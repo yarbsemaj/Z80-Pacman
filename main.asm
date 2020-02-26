@@ -32,14 +32,17 @@ redGhostDis		.EQU	8113H		;Red ghost move distance from pacman
 
 seed			.EQU	8888H		;Random seed
 
-
-
 score			.EQU	8900H		;Score
+
+oldStackPointer	.EQU	89FEH		;Old Stack Location 	
+
 
 
 
 
 	.ORG 9000H
+			ld		(oldStackPointer), SP
+			ld		sp,0FFFFH
 			ld		a, initPacx		;set Pacman Pos
 			ld		(pacx),a
 			ld		a, initPacy
@@ -379,6 +382,7 @@ moveRValid:
 ; C - X
 ; B	- Y
 getDataAtPos:
+				push	bc
 				rlc		b			;Shift b left 5
 				rlc		b			;Shift b left 5
 				rlc		b			;Shift b left 5
@@ -389,11 +393,34 @@ getDataAtPos:
 				or		c			;Combine with C
 				ld		l,a			;A is now low byte of adress
 				ld		a,b
-				and		00011111b	;Mask upper adress
+				and		00000011b	;Mask upper adress
 				or		0E0H		;Start of map
 				ld		h,a
 				ld		a,(HL)
+				pop		bc
 				ret
+
+;------- Get Path Find Map Address----;
+; C - X
+; B	- Y
+getAddressPF:
+				push	bc
+				rlc		b			;Shift b left 5
+				rlc		b			;Shift b left 5
+				rlc		b			;Shift b left 5
+				rlc		b			;Shift b left 5
+				rlc		b			;Shift b left 5
+				ld		a,b
+				and		11100000b	;Mask lower adress
+				or		c			;Combine with C
+				ld		l,a			;A is now low byte of adress
+				ld		a,b
+				and		00000011b	;Mask upper adress
+				or		0D0H		;Start of map
+				ld		h,a
+				pop		bc
+				ret
+
 
 ;--------- Map print -------- ;
 ; C - X
@@ -470,6 +497,42 @@ pmCharRet:
 				pop 	hl
 				ret
 				
+;-------- Path Find Map -------;
+;Initi Path Find Map
+initPathFind:
+				ld		a,32
+				ld		b,a			; 32 chars per line
+				ld		c,a			; 32 lines per map
+				ld		hl,pathFindMap
+pfLoop:			ld		(hl),0FFFFH	; set char
+				inc		hl			; next char
+				djnz	pfLoop		; if were not at the end of a line, print next char
+				ld		b,c			;are we at the end of a block
+				djnz	pfNextRow
+				ret
+pfNextRow:	
+				ld		c,b			;copy decremented b back to c
+				ld 		a,32		;refill b withj 32
+				ld		b,a
+				jr		pfLoop		;draw next char
+
+;Calculate Map
+calculatePathMap:
+				LD		A, (pacx)		;Push X to stack
+				LD		C,A
+				LD		A, (pacy)		;Push Y to stack
+				LD		B,A
+				ld		HL,0FFFFH		;Push Stack terminator		
+				PUSH	HL
+				CALL	getAddressPF
+				LD		(HL),00H
+				PUSH	BC
+calculatePathMapLoop:
+				POP		BC			;Get node to visit
+				LD		B,A			;Check Its not FFFF
+				CP		0FFH
+				RET		Z			;We only have to check half the byte as its imposable to have a cord more than 20h
+
 printScore:					
 				LD		HL, $02
 				PUSH	HL
@@ -621,6 +684,9 @@ pinkGhost:		.BYTE	1BH,"[95mM",1BH,"[0m",0
 void:			.BYTE	" ",0
 
 cls:      	  	.BYTE 1BH,"[H",1BH,"[2J",0
+;-----Path find map
+	.ORG 0D000H
+pathFindMap:
 ;----- Map ------		
 	.ORG 0E000H
 ;----Pellet
