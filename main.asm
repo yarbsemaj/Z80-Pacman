@@ -400,6 +400,26 @@ getDataAtPos:
 				pop		bc
 				ret
 
+; C - X
+; B	- Y
+getMapAddress:
+				push	bc
+				rlc		b			;Shift b left 5
+				rlc		b			;Shift b left 5
+				rlc		b			;Shift b left 5
+				rlc		b			;Shift b left 5
+				rlc		b			;Shift b left 5
+				ld		a,b
+				and		11100000b	;Mask lower adress
+				or		c			;Combine with C
+				ld		l,a			;A is now low byte of adress
+				ld		a,b
+				and		00000011b	;Mask upper adress
+				or		0E0H		;Start of map
+				ld		h,a
+				pop		bc
+				ret
+
 ;------- Get Path Find Map Address----;
 ; C - X
 ; B	- Y
@@ -522,8 +542,8 @@ calculatePathMap:
 				LD		C,A
 				LD		A, (pacy)		;Push Y to stack
 				LD		B,A
-				ld		HL,0FFFFH		;Push Stack terminator		
-				PUSH	HL
+				ld		BC,0FFFFH		;Push Stack terminator		
+				PUSH	BC
 				CALL	getAddressPF
 				LD		(HL),00H
 				PUSH	BC
@@ -532,7 +552,77 @@ calculatePathMapLoop:
 				LD		B,A			;Check Its not FFFF
 				CP		0FFH
 				RET		Z			;We only have to check half the byte as its imposable to have a cord more than 20h
+				CALL	getAddressPF
+				LD		A,(HL)
+				INC		A
+				JP 		PE,calculatePathMapLoop	;Skip again if inc overflows
+				LD		E,A			;Keep the distance were working with safe
+				CALL	getMapAddress
+				LD		D,(HL)
+				LD		A,	'W'			;check up
+				CALL	isMoveValid
+				CALL	NZ,calculateMapU
+				LD		A,	'S'			;down
+				CALL	isMoveValid
+				CALL	NZ,calculateMapD
+				LD		A,	'A'			;left
+				CALL	isMoveValid
+				CALL	NZ,calculateMapL
+				LD		A,	'D'			;right
+				CALL	isMoveValid
+				CALL	NZ,calculateMapR
+				RET
+				
+calculateMapU:	
+				PUSH	BC					;We want to preserve the OG BC Through this process so it can be used again in sub directions		
+				LD		A, C				;Make modifications to corod
+				DEC		A
+				AND		00011111B			;Mask for looping
+				LD		C,A
+				JR		calculateMapCell
+calculateMapD:			
+				LD		A, C
+				INC		A
+				AND		00011111B
+				LD		C,A
+				JR		calculateMapCell
+calculateMapL:			
+				LD		A, B
+				DEC		A
+				AND		00011111B
+				LD		B,A
+				JR		calculateMapCell
+calculateMapR:			
+				LD		A, B
+				INC		A
+				AND		00011111B
+				LD		B,A
+				JR		calculateMapCell
 
+calculateMapCell:
+				CALL	getAddressPF
+				LD		A(HL)
+				CP		E			;Compare new square with E (the path were looking at)
+				;Need to look more at at RET and stack pop
+				;JR		C,calculatePathMapLoop	;If carry is set (A < E)(whats there already < our path) then this route is a dud
+
+
+				CALL	absA
+				LD		H,A
+				LD		A,(pacy)
+				SUB		C
+				CALL	absA
+				ADD		H
+				CP		E
+				JP		Z,redGhostSetEqual		;If 2 options are equidistant, chose a random one to prevent a loop
+				JP		M,redGhostSetNewDir
+				POP		BC
+				RET
+redGhostSetNewDir:
+				LD		(redGhostDis),A
+				POP		BC
+				LD		(redGhostDir),A
+				RET
 printScore:					
 				LD		HL, $02
 				PUSH	HL
