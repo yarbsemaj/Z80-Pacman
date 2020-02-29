@@ -28,7 +28,7 @@ pacNDir			.EQU	8103H		;Pacman next direction (from key press)
 redGhostX		.EQU	8110H		
 redGhostY		.EQU	8111H
 redGhostDir		.EQU	8112H
-redGhostDis		.EQU	8113H		;Red ghost move distance from pacman
+ghostDis		.EQU	8113H		;Red ghost move distance from pacman
 
 seed			.EQU	8888H		;Random seed
 
@@ -66,14 +66,14 @@ gameLoop:
 			call	movePM
 			call 	printPM
 			call	eatPellet
-			
-			;call	getRedGhostNextMove
-			;call	clearRedGhost
-			;call	moveRedGhost
-			;call	printRedGhost
 
 			call	initPathFind
 			call	calculatePathMap
+
+			call	getRedGhostNextMove
+			call	clearRedGhost
+			call	moveRedGhost
+			call	printRedGhost
 			
 			call 	printScore
 			LD 		B,0FFH   ;delay
@@ -231,102 +231,76 @@ moveRedGhost:
 				LD		BC,redGhostY
 				JP		move
 getRedGhostNextMove:
-				LD		A, 41H
-				LD		(redGhostDis),A
+				LD		A, 0FFH
+				LD		(ghostDis),A
 				CALL	getRedGhostMapData
 				LD		D,A
 				LD		A,	'W'			;check up
 				CALL	isMoveValid
-				CALL	NZ,redGhostSetMove
+				CALL	NZ,redGhostCheckU
 				LD		A,	'S'			;down
 				CALL	isMoveValid
-				CALL	NZ,redGhostSetMove
+				CALL	NZ,redGhostCheckD
 				LD		A,	'A'			;left
 				CALL	isMoveValid
-				CALL	NZ,redGhostSetMove
+				CALL	NZ,redGhostCheckL
 				LD		A,	'D'			;right
 				CALL	isMoveValid
-				CALL	NZ,redGhostSetMove
+				CALL	NZ,redGhostCheckR
 				RET
 				
-redGhostSetMove:
+redGhostCheckU:	
 				PUSH	AF
-				CP		'W'
-				JR		Z,redGhostCheckU
-				CP		'A'
-				JR		Z,redGhostCheckL
-				CP		'S'
-				JR		Z,redGhostCheckD
-				JR		redGhostCheckR
-				
-redGhostCheckU:			
 				LD		A, (redGhostY)
 				DEC		A
 				AND		00011111B
-				LD		C,A
-				LD		A,(redGhostX)
 				LD		B,A
+				LD		A,(redGhostX)
+				LD		C,A
 				JR		redGhostPathFind
 redGhostCheckD:			
+				PUSH	AF
 				LD		A, (redGhostY)
 				INC		A
 				AND		00011111B
-				LD		C,A
-				LD		A,(redGhostX)
 				LD		B,A
+				LD		A,(redGhostX)
+				LD		C,A
 				JR		redGhostPathFind
-redGhostCheckL:			
+redGhostCheckL:		
+				PUSH	AF	
 				LD		A, (redGhostX)
 				DEC		A
 				AND		00011111B
-				LD		B,A
-				LD		A,(redGhostY)
 				LD		C,A
+				LD		A,(redGhostY)
+				LD		B,A
 				JR		redGhostPathFind
-redGhostCheckR:			
+redGhostCheckR:
+				PUSH	AF	
 				LD		A, (redGhostX)
 				INC		A
 				AND		00011111B
-				LD		B,A
-				LD		A,(redGhostY)
 				LD		C,A
+				LD		A,(redGhostY)
+				LD		B,A
 				JR		redGhostPathFind
 
 redGhostPathFind:
-				LD		A,(redGhostDis)
-				LD		E,A
-				LD		A,(pacx)
-				SUB		B
-				CALL	absA
-				LD		H,A
-				LD		A,(pacy)
-				SUB		C
-				CALL	absA
-				ADD		H
+				CALL	getAddressPF
+				LD		A,(ghostDis)
+				LD		E,(HL)
 				CP		E
-				JP		Z,redGhostSetEqual		;If 2 options are equidistant, chose a random one to prevent a loop
-				JP		M,redGhostSetNewDir
-				;CALL	NumToHex
+				JP		NC,redGhostSetNewDir
 				POP		AF
-				;RST		08H
 				RET
 redGhostSetNewDir:
-				LD		(redGhostDis),A
-				;CALL	NumToHex
+				LD		A,E
+				LD		(ghostDis),A
 				POP		AF
-				;RST		08H
 				LD		(redGhostDir),A
 				RET
-redGhostSetEqual:
-				LD		B,A
-				CALL	randomA
-				BIT		1,A
-				JR		Z,redGhostRandomSet
-				POP		AF
-				RET
-redGhostRandomSet:
-				LD		A,B
-				JR		redGhostSetNewDir
+
 ;-----------Generic Move Libs -----;
 move:
 				CP		'W'
@@ -693,12 +667,15 @@ Num2:			inc		a
 				RST     08H
 				ret
 ;Print A as HEX				
-NumToHex:    	ld 		c, a   		; a = number to convert
+NumToHex:    	
+				push	bc
+				ld 		c, a   		; a = number to convert
             	call 	Num1H
             	RST     08H
             	ld 		a, c
             	call 	Num2H
             	RST     08H
+				pop		bc
             	ret
 
 Num1H:        	rra
