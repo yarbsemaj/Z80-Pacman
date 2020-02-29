@@ -34,8 +34,8 @@ seed			.EQU	8888H		;Random seed
 
 score			.EQU	8900H		;Score
 
-oldStackPointer	.EQU	89FEH		;Old Stack Location 	
-
+oldStackPointer	.EQU	89F0H		;Old Stack Location 	
+originalBC		.EQU	89F2H		;BC before manipulation, used for calculating board position
 
 
 
@@ -67,16 +67,20 @@ gameLoop:
 			call 	printPM
 			call	eatPellet
 			
-			call	getRedGhostNextMove
-			call	clearRedGhost
-			call	moveRedGhost
-			call	printRedGhost
+			;call	getRedGhostNextMove
+			;call	clearRedGhost
+			;call	moveRedGhost
+			;call	printRedGhost
+
+			call	initPathFind
+			call	calculatePathMap
 			
 			call 	printScore
 			LD 		B,0FFH   ;delay
 			LD		C,0FFH
 			CALL 	DELAY
 			JP		gameLoop
+			LD		SP,(oldStackPointer)
 			ret
 		
 ;-------------- Input --------------------------					
@@ -524,9 +528,10 @@ initPathFind:
 				ld		b,a			; 32 chars per line
 				ld		c,a			; 32 lines per map
 				ld		hl,pathFindMap
-pfLoop:			ld		(hl),0FFFFH	; set char
+initpPFLoop:	ld		D,0FFH		; set char
+				LD		(HL),D
 				inc		hl			; next char
-				djnz	pfLoop		; if were not at the end of a line, print next char
+				djnz	initpPFLoop		; if were not at the end of a line, print next char
 				ld		b,c			;are we at the end of a block
 				djnz	pfNextRow
 				ret
@@ -534,24 +539,26 @@ pfNextRow:
 				ld		c,b			;copy decremented b back to c
 				ld 		a,32		;refill b withj 32
 				ld		b,a
-				jr		pfLoop		;draw next char
+				jr		initpPFLoop		;draw next char
 
 ;Calculate Map
 calculatePathMap:
+				ld		BC,0FFFFH		;Push Stack terminator		
+				PUSH	BC
 				LD		A, (pacx)		;Push X to stack
 				LD		C,A
 				LD		A, (pacy)		;Push Y to stack
 				LD		B,A
-				ld		BC,0FFFFH		;Push Stack terminator		
-				PUSH	BC
 				CALL	getAddressPF
 				LD		(HL),00H
 				PUSH	BC
 calculatePathMapLoop:
 				POP		BC			;Get node to visit
-				LD		B,A			;Check Its not FFFF
+				LD		A,B			;Check Its not FFFF
+				OR		A
 				CP		0FFH
 				RET		Z			;We only have to check half the byte as its imposable to have a cord more than 20h
+				LD		(originalBC),BC
 				CALL	getAddressPF
 				LD		A,(HL)
 				INC		A
@@ -571,58 +578,51 @@ calculatePathMapLoop:
 				LD		A,	'D'			;right
 				CALL	isMoveValid
 				CALL	NZ,calculateMapR
-				RET
+				JP		calculatePathMapLoop
 				
 calculateMapU:	
-				PUSH	BC					;We want to preserve the OG BC Through this process so it can be used again in sub directions		
-				LD		A, C				;Make modifications to corod
+				LD		BC,(originalBC)			;We want to preserve the OG BC Through this process so it can be used again in sub directions		
+				LD		A, B				;Make modifications to corod
 				DEC		A
 				AND		00011111B			;Mask for looping
+				LD		B,A
+				JR		calculateMapCell
+calculateMapD:	
+				LD		BC,(originalBC)	
+				LD		A, B
+				INC		A
+				AND		00011111B
+				LD		B,A
+				JR		calculateMapCell
+calculateMapL:	
+				LD		BC,(originalBC)
+				LD		A, C
+				DEC		C
+				AND		00011111B
 				LD		C,A
 				JR		calculateMapCell
-calculateMapD:			
+calculateMapR:
+				LD		BC,(originalBC)
 				LD		A, C
 				INC		A
 				AND		00011111B
 				LD		C,A
 				JR		calculateMapCell
-calculateMapL:			
-				LD		A, B
-				DEC		A
-				AND		00011111B
-				LD		B,A
-				JR		calculateMapCell
-calculateMapR:			
-				LD		A, B
-				INC		A
-				AND		00011111B
-				LD		B,A
-				JR		calculateMapCell
 
 calculateMapCell:
 				CALL	getAddressPF
-				LD		A(HL)
-				CP		E			;Compare new square with E (the path were looking at)
-				;Need to look more at at RET and stack pop
-				;JR		C,calculatePathMapLoop	;If carry is set (A < E)(whats there already < our path) then this route is a dud
+				LD		A,(HL)
 
+				CP		E			;Compare current data (A) with E (the path were looking at)
+				RET		C			;If carry is set (A < E)(whats there already < our path) then this route is a dud
+				RET		Z			;If its equal we dont want to continue as we alreay have an equally fast route
+				LD		(HL),E
+				POP		HL			;We need the return adress on the top of the stack
+				PUSH	BC			;Push Cell so it can be visited
+				PUSH	HL
+				RET			
 
-				CALL	absA
-				LD		H,A
-				LD		A,(pacy)
-				SUB		C
-				CALL	absA
-				ADD		H
-				CP		E
-				JP		Z,redGhostSetEqual		;If 2 options are equidistant, chose a random one to prevent a loop
-				JP		M,redGhostSetNewDir
-				POP		BC
-				RET
-redGhostSetNewDir:
-				LD		(redGhostDis),A
-				POP		BC
-				LD		(redGhostDir),A
-				RET
+;------Score;
 printScore:					
 				LD		HL, $02
 				PUSH	HL

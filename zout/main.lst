@@ -32,667 +32,823 @@
   32:				
   33:     -	8888          	seed			.EQU	8888H		;Random seed
   34:				
-  35:				
+  35:     -	8900          	score			.EQU	8900H		;Score
   36:				
-  37:     -	8900          	score			.EQU	8900H		;Score
-  38:				
+  37:     -	89F0          	oldStackPointer	.EQU	89F0H		;Old Stack Location 	
+  38:     -	89F2          	originalBC		.EQU	89F2H		;BC before manipulation, used for calculating board position
   39:				
   40:				
   41:				
-  42:     -	9000          		.ORG 9000H
-  43:    0+7	9000  3E0E    				ld		a, initPacx		;set Pacman Pos
-  44:    7+13	9002  320081  				ld		(pacx),a
-  45:   20+7	9005  3E0E    				ld		a, initPacy
-  46:   27+13	9007  320181  				ld		(pacy),a
-  47:   40+7	900A  3E44    				ld		a, 'D'			;Set start direction
-  48:   47+13	900C  320281  				ld		(pacCDir),A
-  49:   60+13	900F  320381  				ld		(pacNDir),A
-  50:   73+10	9012  210000  				ld		HL, 0H
-  51:   83+16	9015  220089  				LD		(score), HL
-  52:   99+7	9018  3E14    				ld		a, initRedGhostX	;set RedGhost Pos
-  53:  106+13	901A  321081  				ld		(redGhostX),a
-  54:  119+7	901D  3E01    				ld		a, initRedGhostY
-  55:  126+13	901F  321181  				ld		(redGhostY),a
-  56:  139+10	9022  21BE93  				LD		HL, cls			;Clear screen
-  57:  149+17	9025  CD3F93  				CALL	print
-  58:  166+17	9028  CD5292  				call 	printMap
-  59:     -	902B          	gameLoop:		
-  60:  183+17	902B  CD5790  				call	input
-  61:  200+17	902E  CDB890  				call 	getMove
-  62:  217+17	9031  CD7190  				call 	clearPM
-  63:  234+17	9034  CDFC90  				call	movePM
-  64:  251+17	9037  CD7D90  				call 	printPM
-  65:  268+17	903A  CDA390  				call	eatPellet
-  66:							
-  67:  285+17	903D  CD4691  				call	getRedGhostNextMove
-  68:  302+17	9040  CD0891  				call	clearRedGhost
-  69:  319+17	9043  CD3A91  				call	moveRedGhost
-  70:  336+17	9046  CD1491  				call	printRedGhost
-  71:							
-  72:  353+17	9049  CDAA92  				call 	printScore
-  73:  370+7	904C  06FF    				LD 		B,0FFH   ;delay
-  74:  377+7	904E  0EFF    				LD		C,0FFH
-  75:  384+17	9050  CD4A93  				CALL 	DELAY
-  76:  401+10	9053  C32B90  				JP		gameLoop
-  77:  411+10	9056  C9      				ret
-  78:						
-  79:				;-------------- Input --------------------------					
-  80:     -	9057          	input:
-  81:  421+11	9057  DF      					RST		18H
-  82:  432+5+6	9058  C8      					RET		Z
-  83:  437+11	9059  D7      					RST		10H
-  84:  448+7	905A  E6DF    					AND     11011111b       ; lower to uppercase
-  85:  455+7	905C  FE57    					CP		'W'
-  86:  462+7+5	905E  280D    					JR		Z,validInput
-  87:  469+7	9060  FE41    					CP		'A'
-  88:  476+7+5	9062  2809    					JR		Z,validInput
-  89:  483+7	9064  FE53    					CP		'S'
-  90:  490+7+5	9066  2805    					JR		Z,validInput
-  91:  497+7	9068  FE44    					CP		'D'
-  92:  504+7+5	906A  2801    					JR		Z,validInput
-  93:  511+10	906C  C9      					RET
-  94:     -	906D          	validInput:		
-  95:  521+13	906D  320381  					LD		(pacNDir), A
-  96:  534+10	9070  C9      					RET
-  97:						
-  98:				;----------Pacman------;
-  99:     -	9071          	clearPM:
- 100:  544+13	9071  3A0081  					LD		A, (pacx)		;Push X to stack
- 101:  557+4	9074  4F      					LD		C,A
- 102:  561+13	9075  3A0181  					LD		A, (pacy)		;Push Y to stack
- 103:  574+4	9078  47      					LD		B,A
- 104:  578+17	9079  CD3C92  					CALL 	printMapAt
- 105:  595+10	907C  C9      					RET
- 106:								
- 107:     -	907D          	printPM:
- 108:  605+13	907D  3A0081  					LD		A, (pacx)		;Push X to stack
- 109:  618+4	9080  3C      					INC		A
- 110:  622+4	9081  6F      					LD		L,A
- 111:  626+7	9082  2600    					LD		H, $00			;We dont care about msb
- 112:  633+11	9084  E5      					PUSH	HL
- 113:  644+13	9085  3A0181  					LD		A, (pacy)		;Push Y to stack
- 114:  657+4	9088  3C      					INC		A
- 115:  661+4	9089  6F      					LD		L,A
- 116:  665+7	908A  2600    					LD		H, $00			;Again we dont care
- 117:  672+11	908C  E5      					PUSH	HL
- 118:  683+17	908D  CDD192  					CALL	moveCursor
- 119:  700+10	9090  218593  					LD		HL, pacman
- 120:  710+17	9093  CD3F93  					CALL 	print
- 121:  727+10	9096  C9      					RET
- 122:     -	9097          	getPMMapData:	
- 123:  737+13	9097  3A0081  					LD		A, (pacx)
- 124:  750+4	909A  4F      					LD		C,A
- 125:  754+13	909B  3A0181  					LD		A, (pacy)
- 126:  767+4	909E  47      					LD		B,A
- 127:  771+17	909F  CD2592  					CALL	getDataAtPos
- 128:  788+10	90A2  C9      					ret
- 129:     -	90A3          	eatPellet:		;Eat pellet at packman location
- 130:  798+17	90A3  CD9790  					CALL 	getPMMapData
- 131:  815+8	90A6  CB6F    					BIT		pelletBit,A
- 132:  823+7+5	90A8  2001    					JR		NZ,eatSPellet
- 133:  830+10	90AA  C9      					RET
- 134:								
- 135:     -	90AB          	eatSPellet:		
- 136:  840+11	90AB  E5      					PUSH	HL		
- 137:  851+16	90AC  2A0089  					LD		HL,(score)
- 138:  867+6	90AF  23      					INC		HL
- 139:  873+6	90B0  23      					INC		HL
- 140:  879+16	90B1  220089  					LD		(score),HL
- 141:  895+10	90B4  E1      					POP		HL
- 142:  905+15	90B5  CBAE    					RES		pelletBit,(HL)
- 143:  920+10	90B7  C9      					RET
- 144:								
- 145:     -	90B8          	getMove:		;Sets the current move var
- 146:  930+17	90B8  CD9790  					CALL	getPMMapData
- 147:  947+4	90BB  57      					LD		D,A
- 148:  951+13	90BC  3A0381  					LD		A,(pacNDir)			;Is the next move valid
- 149:  964+17	90BF  CD0B92  					CALL	isMoveValid
- 150:  981+7+5	90C2  2009    					JR		NZ,nextMoveValid
- 151:  988+13	90C4  3A0281  					LD		A,(pacCDir)			;Is the current move valid
- 152: 1001+17	90C7  CD0B92  					CALL	isMoveValid
- 153: 1018+5+6	90CA  C0      					RET		NZ
- 154: 1023+12	90CB  1807    					JR		calcNextMove
- 155:								
- 156:     -	90CD          	nextMoveValid:
- 157: 1035+13	90CD  320281  					LD		(pacCDir),A
- 158: 1048+13	90D0  320381  					LD		(pacNDir),A
- 159: 1061+10	90D3  C9      					RET
- 160:								
- 161:     -	90D4          	calcNextMove:	
- 162: 1071+7	90D4  FE41    					CP		'A'
- 163: 1078+7+5	90D6  2814    					JR		Z,checkV
- 164: 1085+7	90D8  FE44    					CP		'D'
- 165: 1092+7+5	90DA  2810    					JR		Z,checkV
- 166: 1099+12	90DC  1800    					JR		checkH
- 167:     -	90DE          	checkH:
- 168: 1111+7	90DE  3E41    					LD		A,'A'
- 169: 1118+17	90E0  CD0B92  					CALL	isMoveValid
- 170: 1135+7+5	90E3  20E8    					JR		NZ,nextMoveValid
- 171: 1142+7	90E5  3E44    					LD		A,'D'
- 172: 1149+17	90E7  CD0B92  					CALL	isMoveValid
- 173: 1166+7+5	90EA  20E1    					JR		NZ,nextMoveValid
- 174:     -	90EC          	checkV:
- 175: 1173+7	90EC  3E57    					LD		A,'W'
- 176: 1180+17	90EE  CD0B92  					CALL	isMoveValid
- 177: 1197+7+5	90F1  20DA    					JR		NZ,nextMoveValid
- 178: 1204+7	90F3  3E53    					LD		A,'S'
- 179: 1211+17	90F5  CD0B92  					CALL	isMoveValid
- 180: 1228+7+5	90F8  20D3    					JR		NZ,nextMoveValid
- 181: 1235+12	90FA  18E2    					JR		checkH
- 182:				;Move
- 183:     -	90FC          	movePM:
- 184: 1247+13	90FC  3A0281  					LD		A,(pacCDir)
- 185: 1260+10	90FF  110081  					LD		DE,pacx
- 186: 1270+10	9102  010181  					LD		BC,pacy
- 187: 1280+10	9105  C3E591  					JP		move
- 188:				;------------Ghost
- 189:				;Red
- 190:     -	9108          	clearRedGhost:
- 191: 1290+13	9108  3A1081  					LD		A, (redGhostX)		;Push X to stack
- 192: 1303+4	910B  4F      					LD		C,A
- 193: 1307+13	910C  3A1181  					LD		A, (redGhostY)		;Push Y to stack
- 194: 1320+4	910F  47      					LD		B,A
- 195: 1324+17	9110  CD3C92  					CALL 	printMapAt
- 196: 1341+10	9113  C9      					RET
- 197:								
- 198:     -	9114          	printRedGhost:
- 199: 1351+13	9114  3A1081  					LD		A, (redGhostX)		;Push X to stack
- 200: 1364+4	9117  3C      					INC		A
- 201: 1368+4	9118  6F      					LD		L,A
- 202: 1372+7	9119  2600    					LD		H, $00			;We dont care about msb
- 203: 1379+11	911B  E5      					PUSH	HL
- 204: 1390+13	911C  3A1181  					LD		A, (redGhostY)		;Push Y to stack
- 205: 1403+4	911F  3C      					INC		A
- 206: 1407+4	9120  6F      					LD		L,A
- 207: 1411+7	9121  2600    					LD		H, $00			;Again we dont care
- 208: 1418+11	9123  E5      					PUSH	HL
- 209: 1429+17	9124  CDD192  					CALL	moveCursor
- 210: 1446+10	9127  219093  					LD		HL, redGhost
- 211: 1456+17	912A  CD3F93  					CALL 	print
- 212: 1473+10	912D  C9      					RET
- 213:     -	912E          	getRedGhostMapData:	
- 214: 1483+13	912E  3A1081  					LD		A, (redGhostX)
- 215: 1496+4	9131  4F      					LD		C,A
- 216: 1500+13	9132  3A1181  					LD		A, (redGhostY)
- 217: 1513+4	9135  47      					LD		B,A
- 218: 1517+17	9136  CD2592  					CALL	getDataAtPos
- 219: 1534+10	9139  C9      					ret
- 220:				;Move
- 221:     -	913A          	moveRedGhost:
- 222: 1544+13	913A  3A1281  					LD		A,(redGhostDir)
- 223: 1557+10	913D  111081  					LD		DE,redGhostX
- 224: 1567+10	9140  011181  					LD		BC,redGhostY
- 225: 1577+10	9143  C3E591  					JP		move
- 226:     -	9146          	getRedGhostNextMove:
- 227: 1587+7	9146  3E41    					LD		A, 41H
- 228: 1594+13	9148  321381  					LD		(redGhostDis),A
- 229: 1607+17	914B  CD2E91  					CALL	getRedGhostMapData
- 230: 1624+4	914E  57      					LD		D,A
- 231: 1628+7	914F  3E57    					LD		A,	'W'			;check up
- 232: 1635+17	9151  CD0B92  					CALL	isMoveValid
- 233: 1652+10+7	9154  C47091  					CALL	NZ,redGhostSetMove
- 234: 1662+7	9157  3E53    					LD		A,	'S'			;down
- 235: 1669+17	9159  CD0B92  					CALL	isMoveValid
- 236: 1686+10+7	915C  C47091  					CALL	NZ,redGhostSetMove
- 237: 1696+7	915F  3E41    					LD		A,	'A'			;left
- 238: 1703+17	9161  CD0B92  					CALL	isMoveValid
- 239: 1720+10+7	9164  C47091  					CALL	NZ,redGhostSetMove
- 240: 1730+7	9167  3E44    					LD		A,	'D'			;right
- 241: 1737+17	9169  CD0B92  					CALL	isMoveValid
- 242: 1754+10+7	916C  C47091  					CALL	NZ,redGhostSetMove
- 243: 1764+10	916F  C9      					RET
- 244:								
- 245:     -	9170          	redGhostSetMove:
- 246: 1774+11	9170  F5      					PUSH	AF
- 247: 1785+7	9171  FE57    					CP		'W'
- 248: 1792+7+5	9173  280A    					JR		Z,redGhostCheckU
- 249: 1799+7	9175  FE41    					CP		'A'
- 250: 1806+7+5	9177  2820    					JR		Z,redGhostCheckL
- 251: 1813+7	9179  FE53    					CP		'S'
- 252: 1820+7+5	917B  280F    					JR		Z,redGhostCheckD
- 253: 1827+12	917D  1827    					JR		redGhostCheckR
- 254:								
- 255:     -	917F          	redGhostCheckU:			
- 256: 1839+13	917F  3A1181  					LD		A, (redGhostY)
- 257: 1852+4	9182  3D      					DEC		A
- 258: 1856+7	9183  E61F    					AND		00011111B
- 259: 1863+4	9185  4F      					LD		C,A
- 260: 1867+13	9186  3A1081  					LD		A,(redGhostX)
- 261: 1880+4	9189  47      					LD		B,A
- 262: 1884+12	918A  1827    					JR		redGhostPathFind
- 263:     -	918C          	redGhostCheckD:			
- 264: 1896+13	918C  3A1181  					LD		A, (redGhostY)
- 265: 1909+4	918F  3C      					INC		A
- 266: 1913+7	9190  E61F    					AND		00011111B
- 267: 1920+4	9192  4F      					LD		C,A
- 268: 1924+13	9193  3A1081  					LD		A,(redGhostX)
- 269: 1937+4	9196  47      					LD		B,A
- 270: 1941+12	9197  181A    					JR		redGhostPathFind
- 271:     -	9199          	redGhostCheckL:			
- 272: 1953+13	9199  3A1081  					LD		A, (redGhostX)
- 273: 1966+4	919C  3D      					DEC		A
- 274: 1970+7	919D  E61F    					AND		00011111B
- 275: 1977+4	919F  47      					LD		B,A
- 276: 1981+13	91A0  3A1181  					LD		A,(redGhostY)
- 277: 1994+4	91A3  4F      					LD		C,A
- 278: 1998+12	91A4  180D    					JR		redGhostPathFind
- 279:     -	91A6          	redGhostCheckR:			
- 280: 2010+13	91A6  3A1081  					LD		A, (redGhostX)
- 281: 2023+4	91A9  3C      					INC		A
- 282: 2027+7	91AA  E61F    					AND		00011111B
- 283: 2034+4	91AC  47      					LD		B,A
- 284: 2038+13	91AD  3A1181  					LD		A,(redGhostY)
- 285: 2051+4	91B0  4F      					LD		C,A
- 286: 2055+12	91B1  1800    					JR		redGhostPathFind
- 287:				
- 288:     -	91B3          	redGhostPathFind:
- 289: 2067+13	91B3  3A1381  					LD		A,(redGhostDis)
- 290: 2080+4	91B6  5F      					LD		E,A
- 291: 2084+13	91B7  3A0081  					LD		A,(pacx)
- 292: 2097+4	91BA  90      					SUB		B
- 293: 2101+17	91BB  CD2A93  					CALL	absA
- 294: 2118+4	91BE  67      					LD		H,A
- 295: 2122+13	91BF  3A0181  					LD		A,(pacy)
- 296: 2135+4	91C2  91      					SUB		C
- 297: 2139+17	91C3  CD2A93  					CALL	absA
- 298: 2156+4	91C6  84      					ADD		H
- 299: 2160+4	91C7  BB      					CP		E
- 300: 2164+10	91C8  CAD891  					JP		Z,redGhostSetEqual		;If 2 options are equidistant, chose a random one to prevent a loop
- 301: 2174+10	91CB  FAD091  					JP		M,redGhostSetNewDir
- 302:								;CALL	NumToHex
- 303: 2184+10	91CE  F1      					POP		AF
- 304:								;RST		08H
- 305: 2194+10	91CF  C9      					RET
- 306:     -	91D0          	redGhostSetNewDir:
- 307: 2204+13	91D0  321381  					LD		(redGhostDis),A
- 308:								;CALL	NumToHex
- 309: 2217+10	91D3  F1      					POP		AF
- 310:								;RST		08H
- 311: 2227+13	91D4  321281  					LD		(redGhostDir),A
- 312: 2240+10	91D7  C9      					RET
- 313:     -	91D8          	redGhostSetEqual:
- 314: 2250+4	91D8  47      					LD		B,A
- 315: 2254+17	91D9  CD2F93  					CALL	randomA
- 316: 2271+8	91DC  CB4F    					BIT		1,A
- 317: 2279+7+5	91DE  2802    					JR		Z,redGhostRandomSet
- 318: 2286+10	91E0  F1      					POP		AF
- 319: 2296+10	91E1  C9      					RET
- 320:     -	91E2          	redGhostRandomSet:
- 321: 2306+4	91E2  78      					LD		A,B
- 322: 2310+12	91E3  18EB    					JR		redGhostSetNewDir
- 323:				;-----------Generic Move Libs -----;
- 324:     -	91E5          	move:
- 325: 2322+7	91E5  FE57    					CP		'W'
- 326: 2329+7+5	91E7  280A    					JR		Z,moveU
- 327: 2336+7	91E9  FE41    					CP		'A'
- 328: 2343+7+5	91EB  2812    					JR		Z,moveL
- 329: 2350+7	91ED  FE53    					CP		'S'
- 330: 2357+7+5	91EF  2808    					JR		Z,moveD
- 331: 2364+12	91F1  1812    					JR		moveR
- 332:				
- 333:     -	91F3          	moveU:			
- 334: 2376+7	91F3  0A      					LD		A, (BC)
- 335: 2383+4	91F4  3D      					DEC		A
- 336: 2387+7	91F5  E61F    					AND		00011111B
- 337: 2394+7	91F7  02      					LD		(BC),A
- 338: 2401+10	91F8  C9      					RET
- 339:     -	91F9          	moveD:			
- 340: 2411+7	91F9  0A      					LD		A, (BC)
- 341: 2418+4	91FA  3C      					INC		A
- 342: 2422+7	91FB  E61F    					AND		00011111B
- 343: 2429+7	91FD  02      					LD		(BC),A
- 344: 2436+10	91FE  C9      					RET
- 345:     -	91FF          	moveL:			
- 346: 2446+7	91FF  1A      					LD		A, (DE)
- 347: 2453+4	9200  3D      					DEC		A
- 348: 2457+7	9201  E61F    					AND		00011111B
- 349: 2464+7	9203  12      					LD		(DE),A
- 350: 2471+10	9204  C9      					RET
- 351:     -	9205          	moveR:			
- 352: 2481+7	9205  1A      					LD		A, (DE)
- 353: 2488+4	9206  3C      					INC		A
- 354: 2492+7	9207  E61F    					AND		00011111B
- 355: 2499+7	9209  12      					LD		(DE),A
- 356: 2506+10	920A  C9      					RET
- 357:     -	920B          	isMoveValid:
- 358: 2516+7	920B  FE57    					CP		'W'
- 359: 2523+7+5	920D  280A    					JR		Z,moveUValid
- 360: 2530+7	920F  FE41    					CP		'A'
- 361: 2537+7+5	9211  280C    					JR		Z,moveLValid
- 362: 2544+7	9213  FE53    					CP		'S'
- 363: 2551+7+5	9215  2805    					JR		Z,moveDValid
- 364: 2558+12	9217  1809    					JR		moveRValid
- 365:     -	9219          	moveUValid:			
- 366: 2570+8	9219  CB42    					BIT		upBit,D
- 367: 2578+10	921B  C9      					RET
- 368:     -	921C          	moveDValid:			
- 369: 2588+8	921C  CB4A    					BIT		downBit,D
- 370: 2596+10	921E  C9      					RET
- 371:     -	921F          	moveLValid:			
- 372: 2606+8	921F  CB52    					BIT		leftBit,D
- 373: 2614+10	9221  C9      					RET
- 374:     -	9222          	moveRValid:			
- 375: 2624+8	9222  CB5A    					BIT		rightBit,D
- 376: 2632+10	9224  C9      					RET
- 377:								
- 378:				;------- Get Map Data ----;
- 379:				; C - X
- 380:				; B	- Y
- 381:     -	9225          	getDataAtPos:
- 382: 2642+8	9225  CB00    					rlc		b			;Shift b left 5
- 383: 2650+8	9227  CB00    					rlc		b			;Shift b left 5
- 384: 2658+8	9229  CB00    					rlc		b			;Shift b left 5
- 385: 2666+8	922B  CB00    					rlc		b			;Shift b left 5
- 386: 2674+8	922D  CB00    					rlc		b			;Shift b left 5
- 387: 2682+4	922F  78      					ld		a,b
- 388: 2686+7	9230  E6E0    					and		11100000b	;Mask lower adress
- 389: 2693+4	9232  B1      					or		c			;Combine with C
- 390: 2697+4	9233  6F      					ld		l,a			;A is now low byte of adress
- 391: 2701+4	9234  78      					ld		a,b
- 392: 2705+7	9235  E61F    					and		00011111b	;Mask upper adress
- 393: 2712+7	9237  F6E0    					or		0E0H		;Start of map
- 394: 2719+4	9239  67      					ld		h,a
- 395: 2723+7	923A  7E      					ld		a,(HL)
- 396: 2730+10	923B  C9      					ret
- 397:				
- 398:				;--------- Map print -------- ;
- 399:				; C - X
- 400:				; B	- Y
- 401:     -	923C          	printMapAt:	
- 402: 2740+11	923C  C5      				PUSH	BC
- 403: 2751+4	923D  0C      				INC		C
- 404: 2755+4	923E  69      				LD		L,C
- 405: 2759+7	923F  2600    				LD		H, $00			;We dont care about msb
- 406: 2766+11	9241  E5      				PUSH	HL
- 407: 2777+4	9242  04      				INC		B
- 408: 2781+4	9243  68      				LD		L,B
- 409: 2785+7	9244  2600    				LD		H, $00			;Again we dont care
- 410: 2792+11	9246  E5      				PUSH	HL
- 411: 2803+17	9247  CDD192  				CALL	moveCursor
- 412: 2820+10	924A  C1      				POP 	BC
- 413: 2830+17	924B  CD2592  				CALL	getDataAtPos
- 414: 2847+17	924E  CD6D92  				CALL	pmChar
- 415: 2864+10	9251  C9      				RET
- 416:				
- 417:     -	9252          	printMap:
- 418: 2874+7	9252  3E20    					ld		a,32
- 419: 2881+4	9254  47      					ld		b,a			; 32 chars per line
- 420: 2885+4	9255  4F      					ld		c,a			; 32 lines per map
- 421: 2889+10	9256  2100E0  					ld		hl,map
- 422: 2899+7	9259  7E      	pmLoop:			ld		a,(hl)		; get char
- 423: 2906+17	925A  CD6D92  					call	pmChar		; decode what to print
- 424: 2923+6	925D  23      					inc		hl			; next char
- 425: 2929+8+5	925E  10F9    					djnz	pmLoop		; if were not at the end of a line, print next char
- 426: 2937+17	9260  CDC892  					call	newline		; if we are, print a new line
- 427: 2954+4	9263  41      					ld		b,c			;are we at the end of a block
- 428: 2958+8+5	9264  1001    					djnz	pmNextLine
- 429: 2966+10	9266  C9      					ret
- 430:     -	9267          	pmNextLine:	
- 431: 2976+4	9267  48      					ld		c,b			;copy decremented b back to c
- 432: 2980+7	9268  3E20    					ld 		a,32		;refill b withj 32
- 433: 2987+4	926A  47      					ld		b,a
- 434: 2991+12	926B  18EC    					jr		pmLoop		;draw next char
- 435:				
- 436:				
- 437:     -	926D          	pmChar:		;-- Print map char a
- 438: 3003+11	926D  E5      					push	hl
- 439: 3014+8	926E  CB67    					bit		powerpBit,a
- 440: 3022+7+5	9270  200E    					jr		nz,printPP
- 441: 3029+8	9272  CB6F    					bit		pelletBit,a
- 442: 3037+7+5	9274  2012    					jr		nz,printP
- 443: 3044+8	9276  CB77    					bit		wallBit,a
- 444: 3052+7+5	9278  2016    					jr		nz,printWall
- 445: 3059+8	927A  CB7F    					bit		sfBit,a
- 446: 3067+7+5	927C  201A    					jr		nz,printSF
- 447: 3074+12	927E  1820    					jr	 	printVoid
- 448:							
- 449:     -	9280          	printPP:
- 450: 3086+10	9280  215C93  					ld		hl,powerPellet
- 451: 3096+17	9283  CD3F93  					call	print
- 452: 3113+12	9286  1820    					jr		pmCharRet
- 453:     -	9288          	printP:
- 454: 3125+10	9288  216793  					ld		hl,pellet
- 455: 3135+17	928B  CD3F93  					call	print
- 456: 3152+12	928E  1818    					jr		pmCharRet
- 457:     -	9290          	printWall:
- 458: 3164+10	9290  215193  					ld		hl,wall
- 459: 3174+17	9293  CD3F93  					call	print
- 460: 3191+12	9296  1810    					jr		pmCharRet
- 461:     -	9298          	printSF:
- 462: 3203+10	9298  217293  					ld		hl,superFruit
- 463: 3213+17	929B  CD3F93  					call	print
- 464: 3230+12	929E  1808    					jr		pmCharRet
- 465:     -	92A0          	printVoid:
- 466: 3242+10	92A0  21BC93  					ld		hl,void
- 467: 3252+17	92A3  CD3F93  					call	print
- 468: 3269+12	92A6  1800    					jr		pmCharRet
- 469:     -	92A8          	pmCharRet:	
- 470: 3281+10	92A8  E1      					pop 	hl
- 471: 3291+10	92A9  C9      					ret
- 472:								
- 473:     -	92AA          	printScore:					
- 474: 3301+10	92AA  210200  					LD		HL, $02
- 475: 3311+11	92AD  E5      					PUSH	HL
- 476: 3322+10	92AE  212300  					LD		HL, $23
- 477: 3332+11	92B1  E5      					PUSH	HL
- 478: 3343+17	92B2  CDD192  					CALL	moveCursor
- 479: 3360+10	92B5  217D93  					LD		HL, scoreHUD
- 480: 3370+17	92B8  CD3F93  					CALL 	print
- 481: 3387+16	92BB  2A0089  					LD		HL, (score)
- 482: 3403+17	92BE  CDE892  					CALL	HLToDec
- 483: 3420+7	92C1  3E0A    					LD		A,LF
- 484: 3427+11	92C3  CF      					RST     08H
- 485: 3438+7	92C4  3E0D    					LD		A,CR
- 486: 3445+11	92C6  CF      					RST     08H
- 487: 3456+10	92C7  C9      					RET
- 488:							
- 489:				;------- Libs ------------;
- 490:     -	92C8          	newline:			
- 491: 3466+11	92C8  F5      					push 	af
- 492: 3477+7	92C9  3E0D    					ld		a, CR
- 493: 3484+11	92CB  CF      					rst 	08H
- 494: 3495+7	92CC  3E0A    					ld		a, LF
- 495: 3502+11	92CE  CF      					rst 	08H
- 496: 3513+10	92CF  F1      					pop 	af
- 497: 3523+10	92D0  C9      					ret
- 498:							
- 499:				;move cursor to (sp,sp-2)				
- 500:     -	92D1          	moveCursor:		
- 501: 3533+10	92D1  D1      					POP		DE
- 502: 3543+7	92D2  3E1B    					LD		A,$1B
- 503: 3550+11	92D4  CF      					RST     08H
- 504: 3561+7	92D5  3E5B    					LD		A,'['
- 505: 3568+11	92D7  CF      					RST     08H
- 506: 3579+10	92D8  E1      					POP		HL
- 507: 3589+17	92D9  CDE892  					CALL	HLToDec
- 508: 3606+7	92DC  3E3B    					LD		A,$3B
- 509: 3613+11	92DE  CF      					RST     08H
- 510: 3624+10	92DF  E1      					POP		HL
- 511: 3634+17	92E0  CDE892  					CALL	HLToDec
- 512: 3651+7	92E3  3E66    					LD		A,'f'
- 513: 3658+11	92E5  CF      					RST     08H
- 514: 3669+11	92E6  D5      					PUSH	DE
- 515: 3680+10	92E7  C9      					RET
- 516:				
- 517:				;Prints	hl as decimal			
- 518:     -	92E8          	HLToDec:
- 519: 3690+11	92E8  F5      					PUSH	AF
- 520: 3701+11	92E9  C5      					PUSH	BC
- 521: 3712+17	92EA  CDF092  					CALL	DispHL
- 522: 3729+10	92ED  C1      					POP		BC
- 523: 3739+10	92EE  F1      					POP		AF
- 524: 3749+10	92EF  C9      					RET
- 525:     -	92F0          	DispHL:
- 526: 3759+10	92F0  01F0D8  					ld		bc,-10000
- 527: 3769+17	92F3  CD0993  					call	Num1
- 528: 3786+10	92F6  0118FC  					ld		bc,-1000
- 529: 3796+17	92F9  CD0993  					call	Num1
- 530: 3813+10	92FC  019CFF  					ld		bc,-100
- 531: 3823+17	92FF  CD0993  					call	Num1
- 532: 3840+7	9302  0EF6    					ld		c,-10
- 533: 3847+17	9304  CD0993  					call	Num1
- 534: 3864+7	9307  0EFF    					ld		c,-1
- 535: 3871+7	9309  3E2F    	Num1:			ld		a,'0'-1
- 536: 3878+4	930B  3C      	Num2:			inc		a
- 537: 3882+11	930C  09      					add		hl,bc
- 538: 3893+7+5	930D  38FC    					jr		c,Num2
- 539: 3900+15	930F  ED42    					sbc		hl,bc
- 540: 3915+11	9311  CF      					RST     08H
- 541: 3926+10	9312  C9      					ret
- 542:				;Print A as HEX				
- 543: 3936+4	9313  4F      	NumToHex:    	ld 		c, a   		; a = number to convert
- 544: 3940+17	9314  CD1E93  	            	call 	Num1H
- 545: 3957+11	9317  CF      	            	RST     08H
- 546: 3968+4	9318  79      	            	ld 		a, c
- 547: 3972+17	9319  CD2293  	            	call 	Num2H
- 548: 3989+11	931C  CF      	            	RST     08H
- 549: 4000+10	931D  C9      	            	ret
- 550:				
- 551: 4010+4	931E  1F      	Num1H:        	rra
- 552: 4014+4	931F  1F      	            	rra
- 553: 4018+4	9320  1F      	            	rra
- 554: 4022+4	9321  1F      	           		rra
- 555: 4026+7	9322  F6F0    	Num2H:        	or 		$F0
- 556: 4033+4	9324  27      	            	daa
- 557: 4037+7	9325  C6A0    	            	add 	a, $A0
- 558: 4044+7	9327  CE40    	            	adc 	a, $40 		; Ascii hex at this point (0 to F)   
- 559: 4051+10	9329  C9      	            	ret
- 560:				
- 561:				;Get ABS of A
- 562:     -	932A          	absA:
- 563: 4061+4	932A  B7      	     or a
- 564: 4065+5+6	932B  F0      	     ret p
- 565: 4070+8	932C  ED44    	     neg
- 566: 4078+10	932E  C9      	     ret
- 567:				
- 568:				;getArAndomA	 
- 569:     -	932F          	randomA:				
- 570: 4088+13	932F  3A8888  					ld a, 	(seed)
- 571: 4101+4	9332  47      					ld b, 	a 
- 572:				
- 573: 4105+4	9333  0F      					rrca ; multiply by 32
- 574: 4109+4	9334  0F      					rrca
- 575: 4113+4	9335  0F      					rrca
- 576: 4117+7	9336  EE1F    					xor $1f
- 577:				
- 578: 4124+4	9338  80      					add 	a, b
- 579: 4128+7	9339  DEFF    					sbc a, 255 ; carry
- 580:				
- 581: 4135+13	933B  328888  					ld (seed), a
- 582: 4148+10	933E  C9      					ret
- 583:				
- 584:				;------- Print string
- 585: 4158+11	933F  F5      	print:			PUSH 	AF				; Preserve AF				
- 586: 4169+7	9340  7E      	printLoop:      LD      A,(HL)          ; Get character
- 587: 4176+4	9341  B7      	                OR      A               ; Is it $00 ?
- 588: 4180+7+5	9342  2804    	                JR     	Z,printRet      ; Then RETurn on terminator
- 589: 4187+11	9344  CF      	                RST     08H             ; Print it
- 590: 4198+6	9345  23      	                INC     HL              ; Next Character
- 591: 4204+12	9346  18F8    	                JR      printLoop       ; Continue until $00
- 592:								
- 593:				;delay loop
- 594:     -	9348          	printRet:		
- 595: 4216+10	9348  F1      					POP		AF
- 596: 4226+10	9349  C9      					RET
- 597:     -	934A          	delay:
- 598: 4236+4	934A  00      					NOP
- 599: 4240+6	934B  0B      					DEC 	BC
- 600: 4246+4	934C  78      					LD 		A,B
- 601: 4250+4	934D  B1      					OR 		C
- 602: 4254+5+6	934E  C8      					RET 	Z
- 603: 4259+12	934F  18F9    					JR 		delay
- 604:				
- 605:				;Strings
- 606:     -	9351  1B5B3334	wall:			.BYTE	1BH,"[34m#",1BH,"[0m",0
+  42:				
+  43:     -	9000          		.ORG 9000H
+  44:    0+20	9000  ED73F089				ld		(oldStackPointer), SP
+  45:   20+10	9004  31FFFF  				ld		sp,0FFFFH
+  46:   30+7	9007  3E0E    				ld		a, initPacx		;set Pacman Pos
+  47:   37+13	9009  320081  				ld		(pacx),a
+  48:   50+7	900C  3E0E    				ld		a, initPacy
+  49:   57+13	900E  320181  				ld		(pacy),a
+  50:   70+7	9011  3E44    				ld		a, 'D'			;Set start direction
+  51:   77+13	9013  320281  				ld		(pacCDir),A
+  52:   90+13	9016  320381  				ld		(pacNDir),A
+  53:  103+10	9019  210000  				ld		HL, 0H
+  54:  113+16	901C  220089  				LD		(score), HL
+  55:  129+7	901F  3E14    				ld		a, initRedGhostX	;set RedGhost Pos
+  56:  136+13	9021  321081  				ld		(redGhostX),a
+  57:  149+7	9024  3E01    				ld		a, initRedGhostY
+  58:  156+13	9026  321181  				ld		(redGhostY),a
+  59:  169+10	9029  219094  				LD		HL, cls			;Clear screen
+  60:  179+17	902C  CD1194  				CALL	print
+  61:  196+17	902F  CD8992  				call 	printMap
+  62:     -	9032          	gameLoop:		
+  63:  213+17	9032  CD5C90  				call	input
+  64:  230+17	9035  CDBD90  				call 	getMove
+  65:  247+17	9038  CD7690  				call 	clearPM
+  66:  264+17	903B  CD0191  				call	movePM
+  67:  281+17	903E  CD8290  				call 	printPM
+  68:  298+17	9041  CDA890  				call	eatPellet
+  69:							
+  70:							;call	getRedGhostNextMove
+  71:							;call	clearRedGhost
+  72:							;call	moveRedGhost
+  73:							;call	printRedGhost
+  74:				
+  75:  315+17	9044  CDE192  				call	initPathFind
+  76:  332+17	9047  CDF892  				call	calculatePathMap
+  77:							
+  78:  349+17	904A  CD7C93  				call 	printScore
+  79:  366+7	904D  06FF    				LD 		B,0FFH   ;delay
+  80:  373+7	904F  0EFF    				LD		C,0FFH
+  81:  380+17	9051  CD1C94  				CALL 	DELAY
+  82:  397+10	9054  C33290  				JP		gameLoop
+  83:  407+20	9057  ED7BF089				LD		SP,(oldStackPointer)
+  84:  427+10	905B  C9      				ret
+  85:						
+  86:				;-------------- Input --------------------------					
+  87:     -	905C          	input:
+  88:  437+11	905C  DF      					RST		18H
+  89:  448+5+6	905D  C8      					RET		Z
+  90:  453+11	905E  D7      					RST		10H
+  91:  464+7	905F  E6DF    					AND     11011111b       ; lower to uppercase
+  92:  471+7	9061  FE57    					CP		'W'
+  93:  478+7+5	9063  280D    					JR		Z,validInput
+  94:  485+7	9065  FE41    					CP		'A'
+  95:  492+7+5	9067  2809    					JR		Z,validInput
+  96:  499+7	9069  FE53    					CP		'S'
+  97:  506+7+5	906B  2805    					JR		Z,validInput
+  98:  513+7	906D  FE44    					CP		'D'
+  99:  520+7+5	906F  2801    					JR		Z,validInput
+ 100:  527+10	9071  C9      					RET
+ 101:     -	9072          	validInput:		
+ 102:  537+13	9072  320381  					LD		(pacNDir), A
+ 103:  550+10	9075  C9      					RET
+ 104:						
+ 105:				;----------Pacman------;
+ 106:     -	9076          	clearPM:
+ 107:  560+13	9076  3A0081  					LD		A, (pacx)		;Push X to stack
+ 108:  573+4	9079  4F      					LD		C,A
+ 109:  577+13	907A  3A0181  					LD		A, (pacy)		;Push Y to stack
+ 110:  590+4	907D  47      					LD		B,A
+ 111:  594+17	907E  CD7392  					CALL 	printMapAt
+ 112:  611+10	9081  C9      					RET
+ 113:								
+ 114:     -	9082          	printPM:
+ 115:  621+13	9082  3A0081  					LD		A, (pacx)		;Push X to stack
+ 116:  634+4	9085  3C      					INC		A
+ 117:  638+4	9086  6F      					LD		L,A
+ 118:  642+7	9087  2600    					LD		H, $00			;We dont care about msb
+ 119:  649+11	9089  E5      					PUSH	HL
+ 120:  660+13	908A  3A0181  					LD		A, (pacy)		;Push Y to stack
+ 121:  673+4	908D  3C      					INC		A
+ 122:  677+4	908E  6F      					LD		L,A
+ 123:  681+7	908F  2600    					LD		H, $00			;Again we dont care
+ 124:  688+11	9091  E5      					PUSH	HL
+ 125:  699+17	9092  CDA393  					CALL	moveCursor
+ 126:  716+10	9095  215794  					LD		HL, pacman
+ 127:  726+17	9098  CD1194  					CALL 	print
+ 128:  743+10	909B  C9      					RET
+ 129:     -	909C          	getPMMapData:	
+ 130:  753+13	909C  3A0081  					LD		A, (pacx)
+ 131:  766+4	909F  4F      					LD		C,A
+ 132:  770+13	90A0  3A0181  					LD		A, (pacy)
+ 133:  783+4	90A3  47      					LD		B,A
+ 134:  787+17	90A4  CD2A92  					CALL	getDataAtPos
+ 135:  804+10	90A7  C9      					ret
+ 136:     -	90A8          	eatPellet:		;Eat pellet at packman location
+ 137:  814+17	90A8  CD9C90  					CALL 	getPMMapData
+ 138:  831+8	90AB  CB6F    					BIT		pelletBit,A
+ 139:  839+7+5	90AD  2001    					JR		NZ,eatSPellet
+ 140:  846+10	90AF  C9      					RET
+ 141:								
+ 142:     -	90B0          	eatSPellet:		
+ 143:  856+11	90B0  E5      					PUSH	HL		
+ 144:  867+16	90B1  2A0089  					LD		HL,(score)
+ 145:  883+6	90B4  23      					INC		HL
+ 146:  889+6	90B5  23      					INC		HL
+ 147:  895+16	90B6  220089  					LD		(score),HL
+ 148:  911+10	90B9  E1      					POP		HL
+ 149:  921+15	90BA  CBAE    					RES		pelletBit,(HL)
+ 150:  936+10	90BC  C9      					RET
+ 151:								
+ 152:     -	90BD          	getMove:		;Sets the current move var
+ 153:  946+17	90BD  CD9C90  					CALL	getPMMapData
+ 154:  963+4	90C0  57      					LD		D,A
+ 155:  967+13	90C1  3A0381  					LD		A,(pacNDir)			;Is the next move valid
+ 156:  980+17	90C4  CD1092  					CALL	isMoveValid
+ 157:  997+7+5	90C7  2009    					JR		NZ,nextMoveValid
+ 158: 1004+13	90C9  3A0281  					LD		A,(pacCDir)			;Is the current move valid
+ 159: 1017+17	90CC  CD1092  					CALL	isMoveValid
+ 160: 1034+5+6	90CF  C0      					RET		NZ
+ 161: 1039+12	90D0  1807    					JR		calcNextMove
+ 162:								
+ 163:     -	90D2          	nextMoveValid:
+ 164: 1051+13	90D2  320281  					LD		(pacCDir),A
+ 165: 1064+13	90D5  320381  					LD		(pacNDir),A
+ 166: 1077+10	90D8  C9      					RET
+ 167:								
+ 168:     -	90D9          	calcNextMove:	
+ 169: 1087+7	90D9  FE41    					CP		'A'
+ 170: 1094+7+5	90DB  2814    					JR		Z,checkV
+ 171: 1101+7	90DD  FE44    					CP		'D'
+ 172: 1108+7+5	90DF  2810    					JR		Z,checkV
+ 173: 1115+12	90E1  1800    					JR		checkH
+ 174:     -	90E3          	checkH:
+ 175: 1127+7	90E3  3E41    					LD		A,'A'
+ 176: 1134+17	90E5  CD1092  					CALL	isMoveValid
+ 177: 1151+7+5	90E8  20E8    					JR		NZ,nextMoveValid
+ 178: 1158+7	90EA  3E44    					LD		A,'D'
+ 179: 1165+17	90EC  CD1092  					CALL	isMoveValid
+ 180: 1182+7+5	90EF  20E1    					JR		NZ,nextMoveValid
+ 181:     -	90F1          	checkV:
+ 182: 1189+7	90F1  3E57    					LD		A,'W'
+ 183: 1196+17	90F3  CD1092  					CALL	isMoveValid
+ 184: 1213+7+5	90F6  20DA    					JR		NZ,nextMoveValid
+ 185: 1220+7	90F8  3E53    					LD		A,'S'
+ 186: 1227+17	90FA  CD1092  					CALL	isMoveValid
+ 187: 1244+7+5	90FD  20D3    					JR		NZ,nextMoveValid
+ 188: 1251+12	90FF  18E2    					JR		checkH
+ 189:				;Move
+ 190:     -	9101          	movePM:
+ 191: 1263+13	9101  3A0281  					LD		A,(pacCDir)
+ 192: 1276+10	9104  110081  					LD		DE,pacx
+ 193: 1286+10	9107  010181  					LD		BC,pacy
+ 194: 1296+10	910A  C3EA91  					JP		move
+ 195:				;------------Ghost
+ 196:				;Red
+ 197:     -	910D          	clearRedGhost:
+ 198: 1306+13	910D  3A1081  					LD		A, (redGhostX)		;Push X to stack
+ 199: 1319+4	9110  4F      					LD		C,A
+ 200: 1323+13	9111  3A1181  					LD		A, (redGhostY)		;Push Y to stack
+ 201: 1336+4	9114  47      					LD		B,A
+ 202: 1340+17	9115  CD7392  					CALL 	printMapAt
+ 203: 1357+10	9118  C9      					RET
+ 204:								
+ 205:     -	9119          	printRedGhost:
+ 206: 1367+13	9119  3A1081  					LD		A, (redGhostX)		;Push X to stack
+ 207: 1380+4	911C  3C      					INC		A
+ 208: 1384+4	911D  6F      					LD		L,A
+ 209: 1388+7	911E  2600    					LD		H, $00			;We dont care about msb
+ 210: 1395+11	9120  E5      					PUSH	HL
+ 211: 1406+13	9121  3A1181  					LD		A, (redGhostY)		;Push Y to stack
+ 212: 1419+4	9124  3C      					INC		A
+ 213: 1423+4	9125  6F      					LD		L,A
+ 214: 1427+7	9126  2600    					LD		H, $00			;Again we dont care
+ 215: 1434+11	9128  E5      					PUSH	HL
+ 216: 1445+17	9129  CDA393  					CALL	moveCursor
+ 217: 1462+10	912C  216294  					LD		HL, redGhost
+ 218: 1472+17	912F  CD1194  					CALL 	print
+ 219: 1489+10	9132  C9      					RET
+ 220:     -	9133          	getRedGhostMapData:	
+ 221: 1499+13	9133  3A1081  					LD		A, (redGhostX)
+ 222: 1512+4	9136  4F      					LD		C,A
+ 223: 1516+13	9137  3A1181  					LD		A, (redGhostY)
+ 224: 1529+4	913A  47      					LD		B,A
+ 225: 1533+17	913B  CD2A92  					CALL	getDataAtPos
+ 226: 1550+10	913E  C9      					ret
+ 227:				;Move
+ 228:     -	913F          	moveRedGhost:
+ 229: 1560+13	913F  3A1281  					LD		A,(redGhostDir)
+ 230: 1573+10	9142  111081  					LD		DE,redGhostX
+ 231: 1583+10	9145  011181  					LD		BC,redGhostY
+ 232: 1593+10	9148  C3EA91  					JP		move
+ 233:     -	914B          	getRedGhostNextMove:
+ 234: 1603+7	914B  3E41    					LD		A, 41H
+ 235: 1610+13	914D  321381  					LD		(redGhostDis),A
+ 236: 1623+17	9150  CD3391  					CALL	getRedGhostMapData
+ 237: 1640+4	9153  57      					LD		D,A
+ 238: 1644+7	9154  3E57    					LD		A,	'W'			;check up
+ 239: 1651+17	9156  CD1092  					CALL	isMoveValid
+ 240: 1668+10+7	9159  C47591  					CALL	NZ,redGhostSetMove
+ 241: 1678+7	915C  3E53    					LD		A,	'S'			;down
+ 242: 1685+17	915E  CD1092  					CALL	isMoveValid
+ 243: 1702+10+7	9161  C47591  					CALL	NZ,redGhostSetMove
+ 244: 1712+7	9164  3E41    					LD		A,	'A'			;left
+ 245: 1719+17	9166  CD1092  					CALL	isMoveValid
+ 246: 1736+10+7	9169  C47591  					CALL	NZ,redGhostSetMove
+ 247: 1746+7	916C  3E44    					LD		A,	'D'			;right
+ 248: 1753+17	916E  CD1092  					CALL	isMoveValid
+ 249: 1770+10+7	9171  C47591  					CALL	NZ,redGhostSetMove
+ 250: 1780+10	9174  C9      					RET
+ 251:								
+ 252:     -	9175          	redGhostSetMove:
+ 253: 1790+11	9175  F5      					PUSH	AF
+ 254: 1801+7	9176  FE57    					CP		'W'
+ 255: 1808+7+5	9178  280A    					JR		Z,redGhostCheckU
+ 256: 1815+7	917A  FE41    					CP		'A'
+ 257: 1822+7+5	917C  2820    					JR		Z,redGhostCheckL
+ 258: 1829+7	917E  FE53    					CP		'S'
+ 259: 1836+7+5	9180  280F    					JR		Z,redGhostCheckD
+ 260: 1843+12	9182  1827    					JR		redGhostCheckR
+ 261:								
+ 262:     -	9184          	redGhostCheckU:			
+ 263: 1855+13	9184  3A1181  					LD		A, (redGhostY)
+ 264: 1868+4	9187  3D      					DEC		A
+ 265: 1872+7	9188  E61F    					AND		00011111B
+ 266: 1879+4	918A  4F      					LD		C,A
+ 267: 1883+13	918B  3A1081  					LD		A,(redGhostX)
+ 268: 1896+4	918E  47      					LD		B,A
+ 269: 1900+12	918F  1827    					JR		redGhostPathFind
+ 270:     -	9191          	redGhostCheckD:			
+ 271: 1912+13	9191  3A1181  					LD		A, (redGhostY)
+ 272: 1925+4	9194  3C      					INC		A
+ 273: 1929+7	9195  E61F    					AND		00011111B
+ 274: 1936+4	9197  4F      					LD		C,A
+ 275: 1940+13	9198  3A1081  					LD		A,(redGhostX)
+ 276: 1953+4	919B  47      					LD		B,A
+ 277: 1957+12	919C  181A    					JR		redGhostPathFind
+ 278:     -	919E          	redGhostCheckL:			
+ 279: 1969+13	919E  3A1081  					LD		A, (redGhostX)
+ 280: 1982+4	91A1  3D      					DEC		A
+ 281: 1986+7	91A2  E61F    					AND		00011111B
+ 282: 1993+4	91A4  47      					LD		B,A
+ 283: 1997+13	91A5  3A1181  					LD		A,(redGhostY)
+ 284: 2010+4	91A8  4F      					LD		C,A
+ 285: 2014+12	91A9  180D    					JR		redGhostPathFind
+ 286:     -	91AB          	redGhostCheckR:			
+ 287: 2026+13	91AB  3A1081  					LD		A, (redGhostX)
+ 288: 2039+4	91AE  3C      					INC		A
+ 289: 2043+7	91AF  E61F    					AND		00011111B
+ 290: 2050+4	91B1  47      					LD		B,A
+ 291: 2054+13	91B2  3A1181  					LD		A,(redGhostY)
+ 292: 2067+4	91B5  4F      					LD		C,A
+ 293: 2071+12	91B6  1800    					JR		redGhostPathFind
+ 294:				
+ 295:     -	91B8          	redGhostPathFind:
+ 296: 2083+13	91B8  3A1381  					LD		A,(redGhostDis)
+ 297: 2096+4	91BB  5F      					LD		E,A
+ 298: 2100+13	91BC  3A0081  					LD		A,(pacx)
+ 299: 2113+4	91BF  90      					SUB		B
+ 300: 2117+17	91C0  CDFC93  					CALL	absA
+ 301: 2134+4	91C3  67      					LD		H,A
+ 302: 2138+13	91C4  3A0181  					LD		A,(pacy)
+ 303: 2151+4	91C7  91      					SUB		C
+ 304: 2155+17	91C8  CDFC93  					CALL	absA
+ 305: 2172+4	91CB  84      					ADD		H
+ 306: 2176+4	91CC  BB      					CP		E
+ 307: 2180+10	91CD  CADD91  					JP		Z,redGhostSetEqual		;If 2 options are equidistant, chose a random one to prevent a loop
+ 308: 2190+10	91D0  FAD591  					JP		M,redGhostSetNewDir
+ 309:								;CALL	NumToHex
+ 310: 2200+10	91D3  F1      					POP		AF
+ 311:								;RST		08H
+ 312: 2210+10	91D4  C9      					RET
+ 313:     -	91D5          	redGhostSetNewDir:
+ 314: 2220+13	91D5  321381  					LD		(redGhostDis),A
+ 315:								;CALL	NumToHex
+ 316: 2233+10	91D8  F1      					POP		AF
+ 317:								;RST		08H
+ 318: 2243+13	91D9  321281  					LD		(redGhostDir),A
+ 319: 2256+10	91DC  C9      					RET
+ 320:     -	91DD          	redGhostSetEqual:
+ 321: 2266+4	91DD  47      					LD		B,A
+ 322: 2270+17	91DE  CD0194  					CALL	randomA
+ 323: 2287+8	91E1  CB4F    					BIT		1,A
+ 324: 2295+7+5	91E3  2802    					JR		Z,redGhostRandomSet
+ 325: 2302+10	91E5  F1      					POP		AF
+ 326: 2312+10	91E6  C9      					RET
+ 327:     -	91E7          	redGhostRandomSet:
+ 328: 2322+4	91E7  78      					LD		A,B
+ 329: 2326+12	91E8  18EB    					JR		redGhostSetNewDir
+ 330:				;-----------Generic Move Libs -----;
+ 331:     -	91EA          	move:
+ 332: 2338+7	91EA  FE57    					CP		'W'
+ 333: 2345+7+5	91EC  280A    					JR		Z,moveU
+ 334: 2352+7	91EE  FE41    					CP		'A'
+ 335: 2359+7+5	91F0  2812    					JR		Z,moveL
+ 336: 2366+7	91F2  FE53    					CP		'S'
+ 337: 2373+7+5	91F4  2808    					JR		Z,moveD
+ 338: 2380+12	91F6  1812    					JR		moveR
+ 339:				
+ 340:     -	91F8          	moveU:			
+ 341: 2392+7	91F8  0A      					LD		A, (BC)
+ 342: 2399+4	91F9  3D      					DEC		A
+ 343: 2403+7	91FA  E61F    					AND		00011111B
+ 344: 2410+7	91FC  02      					LD		(BC),A
+ 345: 2417+10	91FD  C9      					RET
+ 346:     -	91FE          	moveD:			
+ 347: 2427+7	91FE  0A      					LD		A, (BC)
+ 348: 2434+4	91FF  3C      					INC		A
+ 349: 2438+7	9200  E61F    					AND		00011111B
+ 350: 2445+7	9202  02      					LD		(BC),A
+ 351: 2452+10	9203  C9      					RET
+ 352:     -	9204          	moveL:			
+ 353: 2462+7	9204  1A      					LD		A, (DE)
+ 354: 2469+4	9205  3D      					DEC		A
+ 355: 2473+7	9206  E61F    					AND		00011111B
+ 356: 2480+7	9208  12      					LD		(DE),A
+ 357: 2487+10	9209  C9      					RET
+ 358:     -	920A          	moveR:			
+ 359: 2497+7	920A  1A      					LD		A, (DE)
+ 360: 2504+4	920B  3C      					INC		A
+ 361: 2508+7	920C  E61F    					AND		00011111B
+ 362: 2515+7	920E  12      					LD		(DE),A
+ 363: 2522+10	920F  C9      					RET
+ 364:     -	9210          	isMoveValid:
+ 365: 2532+7	9210  FE57    					CP		'W'
+ 366: 2539+7+5	9212  280A    					JR		Z,moveUValid
+ 367: 2546+7	9214  FE41    					CP		'A'
+ 368: 2553+7+5	9216  280C    					JR		Z,moveLValid
+ 369: 2560+7	9218  FE53    					CP		'S'
+ 370: 2567+7+5	921A  2805    					JR		Z,moveDValid
+ 371: 2574+12	921C  1809    					JR		moveRValid
+ 372:     -	921E          	moveUValid:			
+ 373: 2586+8	921E  CB42    					BIT		upBit,D
+ 374: 2594+10	9220  C9      					RET
+ 375:     -	9221          	moveDValid:			
+ 376: 2604+8	9221  CB4A    					BIT		downBit,D
+ 377: 2612+10	9223  C9      					RET
+ 378:     -	9224          	moveLValid:			
+ 379: 2622+8	9224  CB52    					BIT		leftBit,D
+ 380: 2630+10	9226  C9      					RET
+ 381:     -	9227          	moveRValid:			
+ 382: 2640+8	9227  CB5A    					BIT		rightBit,D
+ 383: 2648+10	9229  C9      					RET
+ 384:								
+ 385:				;------- Get Map Data ----;
+ 386:				; C - X
+ 387:				; B	- Y
+ 388:     -	922A          	getDataAtPos:
+ 389: 2658+11	922A  C5      					push	bc
+ 390: 2669+8	922B  CB00    					rlc		b			;Shift b left 5
+ 391: 2677+8	922D  CB00    					rlc		b			;Shift b left 5
+ 392: 2685+8	922F  CB00    					rlc		b			;Shift b left 5
+ 393: 2693+8	9231  CB00    					rlc		b			;Shift b left 5
+ 394: 2701+8	9233  CB00    					rlc		b			;Shift b left 5
+ 395: 2709+4	9235  78      					ld		a,b
+ 396: 2713+7	9236  E6E0    					and		11100000b	;Mask lower adress
+ 397: 2720+4	9238  B1      					or		c			;Combine with C
+ 398: 2724+4	9239  6F      					ld		l,a			;A is now low byte of adress
+ 399: 2728+4	923A  78      					ld		a,b
+ 400: 2732+7	923B  E603    					and		00000011b	;Mask upper adress
+ 401: 2739+7	923D  F6E0    					or		0E0H		;Start of map
+ 402: 2746+4	923F  67      					ld		h,a
+ 403: 2750+7	9240  7E      					ld		a,(HL)
+ 404: 2757+10	9241  C1      					pop		bc
+ 405: 2767+10	9242  C9      					ret
+ 406:				
+ 407:				; C - X
+ 408:				; B	- Y
+ 409:     -	9243          	getMapAddress:
+ 410: 2777+11	9243  C5      					push	bc
+ 411: 2788+8	9244  CB00    					rlc		b			;Shift b left 5
+ 412: 2796+8	9246  CB00    					rlc		b			;Shift b left 5
+ 413: 2804+8	9248  CB00    					rlc		b			;Shift b left 5
+ 414: 2812+8	924A  CB00    					rlc		b			;Shift b left 5
+ 415: 2820+8	924C  CB00    					rlc		b			;Shift b left 5
+ 416: 2828+4	924E  78      					ld		a,b
+ 417: 2832+7	924F  E6E0    					and		11100000b	;Mask lower adress
+ 418: 2839+4	9251  B1      					or		c			;Combine with C
+ 419: 2843+4	9252  6F      					ld		l,a			;A is now low byte of adress
+ 420: 2847+4	9253  78      					ld		a,b
+ 421: 2851+7	9254  E603    					and		00000011b	;Mask upper adress
+ 422: 2858+7	9256  F6E0    					or		0E0H		;Start of map
+ 423: 2865+4	9258  67      					ld		h,a
+ 424: 2869+10	9259  C1      					pop		bc
+ 425: 2879+10	925A  C9      					ret
+ 426:				
+ 427:				;------- Get Path Find Map Address----;
+ 428:				; C - X
+ 429:				; B	- Y
+ 430:     -	925B          	getAddressPF:
+ 431: 2889+11	925B  C5      					push	bc
+ 432: 2900+8	925C  CB00    					rlc		b			;Shift b left 5
+ 433: 2908+8	925E  CB00    					rlc		b			;Shift b left 5
+ 434: 2916+8	9260  CB00    					rlc		b			;Shift b left 5
+ 435: 2924+8	9262  CB00    					rlc		b			;Shift b left 5
+ 436: 2932+8	9264  CB00    					rlc		b			;Shift b left 5
+ 437: 2940+4	9266  78      					ld		a,b
+ 438: 2944+7	9267  E6E0    					and		11100000b	;Mask lower adress
+ 439: 2951+4	9269  B1      					or		c			;Combine with C
+ 440: 2955+4	926A  6F      					ld		l,a			;A is now low byte of adress
+ 441: 2959+4	926B  78      					ld		a,b
+ 442: 2963+7	926C  E603    					and		00000011b	;Mask upper adress
+ 443: 2970+7	926E  F6D0    					or		0D0H		;Start of map
+ 444: 2977+4	9270  67      					ld		h,a
+ 445: 2981+10	9271  C1      					pop		bc
+ 446: 2991+10	9272  C9      					ret
+ 447:				
+ 448:				
+ 449:				;--------- Map print -------- ;
+ 450:				; C - X
+ 451:				; B	- Y
+ 452:     -	9273          	printMapAt:	
+ 453: 3001+11	9273  C5      				PUSH	BC
+ 454: 3012+4	9274  0C      				INC		C
+ 455: 3016+4	9275  69      				LD		L,C
+ 456: 3020+7	9276  2600    				LD		H, $00			;We dont care about msb
+ 457: 3027+11	9278  E5      				PUSH	HL
+ 458: 3038+4	9279  04      				INC		B
+ 459: 3042+4	927A  68      				LD		L,B
+ 460: 3046+7	927B  2600    				LD		H, $00			;Again we dont care
+ 461: 3053+11	927D  E5      				PUSH	HL
+ 462: 3064+17	927E  CDA393  				CALL	moveCursor
+ 463: 3081+10	9281  C1      				POP 	BC
+ 464: 3091+17	9282  CD2A92  				CALL	getDataAtPos
+ 465: 3108+17	9285  CDA492  				CALL	pmChar
+ 466: 3125+10	9288  C9      				RET
+ 467:				
+ 468:     -	9289          	printMap:
+ 469: 3135+7	9289  3E20    					ld		a,32
+ 470: 3142+4	928B  47      					ld		b,a			; 32 chars per line
+ 471: 3146+4	928C  4F      					ld		c,a			; 32 lines per map
+ 472: 3150+10	928D  2100E0  					ld		hl,map
+ 473: 3160+7	9290  7E      	pmLoop:			ld		a,(hl)		; get char
+ 474: 3167+17	9291  CDA492  					call	pmChar		; decode what to print
+ 475: 3184+6	9294  23      					inc		hl			; next char
+ 476: 3190+8+5	9295  10F9    					djnz	pmLoop		; if were not at the end of a line, print next char
+ 477: 3198+17	9297  CD9A93  					call	newline		; if we are, print a new line
+ 478: 3215+4	929A  41      					ld		b,c			;are we at the end of a block
+ 479: 3219+8+5	929B  1001    					djnz	pmNextLine
+ 480: 3227+10	929D  C9      					ret
+ 481:     -	929E          	pmNextLine:	
+ 482: 3237+4	929E  48      					ld		c,b			;copy decremented b back to c
+ 483: 3241+7	929F  3E20    					ld 		a,32		;refill b withj 32
+ 484: 3248+4	92A1  47      					ld		b,a
+ 485: 3252+12	92A2  18EC    					jr		pmLoop		;draw next char
+ 486:				
+ 487:				
+ 488:     -	92A4          	pmChar:		;-- Print map char a
+ 489: 3264+11	92A4  E5      					push	hl
+ 490: 3275+8	92A5  CB67    					bit		powerpBit,a
+ 491: 3283+7+5	92A7  200E    					jr		nz,printPP
+ 492: 3290+8	92A9  CB6F    					bit		pelletBit,a
+ 493: 3298+7+5	92AB  2012    					jr		nz,printP
+ 494: 3305+8	92AD  CB77    					bit		wallBit,a
+ 495: 3313+7+5	92AF  2016    					jr		nz,printWall
+ 496: 3320+8	92B1  CB7F    					bit		sfBit,a
+ 497: 3328+7+5	92B3  201A    					jr		nz,printSF
+ 498: 3335+12	92B5  1820    					jr	 	printVoid
+ 499:							
+ 500:     -	92B7          	printPP:
+ 501: 3347+10	92B7  212E94  					ld		hl,powerPellet
+ 502: 3357+17	92BA  CD1194  					call	print
+ 503: 3374+12	92BD  1820    					jr		pmCharRet
+ 504:     -	92BF          	printP:
+ 505: 3386+10	92BF  213994  					ld		hl,pellet
+ 506: 3396+17	92C2  CD1194  					call	print
+ 507: 3413+12	92C5  1818    					jr		pmCharRet
+ 508:     -	92C7          	printWall:
+ 509: 3425+10	92C7  212394  					ld		hl,wall
+ 510: 3435+17	92CA  CD1194  					call	print
+ 511: 3452+12	92CD  1810    					jr		pmCharRet
+ 512:     -	92CF          	printSF:
+ 513: 3464+10	92CF  214494  					ld		hl,superFruit
+ 514: 3474+17	92D2  CD1194  					call	print
+ 515: 3491+12	92D5  1808    					jr		pmCharRet
+ 516:     -	92D7          	printVoid:
+ 517: 3503+10	92D7  218E94  					ld		hl,void
+ 518: 3513+17	92DA  CD1194  					call	print
+ 519: 3530+12	92DD  1800    					jr		pmCharRet
+ 520:     -	92DF          	pmCharRet:	
+ 521: 3542+10	92DF  E1      					pop 	hl
+ 522: 3552+10	92E0  C9      					ret
+ 523:								
+ 524:				;-------- Path Find Map -------;
+ 525:				;Initi Path Find Map
+ 526:     -	92E1          	initPathFind:
+ 527: 3562+7	92E1  3E20    					ld		a,32
+ 528: 3569+4	92E3  47      					ld		b,a			; 32 chars per line
+ 529: 3573+4	92E4  4F      					ld		c,a			; 32 lines per map
+ 530: 3577+10	92E5  2100D0  					ld		hl,pathFindMap
+ 531: 3587+7	92E8  16FF    	initpPFLoop:	ld		D,0FFH		; set char
+ 532: 3594+7	92EA  72      					LD		(HL),D
+ 533: 3601+6	92EB  23      					inc		hl			; next char
+ 534: 3607+8+5	92EC  10FA    					djnz	initpPFLoop		; if were not at the end of a line, print next char
+ 535: 3615+4	92EE  41      					ld		b,c			;are we at the end of a block
+ 536: 3619+8+5	92EF  1001    					djnz	pfNextRow
+ 537: 3627+10	92F1  C9      					ret
+ 538:     -	92F2          	pfNextRow:	
+ 539: 3637+4	92F2  48      					ld		c,b			;copy decremented b back to c
+ 540: 3641+7	92F3  3E20    					ld 		a,32		;refill b withj 32
+ 541: 3648+4	92F5  47      					ld		b,a
+ 542: 3652+12	92F6  18F0    					jr		initpPFLoop		;draw next char
+ 543:				
+ 544:				;Calculate Map
+ 545:     -	92F8          	calculatePathMap:
+ 546: 3664+10	92F8  01FFFF  					ld		BC,0FFFFH		;Push Stack terminator		
+ 547: 3674+11	92FB  C5      					PUSH	BC
+ 548: 3685+13	92FC  3A0081  					LD		A, (pacx)		;Push X to stack
+ 549: 3698+4	92FF  4F      					LD		C,A
+ 550: 3702+13	9300  3A0181  					LD		A, (pacy)		;Push Y to stack
+ 551: 3715+4	9303  47      					LD		B,A
+ 552: 3719+17	9304  CD5B92  					CALL	getAddressPF
+ 553: 3736+10	9307  3600    					LD		(HL),00H
+ 554: 3746+11	9309  C5      					PUSH	BC
+ 555:     -	930A          	calculatePathMapLoop:
+ 556: 3757+10	930A  C1      					POP		BC			;Get node to visit
+ 557: 3767+4	930B  78      					LD		A,B			;Check Its not FFFF
+ 558: 3771+4	930C  B7      					OR		A
+ 559: 3775+7	930D  FEFF    					CP		0FFH
+ 560: 3782+5+6	930F  C8      					RET		Z			;We only have to check half the byte as its imposable to have a cord more than 20h
+ 561: 3787+20	9310  ED43F289					LD		(originalBC),BC
+ 562: 3807+17	9314  CD5B92  					CALL	getAddressPF
+ 563: 3824+7	9317  7E      					LD		A,(HL)
+ 564: 3831+4	9318  3C      					INC		A
+ 565: 3835+10	9319  EA0A93  					JP 		PE,calculatePathMapLoop	;Skip again if inc overflows
+ 566: 3845+4	931C  5F      					LD		E,A			;Keep the distance were working with safe
+ 567: 3849+17	931D  CD4392  					CALL	getMapAddress
+ 568: 3866+7	9320  56      					LD		D,(HL)
+ 569: 3873+7	9321  3E57    					LD		A,	'W'			;check up
+ 570: 3880+17	9323  CD1092  					CALL	isMoveValid
+ 571: 3897+10+7	9326  C44493  					CALL	NZ,calculateMapU
+ 572: 3907+7	9329  3E53    					LD		A,	'S'			;down
+ 573: 3914+17	932B  CD1092  					CALL	isMoveValid
+ 574: 3931+10+7	932E  C44F93  					CALL	NZ,calculateMapD
+ 575: 3941+7	9331  3E41    					LD		A,	'A'			;left
+ 576: 3948+17	9333  CD1092  					CALL	isMoveValid
+ 577: 3965+10+7	9336  C45A93  					CALL	NZ,calculateMapL
+ 578: 3975+7	9339  3E44    					LD		A,	'D'			;right
+ 579: 3982+17	933B  CD1092  					CALL	isMoveValid
+ 580: 3999+10+7	933E  C46593  					CALL	NZ,calculateMapR
+ 581: 4009+10	9341  C30A93  					JP		calculatePathMapLoop
+ 582:								
+ 583:     -	9344          	calculateMapU:	
+ 584: 4019+20	9344  ED4BF289					LD		BC,(originalBC)			;We want to preserve the OG BC Through this process so it can be used again in sub directions		
+ 585: 4039+4	9348  78      					LD		A, B				;Make modifications to corod
+ 586: 4043+4	9349  3D      					DEC		A
+ 587: 4047+7	934A  E61F    					AND		00011111B			;Mask for looping
+ 588: 4054+4	934C  47      					LD		B,A
+ 589: 4058+12	934D  1821    					JR		calculateMapCell
+ 590:     -	934F          	calculateMapD:	
+ 591: 4070+20	934F  ED4BF289					LD		BC,(originalBC)	
+ 592: 4090+4	9353  78      					LD		A, B
+ 593: 4094+4	9354  3C      					INC		A
+ 594: 4098+7	9355  E61F    					AND		00011111B
+ 595: 4105+4	9357  47      					LD		B,A
+ 596: 4109+12	9358  1816    					JR		calculateMapCell
+ 597:     -	935A          	calculateMapL:	
+ 598: 4121+20	935A  ED4BF289					LD		BC,(originalBC)
+ 599: 4141+4	935E  79      					LD		A, C
+ 600: 4145+4	935F  0D      					DEC		C
+ 601: 4149+7	9360  E61F    					AND		00011111B
+ 602: 4156+4	9362  4F      					LD		C,A
+ 603: 4160+12	9363  180B    					JR		calculateMapCell
+ 604:     -	9365          	calculateMapR:
+ 605: 4172+20	9365  ED4BF289					LD		BC,(originalBC)
+ 606: 4192+4	9369  79      					LD		A, C
+ 607: 4196+4	936A  3C      					INC		A
+ 608: 4200+7	936B  E61F    					AND		00011111B
+ 609: 4207+4	936D  4F      					LD		C,A
+ 610: 4211+12	936E  1800    					JR		calculateMapCell
+ 611:				
+ 612:     -	9370          	calculateMapCell:
+ 613: 4223+17	9370  CD5B92  					CALL	getAddressPF
+ 614: 4240+7	9373  7E      					LD		A,(HL)
+ 615:				
+ 616: 4247+4	9374  BB      					CP		E			;Compare current data (A) with E (the path were looking at)
+ 617: 4251+5+6	9375  D8      					RET		C			;If carry is set (A < E)(whats there already < our path) then this route is a dud
+ 618: 4256+5+6	9376  C8      					RET		Z			;If its equal we dont want to continue as we alreay have an equally fast route
+ 619: 4261+7	9377  73      					LD		(HL),E
+ 620: 4268+10	9378  E1      					POP		HL			;We need the return adress on the top of the stack
+ 621: 4278+11	9379  C5      					PUSH	BC			;Push Cell so it can be visited
+ 622: 4289+11	937A  E5      					PUSH	HL
+ 623: 4300+10	937B  C9      					RET			
+ 624:				
+ 625:				;------Score;
+ 626:     -	937C          	printScore:					
+ 627: 4310+10	937C  210200  					LD		HL, $02
+ 628: 4320+11	937F  E5      					PUSH	HL
+ 629: 4331+10	9380  212300  					LD		HL, $23
+ 630: 4341+11	9383  E5      					PUSH	HL
+ 631: 4352+17	9384  CDA393  					CALL	moveCursor
+ 632: 4369+10	9387  214F94  					LD		HL, scoreHUD
+ 633: 4379+17	938A  CD1194  					CALL 	print
+ 634: 4396+16	938D  2A0089  					LD		HL, (score)
+ 635: 4412+17	9390  CDBA93  					CALL	HLToDec
+ 636: 4429+7	9393  3E0A    					LD		A,LF
+ 637: 4436+11	9395  CF      					RST     08H
+ 638: 4447+7	9396  3E0D    					LD		A,CR
+ 639: 4454+11	9398  CF      					RST     08H
+ 640: 4465+10	9399  C9      					RET
+ 641:							
+ 642:				;------- Libs ------------;
+ 643:     -	939A          	newline:			
+ 644: 4475+11	939A  F5      					push 	af
+ 645: 4486+7	939B  3E0D    					ld		a, CR
+ 646: 4493+11	939D  CF      					rst 	08H
+ 647: 4504+7	939E  3E0A    					ld		a, LF
+ 648: 4511+11	93A0  CF      					rst 	08H
+ 649: 4522+10	93A1  F1      					pop 	af
+ 650: 4532+10	93A2  C9      					ret
+ 651:							
+ 652:				;move cursor to (sp,sp-2)				
+ 653:     -	93A3          	moveCursor:		
+ 654: 4542+10	93A3  D1      					POP		DE
+ 655: 4552+7	93A4  3E1B    					LD		A,$1B
+ 656: 4559+11	93A6  CF      					RST     08H
+ 657: 4570+7	93A7  3E5B    					LD		A,'['
+ 658: 4577+11	93A9  CF      					RST     08H
+ 659: 4588+10	93AA  E1      					POP		HL
+ 660: 4598+17	93AB  CDBA93  					CALL	HLToDec
+ 661: 4615+7	93AE  3E3B    					LD		A,$3B
+ 662: 4622+11	93B0  CF      					RST     08H
+ 663: 4633+10	93B1  E1      					POP		HL
+ 664: 4643+17	93B2  CDBA93  					CALL	HLToDec
+ 665: 4660+7	93B5  3E66    					LD		A,'f'
+ 666: 4667+11	93B7  CF      					RST     08H
+ 667: 4678+11	93B8  D5      					PUSH	DE
+ 668: 4689+10	93B9  C9      					RET
+ 669:				
+ 670:				;Prints	hl as decimal			
+ 671:     -	93BA          	HLToDec:
+ 672: 4699+11	93BA  F5      					PUSH	AF
+ 673: 4710+11	93BB  C5      					PUSH	BC
+ 674: 4721+17	93BC  CDC293  					CALL	DispHL
+ 675: 4738+10	93BF  C1      					POP		BC
+ 676: 4748+10	93C0  F1      					POP		AF
+ 677: 4758+10	93C1  C9      					RET
+ 678:     -	93C2          	DispHL:
+ 679: 4768+10	93C2  01F0D8  					ld		bc,-10000
+ 680: 4778+17	93C5  CDDB93  					call	Num1
+ 681: 4795+10	93C8  0118FC  					ld		bc,-1000
+ 682: 4805+17	93CB  CDDB93  					call	Num1
+ 683: 4822+10	93CE  019CFF  					ld		bc,-100
+ 684: 4832+17	93D1  CDDB93  					call	Num1
+ 685: 4849+7	93D4  0EF6    					ld		c,-10
+ 686: 4856+17	93D6  CDDB93  					call	Num1
+ 687: 4873+7	93D9  0EFF    					ld		c,-1
+ 688: 4880+7	93DB  3E2F    	Num1:			ld		a,'0'-1
+ 689: 4887+4	93DD  3C      	Num2:			inc		a
+ 690: 4891+11	93DE  09      					add		hl,bc
+ 691: 4902+7+5	93DF  38FC    					jr		c,Num2
+ 692: 4909+15	93E1  ED42    					sbc		hl,bc
+ 693: 4924+11	93E3  CF      					RST     08H
+ 694: 4935+10	93E4  C9      					ret
+ 695:				;Print A as HEX				
+ 696: 4945+4	93E5  4F      	NumToHex:    	ld 		c, a   		; a = number to convert
+ 697: 4949+17	93E6  CDF093  	            	call 	Num1H
+ 698: 4966+11	93E9  CF      	            	RST     08H
+ 699: 4977+4	93EA  79      	            	ld 		a, c
+ 700: 4981+17	93EB  CDF493  	            	call 	Num2H
+ 701: 4998+11	93EE  CF      	            	RST     08H
+ 702: 5009+10	93EF  C9      	            	ret
+ 703:				
+ 704: 5019+4	93F0  1F      	Num1H:        	rra
+ 705: 5023+4	93F1  1F      	            	rra
+ 706: 5027+4	93F2  1F      	            	rra
+ 707: 5031+4	93F3  1F      	           		rra
+ 708: 5035+7	93F4  F6F0    	Num2H:        	or 		$F0
+ 709: 5042+4	93F6  27      	            	daa
+ 710: 5046+7	93F7  C6A0    	            	add 	a, $A0
+ 711: 5053+7	93F9  CE40    	            	adc 	a, $40 		; Ascii hex at this point (0 to F)   
+ 712: 5060+10	93FB  C9      	            	ret
+ 713:				
+ 714:				;Get ABS of A
+ 715:     -	93FC          	absA:
+ 716: 5070+4	93FC  B7      	     or a
+ 717: 5074+5+6	93FD  F0      	     ret p
+ 718: 5079+8	93FE  ED44    	     neg
+ 719: 5087+10	9400  C9      	     ret
+ 720:				
+ 721:				;getArAndomA	 
+ 722:     -	9401          	randomA:				
+ 723: 5097+13	9401  3A8888  					ld a, 	(seed)
+ 724: 5110+4	9404  47      					ld b, 	a 
+ 725:				
+ 726: 5114+4	9405  0F      					rrca ; multiply by 32
+ 727: 5118+4	9406  0F      					rrca
+ 728: 5122+4	9407  0F      					rrca
+ 729: 5126+7	9408  EE1F    					xor $1f
+ 730:				
+ 731: 5133+4	940A  80      					add 	a, b
+ 732: 5137+7	940B  DEFF    					sbc a, 255 ; carry
+ 733:				
+ 734: 5144+13	940D  328888  					ld (seed), a
+ 735: 5157+10	9410  C9      					ret
+ 736:				
+ 737:				;------- Print string
+ 738: 5167+11	9411  F5      	print:			PUSH 	AF				; Preserve AF				
+ 739: 5178+7	9412  7E      	printLoop:      LD      A,(HL)          ; Get character
+ 740: 5185+4	9413  B7      	                OR      A               ; Is it $00 ?
+ 741: 5189+7+5	9414  2804    	                JR     	Z,printRet      ; Then RETurn on terminator
+ 742: 5196+11	9416  CF      	                RST     08H             ; Print it
+ 743: 5207+6	9417  23      	                INC     HL              ; Next Character
+ 744: 5213+12	9418  18F8    	                JR      printLoop       ; Continue until $00
+ 745:								
+ 746:				;delay loop
+ 747:     -	941A          	printRet:		
+ 748: 5225+10	941A  F1      					POP		AF
+ 749: 5235+10	941B  C9      					RET
+ 750:     -	941C          	delay:
+ 751: 5245+4	941C  00      					NOP
+ 752: 5249+6	941D  0B      					DEC 	BC
+ 753: 5255+4	941E  78      					LD 		A,B
+ 754: 5259+4	941F  B1      					OR 		C
+ 755: 5263+5+6	9420  C8      					RET 	Z
+ 756: 5268+12	9421  18F9    					JR 		delay
+ 757:				
+ 758:				;Strings
+ 759:     -	9423  1B5B3334	wall:			.BYTE	1BH,"[34m#",1BH,"[0m",0
 	              6D231B5B
 	              306D00
- 607:     -	935C  1B5B3937	powerPellet:	.BYTE	1BH,"[97mo",1BH,"[0m",0
+ 760:     -	942E  1B5B3937	powerPellet:	.BYTE	1BH,"[97mo",1BH,"[0m",0
 	              6D6F1B5B
 	              306D00
- 608:     -	9367  1B5B3337	pellet:			.BYTE	1BH,"[37m*",1BH,"[0m",0
+ 761:     -	9439  1B5B3337	pellet:			.BYTE	1BH,"[37m*",1BH,"[0m",0
 	              6D2A1B5B
 	              306D00
- 609:     -	9372  1B5B3331	superFruit:		.BYTE	1BH,"[31m@",1BH,"[0m",0
+ 762:     -	9444  1B5B3331	superFruit:		.BYTE	1BH,"[31m@",1BH,"[0m",0
 	              6D401B5B
 	              306D00
- 610:				
- 611:     -	937D  53636F72	scoreHUD:     	.BYTE "Score: ",0
+ 763:				
+ 764:     -	944F  53636F72	scoreHUD:     	.BYTE "Score: ",0
 	              653A2000
- 612:				
- 613:     -	9385  1B5B3933	pacman:			.BYTE	1BH,"[93mC",1BH,"[0m",0
+ 765:				
+ 766:     -	9457  1B5B3933	pacman:			.BYTE	1BH,"[93mC",1BH,"[0m",0
 	              6D431B5B
 	              306D00
- 614:				
- 615:     -	9390  1B5B3931	redGhost:		.BYTE	1BH,"[91mM",1BH,"[0m",0
+ 767:				
+ 768:     -	9462  1B5B3931	redGhost:		.BYTE	1BH,"[91mM",1BH,"[0m",0
 	              6D4D1B5B
 	              306D00
- 616:     -	939B  1B5B3932	greenGhost:		.BYTE	1BH,"[92mM",1BH,"[0m",0
+ 769:     -	946D  1B5B3932	greenGhost:		.BYTE	1BH,"[92mM",1BH,"[0m",0
 	              6D4D1B5B
 	              306D00
- 617:     -	93A6  1B5B3336	blueGhost:		.BYTE	1BH,"[36mM",1BH,"[0m",0
+ 770:     -	9478  1B5B3336	blueGhost:		.BYTE	1BH,"[36mM",1BH,"[0m",0
 	              6D4D1B5B
 	              306D00
- 618:     -	93B1  1B5B3935	pinkGhost:		.BYTE	1BH,"[95mM",1BH,"[0m",0
+ 771:     -	9483  1B5B3935	pinkGhost:		.BYTE	1BH,"[95mM",1BH,"[0m",0
 	              6D4D1B5B
 	              306D00
- 619:				
- 620:				
- 621:     -	93BC  2000    	void:			.BYTE	" ",0
- 622:				
- 623:     -	93BE  1B5B481B	cls:      	  	.BYTE 1BH,"[H",1BH,"[2J",0
+ 772:				
+ 773:				
+ 774:     -	948E  2000    	void:			.BYTE	" ",0
+ 775:				
+ 776:     -	9490  1B5B481B	cls:      	  	.BYTE 1BH,"[H",1BH,"[2J",0
 	              5B324A00
- 624:				;----- Map ------		
- 625:     -	E000          		.ORG 0E000H
- 626:				;----Pellet
- 627:     -	0040          	ww 		.EQU	40H
- 628:				
- 629:     -	002C          	hp 		.EQU	2CH		;left 	right	pellet
- 630:     -	0023          	gp		.EQU	23H		;up		down	pellet
- 631:				
- 632:     -	0026          	lp		.EQU	26H		;down 	left 	pellet
- 633:     -	002A          	rp		.EQU	2AH		;down 	right	pellet
- 634:     -	0025          	up		.EQU	25H		;up 	left	pellet
- 635:     -	0029          	dp		.EQU	29H		;up 	right	pellet
- 636:				
- 637:     -	002B          	bp		.EQU	2BH		;up		down	right	pellet
- 638:     -	0027          	cp		.EQU	27H		;up		down	left	pellet
- 639:     -	002E          	vp		.EQU	2EH		;down	left	right	pellet
- 640:     -	002D          	kp		.EQU	2DH		;up		left	right	pellet
- 641:				
- 642:     -	002F          	xp		.EQU	2FH		;all	pellet
- 643:				;------- No pellet
- 644:     -	000C          	hn 		.EQU	0CH		;left 	right	pellet
- 645:     -	0003          	gn		.EQU	03H		;up		down	pellet
- 646:				
- 647:     -	0006          	ln		.EQU	06H		;down 	left 	pellet
- 648:     -	000A          	rn		.EQU	0AH		;down 	right	pellet
- 649:     -	0005          	un		.EQU	05H		;up 	left	pellet
- 650:     -	0009          	dn		.EQU	09H		;up 	right	pellet
- 651:				
- 652:     -	000B          	bn		.EQU	0BH		;up		down	right	pellet
- 653:     -	0007          	cn		.EQU	07H		;up		down	left	pellet
- 654:     -	000E          	vn		.EQU	0EH		;down	left	right	pellet
- 655:     -	000D          	kn		.EQU	0DH		;up		left	right	pellet
- 656:				
- 657:     -	000F          	xn		.EQU	0FH		;all	pellet
- 658:				;--------Power Pellet
- 659:     -	001C          	hs 		.EQU	1CH		;left 	right	pellet
- 660:     -	0013          	gs		.EQU	13H		;up		down	pellet
- 661:				
- 662:     -	0016          	ls		.EQU	16H		;down 	left 	pellet
- 663:     -	001A          	rs		.EQU	1AH		;down 	right	pellet
- 664:     -	0015          	us		.EQU	15H		;up 	left	pellet
- 665:     -	0019          	ds		.EQU	19H		;up 	right	pellet
- 666:				
- 667:     -	001B          	bs		.EQU	1BH		;up		down	right	pellet
- 668:     -	0017          	cs		.EQU	17H		;up		down	left	pellet
- 669:     -	001E          	vs		.EQU	1EH		;down	left	right	pellet
- 670:     -	001D          	ks		.EQU	1DH		;up		left	right	pellet
- 671:				
- 672:     -	001F          	xs		.EQU	1FH		;all	pellet
- 673:				
- 674:				
- 675:     -	E000  00004040	map:	.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
+ 777:				;-----Path find map
+ 778:     -	D000          		.ORG 0D000H
+ 779:     -	D000          	pathFindMap:
+ 780:				;----- Map ------		
+ 781:     -	E000          		.ORG 0E000H
+ 782:				;----Pellet
+ 783:     -	0040          	ww 		.EQU	40H
+ 784:				
+ 785:     -	002C          	hp 		.EQU	2CH		;left 	right	pellet
+ 786:     -	0023          	gp		.EQU	23H		;up		down	pellet
+ 787:				
+ 788:     -	0026          	lp		.EQU	26H		;down 	left 	pellet
+ 789:     -	002A          	rp		.EQU	2AH		;down 	right	pellet
+ 790:     -	0025          	up		.EQU	25H		;up 	left	pellet
+ 791:     -	0029          	dp		.EQU	29H		;up 	right	pellet
+ 792:				
+ 793:     -	002B          	bp		.EQU	2BH		;up		down	right	pellet
+ 794:     -	0027          	cp		.EQU	27H		;up		down	left	pellet
+ 795:     -	002E          	vp		.EQU	2EH		;down	left	right	pellet
+ 796:     -	002D          	kp		.EQU	2DH		;up		left	right	pellet
+ 797:				
+ 798:     -	002F          	xp		.EQU	2FH		;all	pellet
+ 799:				;------- No pellet
+ 800:     -	000C          	hn 		.EQU	0CH		;left 	right	pellet
+ 801:     -	0003          	gn		.EQU	03H		;up		down	pellet
+ 802:				
+ 803:     -	0006          	ln		.EQU	06H		;down 	left 	pellet
+ 804:     -	000A          	rn		.EQU	0AH		;down 	right	pellet
+ 805:     -	0005          	un		.EQU	05H		;up 	left	pellet
+ 806:     -	0009          	dn		.EQU	09H		;up 	right	pellet
+ 807:				
+ 808:     -	000B          	bn		.EQU	0BH		;up		down	right	pellet
+ 809:     -	0007          	cn		.EQU	07H		;up		down	left	pellet
+ 810:     -	000E          	vn		.EQU	0EH		;down	left	right	pellet
+ 811:     -	000D          	kn		.EQU	0DH		;up		left	right	pellet
+ 812:				
+ 813:     -	000F          	xn		.EQU	0FH		;all	pellet
+ 814:				;--------Power Pellet
+ 815:     -	001C          	hs 		.EQU	1CH		;left 	right	pellet
+ 816:     -	0013          	gs		.EQU	13H		;up		down	pellet
+ 817:				
+ 818:     -	0016          	ls		.EQU	16H		;down 	left 	pellet
+ 819:     -	001A          	rs		.EQU	1AH		;down 	right	pellet
+ 820:     -	0015          	us		.EQU	15H		;up 	left	pellet
+ 821:     -	0019          	ds		.EQU	19H		;up 	right	pellet
+ 822:				
+ 823:     -	001B          	bs		.EQU	1BH		;up		down	right	pellet
+ 824:     -	0017          	cs		.EQU	17H		;up		down	left	pellet
+ 825:     -	001E          	vs		.EQU	1EH		;down	left	right	pellet
+ 826:     -	001D          	ks		.EQU	1DH		;up		left	right	pellet
+ 827:				
+ 828:     -	001F          	xs		.EQU	1FH		;all	pellet
+ 829:				
+ 830:				
+ 831:     -	E000  00004040	map:	.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
 	              40404040
 	              40404040
 	              40404040
@@ -700,7 +856,7 @@
 	              40404040
 	              40404040
 	              40400000
- 676:     -	E020  0000402A			.BYTE	00,00,ww,rp,hp,hp,hp,hp,vp,hp,hp,hp,hp,hp,lp,ww,ww,rp,hp,hp,hp,hp,hp,vp,hp,hp,hp,hp,lp,ww,00,00
+ 832:     -	E020  0000402A			.BYTE	00,00,ww,rp,hp,hp,hp,hp,vp,hp,hp,hp,hp,hp,lp,ww,ww,rp,hp,hp,hp,hp,hp,vp,hp,hp,hp,hp,lp,ww,00,00
 	              2C2C2C2C
 	              2E2C2C2C
 	              2C2C2640
@@ -708,7 +864,7 @@
 	              2C2C2C2E
 	              2C2C2C2C
 	              26400000
- 677:     -	E040  00004013			.BYTE	00,00,ww,gs,ww,ww,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,ww,ww,gs,ww,00,00
+ 833:     -	E040  00004013			.BYTE	00,00,ww,gs,ww,ww,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,ww,ww,gs,ww,00,00
 	              40404040
 	              23404040
 	              40402340
@@ -716,7 +872,7 @@
 	              40404023
 	              40404040
 	              13400000
- 678:     -	E060  00004023			.BYTE	00,00,ww,gp,ww,ww,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,ww,ww,gp,ww,00,00
+ 834:     -	E060  00004023			.BYTE	00,00,ww,gp,ww,ww,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,ww,ww,gp,ww,00,00
 	              40404040
 	              23404040
 	              40402340
@@ -724,7 +880,7 @@
 	              40404023
 	              40404040
 	              23400000
- 679:     -	E080  0000402B			.BYTE	00,00,ww,bp,hp,hp,hp,hp,xp,hp,hp,vp,hp,hp,kp,hp,hp,kp,hp,hp,vp,hp,hp,xp,hp,hp,hp,hp,cp,ww,00,00
+ 835:     -	E080  0000402B			.BYTE	00,00,ww,bp,hp,hp,hp,hp,xp,hp,hp,vp,hp,hp,kp,hp,hp,kp,hp,hp,vp,hp,hp,xp,hp,hp,hp,hp,cp,ww,00,00
 	              2C2C2C2C
 	              2F2C2C2E
 	              2C2C2D2C
@@ -732,7 +888,7 @@
 	              2E2C2C2F
 	              2C2C2C2C
 	              27400000
- 680:     -	E0A0  00004023			.BYTE	00,00,ww,gp,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,gp,ww,00,00
+ 836:     -	E0A0  00004023			.BYTE	00,00,ww,gp,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,gp,ww,00,00
 	              40404040
 	              23404023
 	              40404040
@@ -740,7 +896,7 @@
 	              23404023
 	              40404040
 	              23400000
- 681:     -	E0C0  00004029			.BYTE	00,00,ww,dp,hp,hp,hp,hp,cp,ww,ww,dp,hp,hp,lp,ww,ww,rp,hp,hp,up,ww,ww,bp,hp,hp,hp,hp,up,ww,00,00
+ 837:     -	E0C0  00004029			.BYTE	00,00,ww,dp,hp,hp,hp,hp,cp,ww,ww,dp,hp,hp,lp,ww,ww,rp,hp,hp,up,ww,ww,bp,hp,hp,hp,hp,up,ww,00,00
 	              2C2C2C2C
 	              27404029
 	              2C2C2640
@@ -748,7 +904,7 @@
 	              2540402B
 	              2C2C2C2C
 	              25400000
- 682:     -	E0E0  00004040			.BYTE	00,00,ww,ww,ww,ww,ww,ww,gp,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gp,ww,ww,ww,ww,ww,ww,00,00
+ 838:     -	E0E0  00004040			.BYTE	00,00,ww,ww,ww,ww,ww,ww,gp,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gp,ww,ww,ww,ww,ww,ww,00,00
 	              40404040
 	              23404040
 	              40400340
@@ -756,7 +912,7 @@
 	              40404023
 	              40404040
 	              40400000
- 683:     -	E100  00000000			.BYTE	00,00,00,00,00,00,00,ww,gp,ww,ww,rn,hn,hn,kn,hn,hn,kn,hn,hn,ln,ww,ww,gp,ww,00,00,00,00,00,00,00
+ 839:     -	E100  00000000			.BYTE	00,00,00,00,00,00,00,ww,gp,ww,ww,rn,hn,hn,kn,hn,hn,kn,hn,hn,ln,ww,ww,gp,ww,00,00,00,00,00,00,00
 	              00000040
 	              2340400A
 	              0C0C0D0C
@@ -764,7 +920,7 @@
 	              06404023
 	              40000000
 	              00000000
- 684:     -	E120  00000000			.BYTE	00,00,00,00,00,00,00,ww,gp,ww,ww,gn,ww,ww,ww,00,00,ww,ww,ww,gn,ww,ww,gp,ww,00,00,00,00,00,00,00
+ 840:     -	E120  00000000			.BYTE	00,00,00,00,00,00,00,ww,gp,ww,ww,gn,ww,ww,ww,00,00,ww,ww,ww,gn,ww,ww,gp,ww,00,00,00,00,00,00,00
 	              00000040
 	              23404003
 	              40404000
@@ -772,7 +928,7 @@
 	              03404023
 	              40000000
 	              00000000
- 685:     -	E140  40404040			.BYTE	ww,ww,ww,ww,ww,ww,ww,ww,gp,ww,ww,gn,ww,00,00,00,00,00,00,ww,gn,ww,ww,gp,ww,ww,ww,ww,ww,ww,ww,ww
+ 841:     -	E140  40404040			.BYTE	ww,ww,ww,ww,ww,ww,ww,ww,gp,ww,ww,gn,ww,00,00,00,00,00,00,ww,gn,ww,ww,gp,ww,ww,ww,ww,ww,ww,ww,ww
 	              40404040
 	              23404003
 	              40000000
@@ -780,7 +936,7 @@
 	              03404023
 	              40404040
 	              40404040
- 686:     -	E160  0C0C0C0C			.BYTE	hn,hn,hn,hn,hn,hn,hn,hn,xp,hn,hn,cn,ww,00,00,00,00,00,00,ww,bn,hn,hn,xp,hn,hn,hn,hn,hn,hn,hn,hn
+ 842:     -	E160  0C0C0C0C			.BYTE	hn,hn,hn,hn,hn,hn,hn,hn,xp,hn,hn,cn,ww,00,00,00,00,00,00,ww,bn,hn,hn,xp,hn,hn,hn,hn,hn,hn,hn,hn
 	              0C0C0C0C
 	              2F0C0C07
 	              40000000
@@ -788,7 +944,7 @@
 	              0B0C0C2F
 	              0C0C0C0C
 	              0C0C0C0C
- 687:     -	E180  40404040			.BYTE	ww,ww,ww,ww,ww,ww,ww,ww,gp,ww,ww,gn,ww,00,00,00,00,00,00,ww,gn,ww,ww,gp,ww,ww,ww,ww,ww,ww,ww,ww
+ 843:     -	E180  40404040			.BYTE	ww,ww,ww,ww,ww,ww,ww,ww,gp,ww,ww,gn,ww,00,00,00,00,00,00,ww,gn,ww,ww,gp,ww,ww,ww,ww,ww,ww,ww,ww
 	              40404040
 	              23404003
 	              40000000
@@ -796,7 +952,7 @@
 	              03404023
 	              40404040
 	              40404040
- 688:     -	E1A0  00000000			.BYTE	00,00,00,00,00,00,00,ww,gp,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gp,ww,00,00,00,00,00,00,00
+ 844:     -	E1A0  00000000			.BYTE	00,00,00,00,00,00,00,ww,gp,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gp,ww,00,00,00,00,00,00,00
 	              00000040
 	              23404003
 	              40404040
@@ -804,7 +960,7 @@
 	              03404023
 	              40000000
 	              00000000
- 689:     -	E1C0  00000000			.BYTE	00,00,00,00,00,00,00,ww,gp,ww,ww,bn,hn,hn,hn,hn,hn,hn,hn,hn,cn,ww,ww,gp,ww,00,00,00,00,00,00,00
+ 845:     -	E1C0  00000000			.BYTE	00,00,00,00,00,00,00,ww,gp,ww,ww,bn,hn,hn,hn,hn,hn,hn,hn,hn,cn,ww,ww,gp,ww,00,00,00,00,00,00,00
 	              00000040
 	              2340400B
 	              0C0C0C0C
@@ -812,7 +968,7 @@
 	              07404023
 	              40000000
 	              00000000
- 690:     -	E1E0  00004040			.BYTE	00,00,ww,ww,ww,ww,ww,ww,gp,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gp,ww,ww,ww,ww,ww,ww,00,00
+ 846:     -	E1E0  00004040			.BYTE	00,00,ww,ww,ww,ww,ww,ww,gp,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gp,ww,ww,ww,ww,ww,ww,00,00
 	              40404040
 	              23404003
 	              40404040
@@ -820,7 +976,7 @@
 	              03404023
 	              40404040
 	              40400000
- 691:     -	E200  0000402A			.BYTE	00,00,ww,rp,hp,hp,hp,hp,xp,hp,hp,kp,hp,hp,lp,ww,ww,rp,hp,hp,kp,hp,hp,xp,hp,hp,hp,hp,lp,ww,00,00
+ 847:     -	E200  0000402A			.BYTE	00,00,ww,rp,hp,hp,hp,hp,xp,hp,hp,kp,hp,hp,lp,ww,ww,rp,hp,hp,kp,hp,hp,xp,hp,hp,hp,hp,lp,ww,00,00
 	              2C2C2C2C
 	              2F2C2C2D
 	              2C2C2640
@@ -828,7 +984,7 @@
 	              2D2C2C2F
 	              2C2C2C2C
 	              26400000
- 692:     -	E220  00004023			.BYTE	00,00,ww,gp,ww,ww,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,ww,ww,gp,ww,00,00
+ 848:     -	E220  00004023			.BYTE	00,00,ww,gp,ww,ww,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,ww,ww,gp,ww,00,00
 	              40404040
 	              23404040
 	              40402340
@@ -836,7 +992,7 @@
 	              40404023
 	              40404040
 	              23400000
- 693:     -	E240  00004019			.BYTE	00,00,ww,ds,hp,lp,ww,ww,bp,hp,hp,vp,hp,hp,kp,hp,hp,kp,hp,hp,vp,hp,hp,cp,ww,ww,rp,hp,us,ww,00,00
+ 849:     -	E240  00004019			.BYTE	00,00,ww,ds,hp,lp,ww,ww,bp,hp,hp,vp,hp,hp,kp,hp,hp,kp,hp,hp,vp,hp,hp,cp,ww,ww,rp,hp,us,ww,00,00
 	              2C264040
 	              2B2C2C2E
 	              2C2C2D2C
@@ -844,7 +1000,7 @@
 	              2E2C2C27
 	              40402A2C
 	              15400000
- 694:     -	E260  00004040			.BYTE	00,00,ww,ww,ww,gp,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,gp,ww,ww,ww,00,00
+ 850:     -	E260  00004040			.BYTE	00,00,ww,ww,ww,gp,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,gp,ww,ww,ww,00,00
 	              40234040
 	              23404023
 	              40404040
@@ -852,7 +1008,7 @@
 	              23404023
 	              40402340
 	              40400000
- 695:     -	E280  0000402A			.BYTE	00,00,ww,rp,hp,kp,hp,hp,up,ww,ww,dp,hp,hp,lp,ww,ww,rp,hp,hp,up,ww,ww,dp,hp,hp,kp,hp,lp,ww,00,00
+ 851:     -	E280  0000402A			.BYTE	00,00,ww,rp,hp,kp,hp,hp,up,ww,ww,dp,hp,hp,lp,ww,ww,rp,hp,hp,up,ww,ww,dp,hp,hp,kp,hp,lp,ww,00,00
 	              2C2D2C2C
 	              25404029
 	              2C2C2640
@@ -860,7 +1016,7 @@
 	              25404029
 	              2C2C2D2C
 	              26400000
- 696:     -	E2A0  00004023			.BYTE	00,00,ww,gp,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,gp,ww,00,00
+ 852:     -	E2A0  00004023			.BYTE	00,00,ww,gp,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,gp,ww,00,00
 	              40404040
 	              40404040
 	              40402340
@@ -868,7 +1024,7 @@
 	              40404040
 	              40404040
 	              23400000
- 697:     -	E2C0  00004029			.BYTE	00,00,ww,dp,hp,hp,hp,hp,hp,hp,hp,hp,hp,hp,kp,hp,hp,kp,hp,hp,hp,hp,hp,hp,hp,hp,hp,hp,up,ww,00,00
+ 853:     -	E2C0  00004029			.BYTE	00,00,ww,dp,hp,hp,hp,hp,hp,hp,hp,hp,hp,hp,kp,hp,hp,kp,hp,hp,hp,hp,hp,hp,hp,hp,hp,hp,up,ww,00,00
 	              2C2C2C2C
 	              2C2C2C2C
 	              2C2C2D2C
@@ -876,7 +1032,7 @@
 	              2C2C2C2C
 	              2C2C2C2C
 	              25400000
- 698:     -	E2E0  00004040			.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
+ 854:     -	E2E0  00004040			.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
 	              40404040
 	              40404040
 	              40404040
@@ -884,7 +1040,7 @@
 	              40404040
 	              40404040
 	              40400000
- 699:     -	E300  00000000			.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+ 855:     -	E300  00000000			.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
 	              00000000
 	              00000000
 	              00000000
@@ -892,7 +1048,7 @@
 	              00000000
 	              00000000
 	              00000000
- 700:     -	E320  00000000			.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+ 856:     -	E320  00000000			.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
 	              00000000
 	              00000000
 	              00000000
@@ -900,7 +1056,7 @@
 	              00000000
 	              00000000
 	              00000000
- 701:     -	E340  00000000			.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+ 857:     -	E340  00000000			.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
 	              00000000
 	              00000000
 	              00000000
@@ -908,7 +1064,7 @@
 	              00000000
 	              00000000
 	              00000000
- 702:     -	E360  00000000			.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+ 858:     -	E360  00000000			.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
 	              00000000
 	              00000000
 	              00000000
@@ -916,7 +1072,7 @@
 	              00000000
 	              00000000
 	              00000000
- 703:     -	E380  00000000			.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+ 859:     -	E380  00000000			.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
 	              00000000
 	              00000000
 	              00000000
@@ -924,7 +1080,7 @@
 	              00000000
 	              00000000
 	              00000000
- 704:     -	E3A0  00000000			.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+ 860:     -	E3A0  00000000			.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
 	              00000000
 	              00000000
 	              00000000
@@ -932,7 +1088,7 @@
 	              00000000
 	              00000000
 	              00000000
- 705:     -	E3C0  00000000			.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+ 861:     -	E3C0  00000000			.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
 	              00000000
 	              00000000
 	              00000000
@@ -941,7 +1097,7 @@
 	              00000000
 	              00000000
 **** main.asm ****
- 706:     -	E3E0  00000000			.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+ 862:     -	E3E0  00000000			.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
 	              00000000
 	              00000000
 	              00000000
@@ -956,56 +1112,67 @@ Statistics:
 
      4	passes
      0	jr promotions
-   137	symbols
-  1990	bytes
+   152	symbols
+  2200	bytes
 
 
 
 Symbol Table:
 
-absa            932a     
-blueghost       93a6     
+absa            93fc     
+blueghost       9478     
 bn             =   b     
 bp             =  2b     
 bs             =  1b     
-calcnextmove    90d4     
-checkh          90de     
-checkv          90ec     
-clearpm         9071     
-clearredghost   9108     
-cls             93be     
+calcnextmove    90d9     
+calculatemapcell 9370     
+calculatemapd   934f     
+calculatemapl   935a     
+calculatemapr   9365     
+calculatemapu   9344     
+calculatepathmap 92f8     
+calculatepathmaploop 930a     
+checkh          90e3     
+checkv          90f1     
+clearpm         9076     
+clearredghost   910d     
+cls             9490     
 cn             =   7     
 cp             =  27     
 cr             =   d     
 cs             =  17     
-delay           934a     
-disphl          92f0     
+delay           941c     
+disphl          93c2     
 dn             =   9     
 downbit        =   1     
 dp             =  29     
 ds             =  19     
-eatpellet       90a3     
-eatspellet      90ab     
-gameloop        902b     
-getdataatpos    9225     
-getmove         90b8     
-getpmmapdata    9097     
-getredghostmapdata 912e     
-getredghostnextmove 9146     
+eatpellet       90a8     
+eatspellet      90b0     
+gameloop        9032     
+getaddresspf    925b     
+getdataatpos    922a     
+getmapaddress   9243     
+getmove         90bd     
+getpmmapdata    909c     
+getredghostmapdata 9133     
+getredghostnextmove 914b     
 gn             =   3     
 gp             =  23     
-greenghost      939b     
+greenghost      946d     
 gs             =  13     
-hltodec         92e8     
+hltodec         93ba     
 hn             =   c     
 hp             =  2c     
 hs             =  1c     
 initpacx       =   e     
 initpacy       =   e     
+initpathfind    92e1     
+initppfloop     92e8     
 initredghostx  =  14     
 initredghosty  =   1     
-input           9057     
-ismovevalid     920b     
+input           905c     
+ismovevalid     9210     
 kn             =   d     
 kp             =  2d     
 ks             =  1d     
@@ -1015,65 +1182,69 @@ ln             =   6
 lp             =  26     
 ls             =  16     
 map             e000     
-move            91e5     
-movecursor      92d1     
-moved           91f9     
-movedvalid      921c     
-movel           91ff     
-movelvalid      921f     
-movepm          90fc     
-mover           9205     
-moveredghost    913a     
-movervalid      9222     
-moveu           91f3     
-moveuvalid      9219     
-newline         92c8     
-nextmovevalid   90cd     
-num1            9309     
-num1h           931e     
-num2            930b     
-num2h           9322     
-numtohex        9313     
+move            91ea     
+movecursor      93a3     
+moved           91fe     
+movedvalid      9221     
+movel           9204     
+movelvalid      9224     
+movepm          9101     
+mover           920a     
+moveredghost    913f     
+movervalid      9227     
+moveu           91f8     
+moveuvalid      921e     
+newline         939a     
+nextmovevalid   90d2     
+num1            93db     
+num1h           93f0     
+num2            93dd     
+num2h           93f4     
+numtohex        93e5     
+oldstackpointer=89f0     
+originalbc     =89f2     
 paccdir        =8102     
-pacman          9385     
+pacman          9457     
 pacndir        =8103     
 pacx           =8100     
 pacy           =8101     
-pellet          9367     
+pathfindmap     d000     
+pellet          9439     
 pelletbit      =   5     
-pinkghost       93b1     
-pmchar          926d     
-pmcharret       92a8     
-pmloop          9259     
-pmnextline      9267     
+pfnextrow       92f2     
+pinkghost       9483     
+pmchar          92a4     
+pmcharret       92df     
+pmloop          9290     
+pmnextline      929e     
 powerpbit      =   4     
-powerpellet     935c     
-print           933f     
-printloop       9340     
-printmap        9252     
-printmapat      923c     
-printp          9288     
-printpm         907d     
-printpp         9280     
-printredghost   9114     
-printret        9348     
-printscore      92aa     
-printsf         9298     
-printvoid       92a0     
-printwall       9290     
-randoma         932f     
-redghost        9390     
-redghostcheckd  918c     
-redghostcheckl  9199     
-redghostcheckr  91a6     
-redghostchecku  917f     
+powerpellet     942e     
+print           9411     
+printloop       9412     
+printmap        9289     
+printmapat      9273     
+printp          92bf     
+printpm         9082     
+printpp         92b7     
+printredghost   9119     
+printret        941a     
+printscore      937c     
+printsf         92cf     
+printvoid       92d7     
+printwall       92c7     
+randoma         9401     
+redghost        9462     
+redghostcheckd  9191     
+redghostcheckl  919e     
+redghostcheckr  91ab     
+redghostchecku  9184     
 redghostdir    =8112     
 redghostdis    =8113     
-redghostpathfind 91b3     
-redghostrandomset 91e2     
-redghostsetequal 91d8     
-redghostsetmove 9170     
-redghostsetnewdir 91d0     
+redghostpathfind 91b8     
+redghostrandomset 91e7     
+redghostsetequal 91dd     
+redghostsetmove 9175     
+redghostsetnewdir 91d5     
 redghostx      =8110     
 redghosty      =8111     
 rightbit       =   3     
@@ -1081,20 +1252,20 @@ rn             =   a
 rp             =  2a     
 rs             =  1a     
 score          =8900     
-scorehud        937d     
+scorehud        944f     
 seed           =8888     
 sfbit          =   7     
-superfruit      9372     
+superfruit      9444     
 un             =   5     
 up             =  25     
 upbit          =   0     
 us             =  15     
-validinput      906d     
+validinput      9072     
 vn             =   e     
-void            93bc     
+void            948e     
 vp             =  2e     
 vs             =  1e     
-wall            9351     
+wall            9423     
 wallbit        =   6     
 ww             =  40     
 xn             =   f     
