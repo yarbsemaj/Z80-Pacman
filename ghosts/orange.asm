@@ -1,6 +1,6 @@
 oGhostInitX	    .EQU	15
 oGhostInitY	    .EQU	8
-oGhostInitTimer .EQU    10H
+oGhostInitTimer .EQU    20H
 oGhostStoreX	.EQU	15
 oGhostStoreY	.EQU	11
 
@@ -185,7 +185,7 @@ oGhostColide:
 			    LD		(oGhostX),a
 			    LD		a, oGhostStoreY
 			    LD		(oGhostY),a
-                LD		a, caughtJaleTime
+                LD		a, oGhostInitTimer
 			    LD		(oGhostTimer),a
                 RET
 

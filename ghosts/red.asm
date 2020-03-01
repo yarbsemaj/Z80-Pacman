@@ -1,6 +1,6 @@
 rGhostInitX	    .EQU	15
 rGhostInitY	    .EQU	8
-rGhostInitTimer .EQU    08H
+rGhostInitTimer .EQU    10H
 rGhostStoreX	.EQU	14
 rGhostStoreY	.EQU	11
 
@@ -185,7 +185,7 @@ rGhostColide:
 			    LD		(rGhostX),a
 			    LD		a, rGhostStoreY
 			    LD		(rGhostY),a
-                LD		a, caughtJaleTime
+                LD		a, rGhostInitTimer
 			    LD		(rGhostTimer),a
                 RET
 

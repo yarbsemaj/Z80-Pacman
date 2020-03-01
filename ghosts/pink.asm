@@ -1,6 +1,6 @@
 pGhostInitX	    .EQU	15
 pGhostInitY	    .EQU	8
-pGhostInitTimer .EQU    18H
+pGhostInitTimer .EQU    30H
 pGhostStoreX	.EQU	16
 pGhostStoreY	.EQU	11
 
@@ -185,7 +185,7 @@ pGhostColide:
 			    LD		(pGhostX),a
 			    LD		a, pGhostStoreY
 			    LD		(pGhostY),a
-                LD		a, caughtJaleTime
+                LD		a, pGhostInitTimer
 			    LD		(pGhostTimer),a
                 RET
 

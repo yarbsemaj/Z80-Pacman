@@ -440,7 +440,7 @@ binary-debuggable-source
 91a6 91a6 f ghosts/red.asm
 91a6 91a6 s rGhostInitX	    .EQU	15
 91a6 91a6 s rGhostInitY	    .EQU	8
-91a6 91a6 s rGhostInitTimer .EQU    08H
+91a6 91a6 s rGhostInitTimer .EQU    10H
 91a6 91a6 s rGhostStoreX	.EQU	14
 91a6 91a6 s rGhostStoreY	.EQU	11
 91a6 91a6 s 
@@ -524,7 +524,7 @@ binary-debuggable-source
 91e5 91e5 s 			    LD		a, rGhostStoreY
 91e7 91e7 d 321181
 91e7 91e7 s 			    LD		(rGhostY),a
-91ea 91ea d 3e08
+91ea 91ea d 3e10
 91ea 91ea s                 LD		a, rGhostInitTimer
 91ec 91ec d 321581
 91ec 91ec s 			    LD		(rGhostTimer),a
@@ -772,8 +772,8 @@ binary-debuggable-source
 92c6 92c6 s 			    LD		a, rGhostStoreY
 92c8 92c8 d 321181
 92c8 92c8 s 			    LD		(rGhostY),a
-92cb 92cb d 3e20
-92cb 92cb s                 LD		a, caughtJaleTime
+92cb 92cb d 3e10
+92cb 92cb s                 LD		a, rGhostInitTimer
 92cd 92cd d 321581
 92cd 92cd s 			    LD		(rGhostTimer),a
 92d0 92d0 d c9
@@ -786,7 +786,7 @@ binary-debuggable-source
 92dc 92dc f ghosts/orange.asm
 92dc 92dc s oGhostInitX	    .EQU	15
 92dc 92dc s oGhostInitY	    .EQU	8
-92dc 92dc s oGhostInitTimer .EQU    10H
+92dc 92dc s oGhostInitTimer .EQU    20H
 92dc 92dc s oGhostStoreX	.EQU	15
 92dc 92dc s oGhostStoreY	.EQU	11
 92dc 92dc s 
@@ -870,7 +870,7 @@ binary-debuggable-source
 931b 931b s 			    LD		a, oGhostStoreY
 931d 931d d 322181
 931d 931d s 			    LD		(oGhostY),a
-9320 9320 d 3e10
+9320 9320 d 3e20
 9320 9320 s                 LD		a, oGhostInitTimer
 9322 9322 d 322581
 9322 9322 s 			    LD		(oGhostTimer),a
@@ -1119,7 +1119,7 @@ binary-debuggable-source
 93fe 93fe d 322181
 93fe 93fe s 			    LD		(oGhostY),a
 9401 9401 d 3e20
-9401 9401 s                 LD		a, caughtJaleTime
+9401 9401 s                 LD		a, oGhostInitTimer
 9403 9403 d 322581
 9403 9403 s 			    LD		(oGhostTimer),a
 9406 9406 d c9
@@ -1132,7 +1132,7 @@ binary-debuggable-source
 9412 9412 f ghosts/pink.asm
 9412 9412 s pGhostInitX	    .EQU	15
 9412 9412 s pGhostInitY	    .EQU	8
-9412 9412 s pGhostInitTimer .EQU    18H
+9412 9412 s pGhostInitTimer .EQU    30H
 9412 9412 s pGhostStoreX	.EQU	16
 9412 9412 s pGhostStoreY	.EQU	11
 9412 9412 s 
@@ -1216,7 +1216,7 @@ binary-debuggable-source
 9451 9451 s 			    LD		a, pGhostStoreY
 9453 9453 d 323181
 9453 9453 s 			    LD		(pGhostY),a
-9456 9456 d 3e18
+9456 9456 d 3e30
 9456 9456 s                 LD		a, pGhostInitTimer
 9458 9458 d 323581
 9458 9458 s 			    LD		(pGhostTimer),a
@@ -1464,8 +1464,8 @@ binary-debuggable-source
 9532 9532 s 			    LD		a, pGhostStoreY
 9534 9534 d 323181
 9534 9534 s 			    LD		(pGhostY),a
-9537 9537 d 3e20
-9537 9537 s                 LD		a, caughtJaleTime
+9537 9537 d 3e30
+9537 9537 s                 LD		a, pGhostInitTimer
 9539 9539 d 323581
 9539 9539 s 			    LD		(pGhostTimer),a
 953c 953c d c9
@@ -1478,7 +1478,7 @@ binary-debuggable-source
 9548 9548 f ghosts/teal.asm
 9548 9548 s tGhostInitX	    .EQU	15
 9548 9548 s tGhostInitY	    .EQU	8
-9548 9548 s tGhostInitTimer .EQU    20H
+9548 9548 s tGhostInitTimer .EQU    40H
 9548 9548 s tGhostStoreX	.EQU	17 
 9548 9548 s tGhostStoreY	.EQU	11
 9548 9548 s 
@@ -1552,7 +1552,6 @@ binary-debuggable-source
 9581 9581 d c9
 9581 9581 s 				ret
 9582 9582 s 
-9582 9582 s 
 9582 9582 s tGhostInit:   
 9582 9582 d 3e11
 9582 9582 s                 LD		a, tGhostStoreX	;set tGhost Pos
@@ -1562,7 +1561,7 @@ binary-debuggable-source
 9587 9587 s 			    LD		a, tGhostStoreY
 9589 9589 d 324181
 9589 9589 s 			    LD		(tGhostY),a
-958c 958c d 3e20
+958c 958c d 3e40
 958c 958c s                 LD		a, tGhostInitTimer
 958e 958e d 324581
 958e 958e s 			    LD		(tGhostTimer),a
@@ -1810,8 +1809,8 @@ binary-debuggable-source
 9668 9668 s 			    LD		a, tGhostStoreY
 966a 966a d 324181
 966a 966a s 			    LD		(tGhostY),a
-966d 966d d 3e20
-966d 966d s                 LD		a, caughtJaleTime
+966d 966d d 3e40
+966d 966d s                 LD		a, tGhostInitTimer
 966f 966f d 324581
 966f 966f s 			    LD		(tGhostTimer),a
 9672 9672 d c9
@@ -3046,13 +3045,13 @@ d000 a pathfindmap
 921a a rghostnextmove
 95bc a tghostnextmove
 89f0 v oldstackpointer
-0010 v oghostinittimer
+0020 v oghostinittimer
 93d5 a oghostsetnewdir
-0018 v pghostinittimer
-0008 v rghostinittimer
+0030 v pghostinittimer
+0010 v rghostinittimer
 929f a rghostsetnewdir
 950b a pghostsetnewdir
-0020 v tghostinittimer
+0040 v tghostinittimer
 9641 a tghostsetnewdir
 9809 a calculatemapcell
 978b a calculatepathmap

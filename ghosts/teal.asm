@@ -1,6 +1,6 @@
 tGhostInitX	    .EQU	15
 tGhostInitY	    .EQU	8
-tGhostInitTimer .EQU    20H
+tGhostInitTimer .EQU    40H
 tGhostStoreX	.EQU	17 
 tGhostStoreY	.EQU	11
 
@@ -43,7 +43,6 @@ tGhostMapData:
 				CALL	getMapAddress
                 LD      A,(HL)
 				ret
-
 
 tGhostInit:   
                 LD		a, tGhostStoreX	;set tGhost Pos
@@ -185,7 +184,7 @@ tGhostColide:
 			    LD		(tGhostX),a
 			    LD		a, tGhostStoreY
 			    LD		(tGhostY),a
-                LD		a, caughtJaleTime
+                LD		a, tGhostInitTimer
 			    LD		(tGhostTimer),a
                 RET
 

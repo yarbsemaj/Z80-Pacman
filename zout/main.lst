@@ -258,7 +258,7 @@
 **** ghosts/red.asm ****
    1:     -	000F          	rGhostInitX	    .EQU	15
    2:     -	0008          	rGhostInitY	    .EQU	8
-   3:     -	0008          	rGhostInitTimer .EQU    08H
+   3:     -	0010          	rGhostInitTimer .EQU    10H
    4:     -	000E          	rGhostStoreX	.EQU	14
    5:     -	000B          	rGhostStoreY	.EQU	11
    6:				
@@ -308,7 +308,7 @@
   50: 2449+13	91E2  321081  				    LD		(rGhostX),a
   51: 2462+7	91E5  3E0B    				    LD		a, rGhostStoreY
   52: 2469+13	91E7  321181  				    LD		(rGhostY),a
-  53: 2482+7	91EA  3E08    	                LD		a, rGhostInitTimer
+  53: 2482+7	91EA  3E10    	                LD		a, rGhostInitTimer
   54: 2489+13	91EC  321581  				    LD		(rGhostTimer),a
   55: 2502+10	91EF  C9      	                RET
   56:				
@@ -443,7 +443,7 @@
  185: 3501+13	92C3  321081  				    LD		(rGhostX),a
  186: 3514+7	92C6  3E0B    				    LD		a, rGhostStoreY
  187: 3521+13	92C8  321181  				    LD		(rGhostY),a
- 188: 3534+7	92CB  3E20    	                LD		a, caughtJaleTime
+ 188: 3534+7	92CB  3E10    	                LD		a, rGhostInitTimer
  189: 3541+13	92CD  321581  				    LD		(rGhostTimer),a
  190: 3554+10	92D0  C9      	                RET
  191:				
@@ -455,7 +455,7 @@
 **** ghosts/orange.asm ****
    1:     -	000F          	oGhostInitX	    .EQU	15
    2:     -	0008          	oGhostInitY	    .EQU	8
-   3:     -	0010          	oGhostInitTimer .EQU    10H
+   3:     -	0020          	oGhostInitTimer .EQU    20H
    4:     -	000F          	oGhostStoreX	.EQU	15
    5:     -	000B          	oGhostStoreY	.EQU	11
    6:				
@@ -505,7 +505,7 @@
   50: 3859+13	9318  322081  				    LD		(oGhostX),a
   51: 3872+7	931B  3E0B    				    LD		a, oGhostStoreY
   52: 3879+13	931D  322181  				    LD		(oGhostY),a
-  53: 3892+7	9320  3E10    	                LD		a, oGhostInitTimer
+  53: 3892+7	9320  3E20    	                LD		a, oGhostInitTimer
   54: 3899+13	9322  322581  				    LD		(oGhostTimer),a
   55: 3912+10	9325  C9      	                RET
   56:				
@@ -640,7 +640,7 @@
  185: 4911+13	93F9  322081  				    LD		(oGhostX),a
  186: 4924+7	93FC  3E0B    				    LD		a, oGhostStoreY
  187: 4931+13	93FE  322181  				    LD		(oGhostY),a
- 188: 4944+7	9401  3E20    	                LD		a, caughtJaleTime
+ 188: 4944+7	9401  3E20    	                LD		a, oGhostInitTimer
  189: 4951+13	9403  322581  				    LD		(oGhostTimer),a
  190: 4964+10	9406  C9      	                RET
  191:				
@@ -652,7 +652,7 @@
 **** ghosts/pink.asm ****
    1:     -	000F          	pGhostInitX	    .EQU	15
    2:     -	0008          	pGhostInitY	    .EQU	8
-   3:     -	0018          	pGhostInitTimer .EQU    18H
+   3:     -	0030          	pGhostInitTimer .EQU    30H
    4:     -	0010          	pGhostStoreX	.EQU	16
    5:     -	000B          	pGhostStoreY	.EQU	11
    6:				
@@ -702,7 +702,7 @@
   50: 5269+13	944E  323081  				    LD		(pGhostX),a
   51: 5282+7	9451  3E0B    				    LD		a, pGhostStoreY
   52: 5289+13	9453  323181  				    LD		(pGhostY),a
-  53: 5302+7	9456  3E18    	                LD		a, pGhostInitTimer
+  53: 5302+7	9456  3E30    	                LD		a, pGhostInitTimer
   54: 5309+13	9458  323581  				    LD		(pGhostTimer),a
   55: 5322+10	945B  C9      	                RET
   56:				
@@ -837,7 +837,7 @@
  185: 6321+13	952F  323081  				    LD		(pGhostX),a
  186: 6334+7	9532  3E0B    				    LD		a, pGhostStoreY
  187: 6341+13	9534  323181  				    LD		(pGhostY),a
- 188: 6354+7	9537  3E20    	                LD		a, caughtJaleTime
+ 188: 6354+7	9537  3E30    	                LD		a, pGhostInitTimer
  189: 6361+13	9539  323581  				    LD		(pGhostTimer),a
  190: 6374+10	953C  C9      	                RET
  191:				
@@ -849,7 +849,7 @@
 **** ghosts/teal.asm ****
    1:     -	000F          	tGhostInitX	    .EQU	15
    2:     -	0008          	tGhostInitY	    .EQU	8
-   3:     -	0020          	tGhostInitTimer .EQU    20H
+   3:     -	0040          	tGhostInitTimer .EQU    40H
    4:     -	0011          	tGhostStoreX	.EQU	17 
    5:     -	000B          	tGhostStoreY	.EQU	11
    6:				
@@ -893,151 +893,150 @@
   44: 6655+7	9580  7E      	                LD      A,(HL)
   45: 6662+10	9581  C9      					ret
   46:				
-  47:				
-  48:     -	9582          	tGhostInit:   
-  49: 6672+7	9582  3E11    	                LD		a, tGhostStoreX	;set tGhost Pos
-  50: 6679+13	9584  324081  				    LD		(tGhostX),a
-  51: 6692+7	9587  3E0B    				    LD		a, tGhostStoreY
-  52: 6699+13	9589  324181  				    LD		(tGhostY),a
-  53: 6712+7	958C  3E20    	                LD		a, tGhostInitTimer
-  54: 6719+13	958E  324581  				    LD		(tGhostTimer),a
-  55: 6732+10	9591  C9      	                RET
-  56:				
-  57:     -	9592          	tGhostMove:
-  58: 6742+13	9592  3A4581  	                LD      A,(tGhostTimer)     ;Dont move if the ghost is in jale
-  59: 6755+4	9595  B7      	                OR      A                
-  60: 6759+10	9596  C2AB95  	                JP      NZ,tGhostDecTimer   ;Decrement the timer if its x
-  61: 6769+13	9599  3A0481  	                LD      A,(pPActive)
-  62: 6782+8	959C  CB47    	                BIT     0,A                 ;Move every other tick, bit 0 will always 0 when the power pellet isnt active
-  63: 6790+5+6	959E  C0      	                RET     NZ
-  64: 6795+13	959F  3A4281  					LD		A,(tGhostDir)
-  65: 6808+10	95A2  114081  					LD		DE,tGhostX
-  66: 6818+10	95A5  014181  					LD		BC,tGhostY
-  67: 6828+10	95A8  C39496  					JP		move
-  68:				
-  69:     -	95AB          	tGhostDecTimer:
-  70: 6838+4	95AB  3D      	                DEC     A
-  71: 6842+13	95AC  324581  	                LD      (tGhostTimer),A
-  72: 6855+4	95AF  B7      	                OR      A
-  73: 6859+5+6	95B0  C0      	                RET     NZ              ;IF Zero move ghost out of jale
-  74: 6864+7	95B1  3E0F    	                LD		a, tGhostInitX	;set tGhost Pos
-  75: 6871+13	95B3  324081  				    LD		(tGhostX),a
-  76: 6884+7	95B6  3E08    				    LD		a, tGhostInitY
-  77: 6891+13	95B8  324181  				    LD		(tGhostY),a
-  78: 6904+10	95BB  C9      	                RET
-  79:				
-  80:     -	95BC          	tGhostNextMove:
-  81: 6914+7	95BC  3EFF    					LD		A, 0FFH
-  82: 6921+13	95BE  321381  					LD		(ghostDis),A
-  83: 6934+17	95C1  CD7595  					CALL	tGhostMapData
-  84: 6951+4	95C4  57      					LD		D,A
-  85: 6955+7	95C5  3E57    					LD		A,	'W'			;check up
-  86: 6962+17	95C7  CDBA96  					CALL	isMoveValid
-  87: 6979+10+7	95CA  C4E695  					CALL	NZ,tGhostCheckU
-  88: 6989+7	95CD  3E53    					LD		A,	'S'			;down
-  89: 6996+17	95CF  CDBA96  					CALL	isMoveValid
-  90: 7013+10+7	95D2  C4F495  					CALL	NZ,tGhostCheckD
-  91: 7023+7	95D5  3E41    					LD		A,	'A'			;left
-  92: 7030+17	95D7  CDBA96  					CALL	isMoveValid
-  93: 7047+10+7	95DA  C40296  					CALL	NZ,tGhostCheckL
-  94: 7057+7	95DD  3E44    					LD		A,	'D'			;right
-  95: 7064+17	95DF  CDBA96  					CALL	isMoveValid
-  96: 7081+10+7	95E2  C41096  					CALL	NZ,tGhostCheckR
-  97: 7091+10	95E5  C9      					RET
-  98:								
-  99:     -	95E6          	tGhostCheckU:	
- 100: 7101+11	95E6  F5      					PUSH	AF
- 101: 7112+13	95E7  3A4181  					LD		A, (tGhostY)
- 102: 7125+4	95EA  3D      					DEC		A
- 103: 7129+7	95EB  E61F    					AND		00011111B
- 104: 7136+4	95ED  47      					LD		B,A
- 105: 7140+13	95EE  3A4081  					LD		A,(tGhostX)
- 106: 7153+4	95F1  4F      					LD		C,A
- 107: 7157+12	95F2  182A    					JR		tGhostPathFind
- 108:     -	95F4          	tGhostCheckD:			
- 109: 7169+11	95F4  F5      					PUSH	AF
- 110: 7180+13	95F5  3A4181  					LD		A, (tGhostY)
- 111: 7193+4	95F8  3C      					INC		A
- 112: 7197+7	95F9  E61F    					AND		00011111B
- 113: 7204+4	95FB  47      					LD		B,A
- 114: 7208+13	95FC  3A4081  					LD		A,(tGhostX)
- 115: 7221+4	95FF  4F      					LD		C,A
- 116: 7225+12	9600  181C    					JR		tGhostPathFind
- 117:     -	9602          	tGhostCheckL:		
- 118: 7237+11	9602  F5      					PUSH	AF	
- 119: 7248+13	9603  3A4081  					LD		A, (tGhostX)
- 120: 7261+4	9606  3D      					DEC		A
- 121: 7265+7	9607  E61F    					AND		00011111B
- 122: 7272+4	9609  4F      					LD		C,A
- 123: 7276+13	960A  3A4181  					LD		A,(tGhostY)
- 124: 7289+4	960D  47      					LD		B,A
- 125: 7293+12	960E  180E    					JR		tGhostPathFind
- 126:     -	9610          	tGhostCheckR:
- 127: 7305+11	9610  F5      					PUSH	AF	
- 128: 7316+13	9611  3A4081  					LD		A, (tGhostX)
- 129: 7329+4	9614  3C      					INC		A
- 130: 7333+7	9615  E61F    					AND		00011111B
- 131: 7340+4	9617  4F      					LD		C,A
- 132: 7344+13	9618  3A4181  					LD		A,(tGhostY)
- 133: 7357+4	961B  47      					LD		B,A
- 134: 7361+12	961C  1800    					JR		tGhostPathFind
- 135:				
- 136:     -	961E          	tGhostPathFind:
- 137: 7373+17	961E  CDEC96  					CALL	getAddressPF
- 138: 7390+13	9621  3A1381  					LD		A,(ghostDis)
- 139: 7403+7	9624  5E      					LD		E,(HL)
- 140: 7410+4	9625  BB      					CP		E
- 141: 7414+11	9626  F5      	                PUSH    AF
- 142: 7425+13	9627  3A0481  	                LD      A,(pPActive)            ;Check power pellet is not activ, if it is, run away
- 143: 7438+4	962A  B7      	                OR      A
- 144: 7442+10	962B  C23596  	                JP      NZ,tGhostPFPP
- 145: 7452+10	962E  F1      	                POP     AF
- 146: 7462+10	962F  D24196  					JP		NC,tGhostSetNewDir
- 147: 7472+10	9632  F1      	                POP     AF
- 148: 7482+10	9633  F1      					POP		AF
- 149: 7492+10	9634  C9      					RET
- 150:     -	9635          	tGhostPFPP:
- 151: 7502+10	9635  F1      	                POP     AF
- 152: 7512+10	9636  DA4196  	                JP		C,tGhostSetNewDir
- 153: 7522+7	9639  FEFF    	                CP      0FFH
- 154: 7529+10	963B  CA4196  	                JP      Z,tGhostSetNewDir
- 155: 7539+10	963E  F1      	                POP     AF
- 156: 7549+10	963F  F1      					POP		AF
- 157: 7559+10	9640  C9      	                RET
- 158:				
- 159:     -	9641          	tGhostSetNewDir:
- 160: 7569+4	9641  7B      					LD		A,E
- 161: 7573+13	9642  321381  					LD		(ghostDis),A
- 162: 7586+10	9645  F1      					POP		AF
- 163: 7596+13	9646  324281  					LD		(tGhostDir),A
- 164: 7609+10	9649  C9      					RET
- 165:				
- 166:     -	964A          	tGhostColide:   
- 167: 7619+13	964A  3A0081  	                LD      A,(pacx)                ;Compair X
- 168:								;CALL	NumToHex
- 169: 7632+4	964D  47      	                LD      B,A
- 170: 7636+13	964E  3A4081  	                LD      A,(tGhostX)
- 171:								;CALL	NumToHex
- 172: 7649+4	9651  B8      	                CP      B
- 173: 7653+5+6	9652  C0      	                RET     NZ
- 174: 7658+13	9653  3A0181  	                LD      A,(pacy)                ;Compair Y
- 175:								;CALL	NumToHex
- 176: 7671+4	9656  47      	                LD      B,A
- 177: 7675+13	9657  3A4181  	                LD      A,(tGhostY)
- 178:								;CALL	NumToHex
- 179: 7688+4	965A  B8      	                CP      B
- 180: 7692+5+6	965B  C0      	                RET     NZ
- 181: 7697+13	965C  3A0481  	                LD      A,(pPActive)              ;Colishion Happened
- 182: 7710+4	965F  B7      	                OR      A
- 183: 7714+10	9660  CA3A91  	                JP      Z,killPacman               ;If power pellet not active, run genric deth lib
- 184: 7724+7	9663  3E11    	                LD		a, tGhostStoreX	           ;set tGhost Pos
- 185: 7731+13	9665  324081  				    LD		(tGhostX),a
- 186: 7744+7	9668  3E0B    				    LD		a, tGhostStoreY
- 187: 7751+13	966A  324181  				    LD		(tGhostY),a
- 188: 7764+7	966D  3E20    	                LD		a, caughtJaleTime
- 189: 7771+13	966F  324581  				    LD		(tGhostTimer),a
- 190: 7784+10	9672  C9      	                RET
- 191:				
+  47:     -	9582          	tGhostInit:   
+  48: 6672+7	9582  3E11    	                LD		a, tGhostStoreX	;set tGhost Pos
+  49: 6679+13	9584  324081  				    LD		(tGhostX),a
+  50: 6692+7	9587  3E0B    				    LD		a, tGhostStoreY
+  51: 6699+13	9589  324181  				    LD		(tGhostY),a
+  52: 6712+7	958C  3E40    	                LD		a, tGhostInitTimer
+  53: 6719+13	958E  324581  				    LD		(tGhostTimer),a
+  54: 6732+10	9591  C9      	                RET
+  55:				
+  56:     -	9592          	tGhostMove:
+  57: 6742+13	9592  3A4581  	                LD      A,(tGhostTimer)     ;Dont move if the ghost is in jale
+  58: 6755+4	9595  B7      	                OR      A                
+  59: 6759+10	9596  C2AB95  	                JP      NZ,tGhostDecTimer   ;Decrement the timer if its x
+  60: 6769+13	9599  3A0481  	                LD      A,(pPActive)
+  61: 6782+8	959C  CB47    	                BIT     0,A                 ;Move every other tick, bit 0 will always 0 when the power pellet isnt active
+  62: 6790+5+6	959E  C0      	                RET     NZ
+  63: 6795+13	959F  3A4281  					LD		A,(tGhostDir)
+  64: 6808+10	95A2  114081  					LD		DE,tGhostX
+  65: 6818+10	95A5  014181  					LD		BC,tGhostY
+  66: 6828+10	95A8  C39496  					JP		move
+  67:				
+  68:     -	95AB          	tGhostDecTimer:
+  69: 6838+4	95AB  3D      	                DEC     A
+  70: 6842+13	95AC  324581  	                LD      (tGhostTimer),A
+  71: 6855+4	95AF  B7      	                OR      A
+  72: 6859+5+6	95B0  C0      	                RET     NZ              ;IF Zero move ghost out of jale
+  73: 6864+7	95B1  3E0F    	                LD		a, tGhostInitX	;set tGhost Pos
+  74: 6871+13	95B3  324081  				    LD		(tGhostX),a
+  75: 6884+7	95B6  3E08    				    LD		a, tGhostInitY
+  76: 6891+13	95B8  324181  				    LD		(tGhostY),a
+  77: 6904+10	95BB  C9      	                RET
+  78:				
+  79:     -	95BC          	tGhostNextMove:
+  80: 6914+7	95BC  3EFF    					LD		A, 0FFH
+  81: 6921+13	95BE  321381  					LD		(ghostDis),A
+  82: 6934+17	95C1  CD7595  					CALL	tGhostMapData
+  83: 6951+4	95C4  57      					LD		D,A
+  84: 6955+7	95C5  3E57    					LD		A,	'W'			;check up
+  85: 6962+17	95C7  CDBA96  					CALL	isMoveValid
+  86: 6979+10+7	95CA  C4E695  					CALL	NZ,tGhostCheckU
+  87: 6989+7	95CD  3E53    					LD		A,	'S'			;down
+  88: 6996+17	95CF  CDBA96  					CALL	isMoveValid
+  89: 7013+10+7	95D2  C4F495  					CALL	NZ,tGhostCheckD
+  90: 7023+7	95D5  3E41    					LD		A,	'A'			;left
+  91: 7030+17	95D7  CDBA96  					CALL	isMoveValid
+  92: 7047+10+7	95DA  C40296  					CALL	NZ,tGhostCheckL
+  93: 7057+7	95DD  3E44    					LD		A,	'D'			;right
+  94: 7064+17	95DF  CDBA96  					CALL	isMoveValid
+  95: 7081+10+7	95E2  C41096  					CALL	NZ,tGhostCheckR
+  96: 7091+10	95E5  C9      					RET
+  97:								
+  98:     -	95E6          	tGhostCheckU:	
+  99: 7101+11	95E6  F5      					PUSH	AF
+ 100: 7112+13	95E7  3A4181  					LD		A, (tGhostY)
+ 101: 7125+4	95EA  3D      					DEC		A
+ 102: 7129+7	95EB  E61F    					AND		00011111B
+ 103: 7136+4	95ED  47      					LD		B,A
+ 104: 7140+13	95EE  3A4081  					LD		A,(tGhostX)
+ 105: 7153+4	95F1  4F      					LD		C,A
+ 106: 7157+12	95F2  182A    					JR		tGhostPathFind
+ 107:     -	95F4          	tGhostCheckD:			
+ 108: 7169+11	95F4  F5      					PUSH	AF
+ 109: 7180+13	95F5  3A4181  					LD		A, (tGhostY)
+ 110: 7193+4	95F8  3C      					INC		A
+ 111: 7197+7	95F9  E61F    					AND		00011111B
+ 112: 7204+4	95FB  47      					LD		B,A
+ 113: 7208+13	95FC  3A4081  					LD		A,(tGhostX)
+ 114: 7221+4	95FF  4F      					LD		C,A
+ 115: 7225+12	9600  181C    					JR		tGhostPathFind
+ 116:     -	9602          	tGhostCheckL:		
+ 117: 7237+11	9602  F5      					PUSH	AF	
+ 118: 7248+13	9603  3A4081  					LD		A, (tGhostX)
+ 119: 7261+4	9606  3D      					DEC		A
+ 120: 7265+7	9607  E61F    					AND		00011111B
+ 121: 7272+4	9609  4F      					LD		C,A
+ 122: 7276+13	960A  3A4181  					LD		A,(tGhostY)
+ 123: 7289+4	960D  47      					LD		B,A
+ 124: 7293+12	960E  180E    					JR		tGhostPathFind
+ 125:     -	9610          	tGhostCheckR:
+ 126: 7305+11	9610  F5      					PUSH	AF	
+ 127: 7316+13	9611  3A4081  					LD		A, (tGhostX)
+ 128: 7329+4	9614  3C      					INC		A
+ 129: 7333+7	9615  E61F    					AND		00011111B
+ 130: 7340+4	9617  4F      					LD		C,A
+ 131: 7344+13	9618  3A4181  					LD		A,(tGhostY)
+ 132: 7357+4	961B  47      					LD		B,A
+ 133: 7361+12	961C  1800    					JR		tGhostPathFind
+ 134:				
+ 135:     -	961E          	tGhostPathFind:
+ 136: 7373+17	961E  CDEC96  					CALL	getAddressPF
+ 137: 7390+13	9621  3A1381  					LD		A,(ghostDis)
+ 138: 7403+7	9624  5E      					LD		E,(HL)
+ 139: 7410+4	9625  BB      					CP		E
+ 140: 7414+11	9626  F5      	                PUSH    AF
+ 141: 7425+13	9627  3A0481  	                LD      A,(pPActive)            ;Check power pellet is not activ, if it is, run away
+ 142: 7438+4	962A  B7      	                OR      A
+ 143: 7442+10	962B  C23596  	                JP      NZ,tGhostPFPP
+ 144: 7452+10	962E  F1      	                POP     AF
+ 145: 7462+10	962F  D24196  					JP		NC,tGhostSetNewDir
+ 146: 7472+10	9632  F1      	                POP     AF
+ 147: 7482+10	9633  F1      					POP		AF
+ 148: 7492+10	9634  C9      					RET
+ 149:     -	9635          	tGhostPFPP:
+ 150: 7502+10	9635  F1      	                POP     AF
+ 151: 7512+10	9636  DA4196  	                JP		C,tGhostSetNewDir
+ 152: 7522+7	9639  FEFF    	                CP      0FFH
+ 153: 7529+10	963B  CA4196  	                JP      Z,tGhostSetNewDir
+ 154: 7539+10	963E  F1      	                POP     AF
+ 155: 7549+10	963F  F1      					POP		AF
+ 156: 7559+10	9640  C9      	                RET
+ 157:				
+ 158:     -	9641          	tGhostSetNewDir:
+ 159: 7569+4	9641  7B      					LD		A,E
+ 160: 7573+13	9642  321381  					LD		(ghostDis),A
+ 161: 7586+10	9645  F1      					POP		AF
+ 162: 7596+13	9646  324281  					LD		(tGhostDir),A
+ 163: 7609+10	9649  C9      					RET
+ 164:				
+ 165:     -	964A          	tGhostColide:   
+ 166: 7619+13	964A  3A0081  	                LD      A,(pacx)                ;Compair X
+ 167:								;CALL	NumToHex
+ 168: 7632+4	964D  47      	                LD      B,A
+ 169: 7636+13	964E  3A4081  	                LD      A,(tGhostX)
+ 170:								;CALL	NumToHex
+ 171: 7649+4	9651  B8      	                CP      B
+ 172: 7653+5+6	9652  C0      	                RET     NZ
+ 173: 7658+13	9653  3A0181  	                LD      A,(pacy)                ;Compair Y
+ 174:								;CALL	NumToHex
+ 175: 7671+4	9656  47      	                LD      B,A
+ 176: 7675+13	9657  3A4181  	                LD      A,(tGhostY)
+ 177:								;CALL	NumToHex
+ 178: 7688+4	965A  B8      	                CP      B
+ 179: 7692+5+6	965B  C0      	                RET     NZ
+ 180: 7697+13	965C  3A0481  	                LD      A,(pPActive)              ;Colishion Happened
+ 181: 7710+4	965F  B7      	                OR      A
+ 182: 7714+10	9660  CA3A91  	                JP      Z,killPacman               ;If power pellet not active, run genric deth lib
+ 183: 7724+7	9663  3E11    	                LD		a, tGhostStoreX	           ;set tGhost Pos
+ 184: 7731+13	9665  324081  				    LD		(tGhostX),a
+ 185: 7744+7	9668  3E0B    				    LD		a, tGhostStoreY
+ 186: 7751+13	966A  324181  				    LD		(tGhostY),a
+ 187: 7764+7	966D  3E40    	                LD		a, tGhostInitTimer
+ 188: 7771+13	966F  324581  				    LD		(tGhostTimer),a
+ 189: 7784+10	9672  C9      	                RET
+ 190:				
 **** ghosts.asm ****
   59:     -	9673  1B5B3936	tGhost:		.BYTE	1BH,"[96mM",1BH,"[0m",0
 	              6D4D1B5B
@@ -1978,7 +1977,7 @@ oghostcolide    93de
 oghostdectimer  933f     
 oghostdir      =8122     
 oghostinit      9316     
-oghostinittimer=  10     
+oghostinittimer=  20     
 oghostinitx    =   f     
 oghostinity    =   8     
 oghostmapdata   9309     
@@ -2015,7 +2014,7 @@ pghostcolide    9514
 pghostdectimer  9475     
 pghostdir      =8132     
 pghostinit      944c     
-pghostinittimer=  18     
+pghostinittimer=  30     
 pghostinitx    =   f     
 pghostinity    =   8     
 pghostmapdata   943f     
@@ -2068,7 +2067,7 @@ rghostcolide    92a8
 rghostdectimer  9209     
 rghostdir      =8112     
 rghostinit      91e0     
-rghostinittimer=   8     
+rghostinittimer=  10     
 rghostinitx    =   f     
 rghostinity    =   8     
 rghostmapdata   91d3     
@@ -2106,7 +2105,7 @@ tghostcolide    964a
 tghostdectimer  95ab     
 tghostdir      =8142     
 tghostinit      9582     
-tghostinittimer=  20     
+tghostinittimer=  40     
 tghostinitx    =   f     
 tghostinity    =   8     
 tghostmapdata   9575     
