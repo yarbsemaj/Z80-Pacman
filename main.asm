@@ -1,41 +1,8 @@
 CR              .EQU     0DH
 LF              .EQU     0AH
 
-;----- Map data bit positions
-upBit			.EQU	0
-downBit			.EQU	1
-leftBit			.EQU	2
-rightBit		.EQU	3
-powerpBit		.EQU	4
-pelletBit		.EQU	5
-wallBit			.EQU	6
-sfBit			.EQU	7
-;--------Initial Stats
-initPacx		.EQU	14
-initPacy		.EQU	14
-
-;-----Varr
-;Packman
-pacx			.EQU	8100H
-pacy			.EQU	8101H
-pacCDir			.EQU	8102H		;Pacmans current direction
-pacNDir			.EQU	8103H		;Pacman next direction (from key press)
-
-;RedGhost
-redGhostX		.EQU	8110H		
-redGhostY		.EQU	8111H
-redGhostDir		.EQU	8112H
-ghostDis		.EQU	8113H		;Red ghost move distance from pacman
-
-seed			.EQU	8888H		;Random seed
-
-score			.EQU	8900H		;Score
-
 oldStackPointer	.EQU	89F0H		;Old Stack Location 	
 originalBC		.EQU	89F2H		;BC before manipulation, used for calculating board position
-
-
-
 
 	.ORG 9000H
 			ld		(oldStackPointer), SP
@@ -71,11 +38,13 @@ gameLoop:
 			call	clearRedGhost
 			call	moveRedGhost
 			call	printRedGhost
+
+			;call 	printPFMap
 			
 			call 	printScore
 			LD 		B,0FFH   ;delay
 			LD		C,0FFH
-			CALL 	DELAY
+			;CALL 	DELAY
 			JP		gameLoop
 			LD		SP,(oldStackPointer)
 			ret

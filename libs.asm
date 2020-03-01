@@ -1,3 +1,5 @@
+seed			.EQU	8888H		;Random seed
+
 newline:			
 				push 	af
 				ld		a, CR

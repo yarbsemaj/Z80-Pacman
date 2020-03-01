@@ -1,3 +1,5 @@
+score			.EQU	8900H		;Score
+
 printScore:					
 				LD		HL, $02
 				PUSH	HL

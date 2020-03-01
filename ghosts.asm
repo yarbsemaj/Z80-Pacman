@@ -1,27 +1,33 @@
+ghostDis		.EQU	8113H		;ghost move distance from pacman
+
 ;Ghost
 ;Red
 initRedGhostX	.EQU	20
 initRedGhostY	.EQU	1
 storeRedGhostX	.EQU	15
-storeRedGhostX	.EQU	15
+storeRedGhostY	.EQU	15
+
+redGhostX		.EQU	8110H		
+redGhostY		.EQU	8111H
+redGhostDir		.EQU	8112H
 
 ;Orange
-initRedGhostX	.EQU	20
-initRedGhostY	.EQU	1
-storeRedGhostX	.EQU	15
-storeRedGhostX	.EQU	15
+initOGhostX     .EQU	20
+initOGhostY	    .EQU	1
+storeOGhostX	.EQU	15
+storeOGhostY	.EQU	15
 
 ;Teal
 initRedGhostX	.EQU	20
 initRedGhostY	.EQU	1
 storeRedGhostX	.EQU	15
-storeRedGhostX	.EQU	15
+storeRedGhostY	.EQU	15
 
 ;Prink
 initRedGhostX	.EQU	20
 initRedGhostY	.EQU	1
 storeRedGhostX	.EQU	15
-storeRedGhostX	.EQU	15
+storeRedGhostY	.EQU	15
 
 
 ;Red

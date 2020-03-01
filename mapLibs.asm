@@ -1,3 +1,5 @@
+pathFindDepth   .EQU	30H
+
 ;------- Get Map Data ----;
 ; C - X
 ; B	- Y
@@ -135,7 +137,7 @@ pfNextRow:
 				ld		c,b			;copy decremented b back to c
 				ld 		a,32		;refill b withj 32
 				ld		b,a
-				jr		initpPFLoop		;draw next char
+				jp		initpPFLoop		;draw next char
 
 ;Calculate Map
 calculatePathMap:
@@ -158,7 +160,8 @@ calculatePathMapLoop:
 				CALL	getAddressPF
 				LD		A,(HL)
 				INC		A
-				JP 		PE,calculatePathMapLoop	;Skip again if inc overflows
+                CP      pathFindDepth
+				JP 		Z,calculatePathMapLoop	;Skip if wer getting too long
 				LD		E,A			;Keep the distance were working with safe
 				CALL	getMapAddress
 				LD		D,(HL)
@@ -182,28 +185,28 @@ calculateMapU:
 				DEC		A
 				AND		00011111B			;Mask for looping
 				LD		B,A
-				JR		calculateMapCell
+				JP		calculateMapCell
 calculateMapD:	
 				LD		BC,(originalBC)	
 				LD		A, B
 				INC		A
 				AND		00011111B
 				LD		B,A
-				JR		calculateMapCell
+				JP		calculateMapCell
 calculateMapL:	
 				LD		BC,(originalBC)
 				LD		A, C
-				DEC		C
+				DEC		A
 				AND		00011111B
 				LD		C,A
-				JR		calculateMapCell
+				JP		calculateMapCell
 calculateMapR:
 				LD		BC,(originalBC)
 				LD		A, C
 				INC		A
 				AND		00011111B
 				LD		C,A
-				JR		calculateMapCell
+				JP		calculateMapCell
 
 calculateMapCell:
 				CALL	getAddressPF
@@ -216,4 +219,39 @@ calculateMapCell:
 				POP		HL			;We need the return adress on the top of the stack
 				PUSH	BC			;Push Cell so it can be visited
 				PUSH	HL
-				RET	
+				RET
+
+printPFMap:
+                LD		HL, $01
+				PUSH	HL
+				LD		HL, $1A
+				PUSH	HL
+				CALL	moveCursor
+				ld		a,32
+				ld		b,a			; 32 chars per line
+                ld		a,$1A
+				ld		c,a			; 32 lines per map
+				ld		hl,pathFindMap
+pmPFLoop:		ld		a,(hl)		; get char
+                cp      0FFH
+                JP      Z,pmPFSkip
+				call	NumToHex	; decode what to print
+pmPFAfterSkip:  ld      a,' '
+                rst     08H
+				inc		hl			; next char
+				djnz	pmPFLoop		; if were not at the end of a line, print next char
+				call	newline		; if we are, print a new line
+				ld		b,c			;are we at the end of a block
+				djnz	pmPFNextLine
+				ret
+pmPFNextLine:	
+				ld		c,b			;copy decremented b back to c
+				ld 		a,32		;refill b withj 32
+				ld		b,a
+				jr		pmPFLoop	;draw next char
+pmPFSkip:       
+                ld      a,' '
+                rst     08H
+                ld      a,' '
+                rst     08H
+                JP      pmPFAfterSkip

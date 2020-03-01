@@ -1,3 +1,12 @@
+;Packman
+pacx			.EQU	8100H
+pacy			.EQU	8101H
+pacCDir			.EQU	8102H		;Pacmans current direction
+pacNDir			.EQU	8103H		;Pacman next direction (from key press)
+
+initPacx		.EQU	14
+initPacy		.EQU	14
+
 clearPM:
 				LD		A, (pacx)		;Push X to stack
 				LD		C,A

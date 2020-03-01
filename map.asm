@@ -1,3 +1,13 @@
+;----- Map data bit positions
+upBit			.EQU	0
+downBit			.EQU	1
+leftBit			.EQU	2
+rightBit		.EQU	3
+powerpBit		.EQU	4
+pelletBit		.EQU	5
+wallBit			.EQU	6
+sfBit			.EQU	7
+
 ;----Pellet
 ww 		.EQU	40H
 
