@@ -55,12 +55,14 @@ Num2:			inc		a
 ;Print A as HEX				
 NumToHex:    	
 				push	bc
+                push    af
 				ld 		c, a   		; a = number to convert
             	call 	Num1H
             	RST     08H
             	ld 		a, c
             	call 	Num2H
             	RST     08H
+                pop     af
 				pop		bc
             	ret
 

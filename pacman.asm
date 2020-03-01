@@ -7,6 +7,10 @@ pacNDir			.EQU	8103H		;Pacman next direction (from key press)
 initPacx		.EQU	14
 initPacy		.EQU	14
 
+pPelletTics     .EQU    20H         ;Power Pellet last time
+
+pPActive        .EQU    8104H       ;Power Pellet Timer
+
 clearPM:
 				LD		A, (pacx)		;Push X to stack
 				LD		C,A
@@ -42,16 +46,23 @@ eatPellet:		;Eat pellet at packman location
 				CALL 	getPMMapData
 				BIT		pelletBit,A
 				JR		NZ,eatSPellet
+                BIT		powerPBit,A
+				JR		NZ,eatPPellet
 				RET
 				
 eatSPellet:		
 				PUSH	HL		
 				LD		HL,(score)
 				INC		HL
-				INC		HL
 				LD		(score),HL
 				POP		HL
 				RES		pelletBit,(HL)
+				RET
+
+eatPPellet:		
+				LD      A,pPelletTics
+                LD      (pPActive),A
+                RES		powerPBit,(HL)
 				RET
 				
 getMove:		;Sets the current move var
@@ -93,7 +104,18 @@ checkV:
 				JR		checkH
 ;Move
 movePM:
-				LD		A,(pacCDir)
+				LD      A,(pPActive)
+                OR      A
+                JP      Z,movePMA
+                DEC     A
+                LD      (pPActive),A
+movePMA:        LD		A,(pacCDir)
 				LD		DE,pacx
 				LD		BC,pacy
 				JP		move
+
+killPacman:
+                LD		HL, showCursor	;Hide Cursor
+			    CALL	print
+                LD		SP,(oldStackPointer)
+				ret	

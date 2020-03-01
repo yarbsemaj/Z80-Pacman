@@ -16,11 +16,12 @@ originalBC		.EQU	89F2H		;BC before manipulation, used for calculating board posi
 			ld		(pacNDir),A
 			ld		HL, 0H
 			LD		(score), HL
-			ld		a, initRedGhostX	;set RedGhost Pos
-			ld		(redGhostX),a
-			ld		a, initRedGhostY
-			ld		(redGhostY),a
+			ld		a,0
+			ld		(pPActive),A
+			CALL	initGhost
 			LD		HL, cls			;Clear screen
+			CALL	print
+			LD		HL, hideCursor	;Hide Cursor
 			CALL	print
 			call 	printMap
 gameLoop:		
@@ -30,21 +31,25 @@ gameLoop:
 			call	movePM
 			call 	printPM
 			call	eatPellet
-
+			
 			call	initPathFind
 			call	calculatePathMap
 
-			call	getRedGhostNextMove
-			call	clearRedGhost
-			call	moveRedGhost
-			call	printRedGhost
+			call	ghostNextMove
+			call	clearGhost
+			call	colideGhost
+			call	moveGhost
+			call	printGhost
+
+			call	colideGhost
+
 
 			;call 	printPFMap
 			
 			call 	printScore
-			LD 		B,0FFH   ;delay
+			LD 		B,0FH   ;delay
 			LD		C,0FFH
-			;CALL 	DELAY
+			CALL 	DELAY
 			JP		gameLoop
 			LD		SP,(oldStackPointer)
 			ret
@@ -78,6 +83,8 @@ pacman:			.BYTE	1BH,"[93mC",1BH,"[0m",0
 void:			.BYTE	" ",0
 
 cls:      	  	.BYTE 1BH,"[H",1BH,"[2J",0
+hideCursor:	  	.BYTE	1BH,"[?25l",0
+showCursor:	  	.BYTE	1BH,"[?25h",0
 ;-----Path find map
 	.ORG 0D000H
 pathFindMap:

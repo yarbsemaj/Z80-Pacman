@@ -1,146 +1,59 @@
 ghostDis		.EQU	8113H		;ghost move distance from pacman
+caughtJaleTime  .EQU    20H
 
-;Ghost
-;Red
-initRedGhostX	.EQU	20
-initRedGhostY	.EQU	1
-storeRedGhostX	.EQU	15
-storeRedGhostY	.EQU	15
+ghostNextMove:
+                CALL    rGhostNextMove
+                CALL    oGhostNextMove
+                CALL    pGhostNextMove
+                CALL    tGhostNextMove
+                RET
+clearGhost:
+                CALL    rGhostClear
+                CALL    oGhostClear
+                CALL    pGhostClear
+                CALL    tGhostClear
+                RET
+printGhost:
+                CALL    rGhostPrint
+                CALL    oGhostPrint
+                CALL    pGhostPrint
+                CALL    tGhostPrint
+                RET
+colideGhost:
+                CALL    rGhostColide
+                CALL    oGhostColide
+                CALL    pGhostColide
+                CALL    tGhostColide
+                RET
+initGhost:
+                CALL    rGhostInit
+                CALL    oGhostInit
+                CALL    pGhostInit
+                CALL    tGhostInit
+                RET
+moveGhost:
+                CALL    rGhostMove
+                CALL    oGhostMove
+                CALL    pGhostMove
+                CALL    tGhostMove
+                RET
 
-redGhostX		.EQU	8110H		
-redGhostY		.EQU	8111H
-redGhostDir		.EQU	8112H
-
-;Orange
-initOGhostX     .EQU	20
-initOGhostY	    .EQU	1
-storeOGhostX	.EQU	15
-storeOGhostY	.EQU	15
-
-;Teal
-initRedGhostX	.EQU	20
-initRedGhostY	.EQU	1
-storeRedGhostX	.EQU	15
-storeRedGhostY	.EQU	15
-
-;Prink
-initRedGhostX	.EQU	20
-initRedGhostY	.EQU	1
-storeRedGhostX	.EQU	15
-storeRedGhostY	.EQU	15
-
-
-;Red
-clearRedGhost:
-				LD		A, (redGhostX)		;Push X to stack
-				LD		C,A
-				LD		A, (redGhostY)		;Push Y to stack
-				LD		B,A
-				CALL 	printMapAt
-				RET
-				
-printRedGhost:
-				LD		A, (redGhostX)		;Push X to stack
-				INC		A
-				LD		L,A
-				LD		H, $00			;We dont care about msb
-				PUSH	HL
-				LD		A, (redGhostY)		;Push Y to stack
-				INC		A
-				LD		L,A
-				LD		H, $00			;Again we dont care
-				PUSH	HL
-				CALL	moveCursor
-				LD		HL, redGhost
+printSGhost:
+                BIT     0,A
+                JP      Z,sGhost1Print
+                LD		HL, sGhost0
 				CALL 	print
 				RET
-getRedGhostMapData:	
-				LD		A, (redGhostX)
-				LD		C,A
-				LD		A, (redGhostY)
-				LD		B,A
-				CALL	getMapAddress
-                LD      A,(HL)
-				ret
-;Move
-moveRedGhost:
-				LD		A,(redGhostDir)
-				LD		DE,redGhostX
-				LD		BC,redGhostY
-				JP		move
-getRedGhostNextMove:
-				LD		A, 0FFH
-				LD		(ghostDis),A
-				CALL	getRedGhostMapData
-				LD		D,A
-				LD		A,	'W'			;check up
-				CALL	isMoveValid
-				CALL	NZ,redGhostCheckU
-				LD		A,	'S'			;down
-				CALL	isMoveValid
-				CALL	NZ,redGhostCheckD
-				LD		A,	'A'			;left
-				CALL	isMoveValid
-				CALL	NZ,redGhostCheckL
-				LD		A,	'D'			;right
-				CALL	isMoveValid
-				CALL	NZ,redGhostCheckR
-				RET
-				
-redGhostCheckU:	
-				PUSH	AF
-				LD		A, (redGhostY)
-				DEC		A
-				AND		00011111B
-				LD		B,A
-				LD		A,(redGhostX)
-				LD		C,A
-				JR		redGhostPathFind
-redGhostCheckD:			
-				PUSH	AF
-				LD		A, (redGhostY)
-				INC		A
-				AND		00011111B
-				LD		B,A
-				LD		A,(redGhostX)
-				LD		C,A
-				JR		redGhostPathFind
-redGhostCheckL:		
-				PUSH	AF	
-				LD		A, (redGhostX)
-				DEC		A
-				AND		00011111B
-				LD		C,A
-				LD		A,(redGhostY)
-				LD		B,A
-				JR		redGhostPathFind
-redGhostCheckR:
-				PUSH	AF	
-				LD		A, (redGhostX)
-				INC		A
-				AND		00011111B
-				LD		C,A
-				LD		A,(redGhostY)
-				LD		B,A
-				JR		redGhostPathFind
-
-redGhostPathFind:
-				CALL	getAddressPF
-				LD		A,(ghostDis)
-				LD		E,(HL)
-				CP		E
-				JP		NC,redGhostSetNewDir
-				POP		AF
-				RET
-redGhostSetNewDir:
-				LD		A,E
-				LD		(ghostDis),A
-				POP		AF
-				LD		(redGhostDir),A
+sGhost1Print:
+                LD		HL, sGhost1
+				CALL 	print
 				RET
 
+include ghosts/red.asm
+include ghosts/orange.asm
+include ghosts/pink.asm
+include ghosts/teal.asm
 
-redGhost:		.BYTE	1BH,"[91mM",1BH,"[0m",0
-greenGhost:		.BYTE	1BH,"[92mM",1BH,"[0m",0
-blueGhost:		.BYTE	1BH,"[36mM",1BH,"[0m",0
-pinkGhost:		.BYTE	1BH,"[95mM",1BH,"[0m",0
+
+sGhost0:	.BYTE	1BH,"[34mM",1BH,"[0m",0
+sGhost1:	.BYTE	1BH,"[97mM",1BH,"[0m",0

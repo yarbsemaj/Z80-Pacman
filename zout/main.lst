@@ -16,62 +16,67 @@
   16:   90+13	9016  320381  				ld		(pacNDir),A
   17:  103+10	9019  210000  				ld		HL, 0H
   18:  113+16	901C  220089  				LD		(score), HL
-  19:  129+7	901F  3E14    				ld		a, initRedGhostX	;set RedGhost Pos
-  20:  136+13	9021  321081  				ld		(redGhostX),a
-  21:  149+7	9024  3E01    				ld		a, initRedGhostY
-  22:  156+13	9026  321181  				ld		(redGhostY),a
-  23:  169+10	9029  219E94  				LD		HL, cls			;Clear screen
-  24:  179+17	902C  CD4B94  				CALL	print
-  25:  196+17	902F  CD8192  				call 	printMap
-  26:     -	9032          	gameLoop:		
-  27:  213+17	9032  CD6590  				call	input
-  28:  230+17	9035  CDC790  				call 	getMove
-  29:  247+17	9038  CD7F90  				call 	clearPM
-  30:  264+17	903B  CD0B91  				call	movePM
-  31:  281+17	903E  CD8B90  				call 	printPM
-  32:  298+17	9041  CDB290  				call	eatPellet
-  33:				
-  34:  315+17	9044  CDD992  				call	initPathFind
-  35:  332+17	9047  CDF192  				call	calculatePathMap
-  36:				
-  37:  349+17	904A  CD5691  				call	getRedGhostNextMove
-  38:  366+17	904D  CD1791  				call	clearRedGhost
-  39:  383+17	9050  CD4A91  				call	moveRedGhost
-  40:  400+17	9053  CD2391  				call	printRedGhost
-  41:				
-  42:							;call 	printPFMap
-  43:							
-  44:  417+17	9056  CDB493  				call 	printScore
-  45:  434+7	9059  06FF    				LD 		B,0FFH   ;delay
-  46:  441+7	905B  0EFF    				LD		C,0FFH
-  47:							;CALL 	DELAY
-  48:  448+10	905D  C33290  				JP		gameLoop
-  49:  458+20	9060  ED7BF089				LD		SP,(oldStackPointer)
-  50:  478+10	9064  C9      				ret
-  51:						
-  52:				;-------------- Input --------------------------					
-  53:				include input.asm	
+  19:  129+7	901F  3E00    				ld		a,0
+  20:  136+13	9021  320481  				ld		(pPActive),A
+  21:  149+17	9024  CD7991  				CALL	initGhost
+  22:  166+10	9027  213A99  				LD		HL, cls			;Clear screen
+  23:  176+17	902A  CDE798  				CALL	print
+  24:  193+10	902D  214299  				LD		HL, hideCursor	;Hide Cursor
+  25:  203+17	9030  CDE798  				CALL	print
+  26:  220+17	9033  CD1B97  				call 	printMap
+  27:     -	9036          	gameLoop:		
+  28:  237+17	9036  CD7290  				call	input
+  29:  254+17	9039  CDDF90  				call 	getMove
+  30:  271+17	903C  CD8C90  				call 	clearPM
+  31:  288+17	903F  CD2391  				call	movePM
+  32:  305+17	9042  CD9890  				call 	printPM
+  33:  322+17	9045  CDBF90  				call	eatPellet
+  34:							
+  35:  339+17	9048  CD7397  				call	initPathFind
+  36:  356+17	904B  CD8B97  				call	calculatePathMap
+  37:				
+  38:  373+17	904E  CD4591  				call	ghostNextMove
+  39:  390+17	9051  CD5291  				call	clearGhost
+  40:  407+17	9054  CD6C91  				call	colideGhost
+  41:  424+17	9057  CD8691  				call	moveGhost
+  42:  441+17	905A  CD5F91  				call	printGhost
+  43:				
+  44:  458+17	905D  CD6C91  				call	colideGhost
+  45:				
+  46:				
+  47:							;call 	printPFMap
+  48:							
+  49:  475+17	9060  CD4E98  				call 	printScore
+  50:  492+7	9063  060F    				LD 		B,0FH   ;delay
+  51:  499+7	9065  0EFF    				LD		C,0FFH
+  52:  506+17	9067  CDF298  				CALL 	DELAY
+  53:  523+10	906A  C33690  				JP		gameLoop
+  54:  533+20	906D  ED7BF089				LD		SP,(oldStackPointer)
+  55:  553+10	9071  C9      				ret
+  56:						
+  57:				;-------------- Input --------------------------					
+  58:				include input.asm	
 **** input.asm ****
-   1:     -	9065          	input:
-   2:  488+11	9065  DF      					RST		18H
-   3:  499+5+6	9066  C8      					RET		Z
-   4:  504+11	9067  D7      					RST		10H
-   5:  515+7	9068  E6DF    					AND     11011111b       ; lower to uppercase
-   6:  522+7	906A  FE57    					CP		'W'
-   7:  529+7+5	906C  280D    					JR		Z,validInput
-   8:  536+7	906E  FE41    					CP		'A'
-   9:  543+7+5	9070  2809    					JR		Z,validInput
-  10:  550+7	9072  FE53    					CP		'S'
-  11:  557+7+5	9074  2805    					JR		Z,validInput
-  12:  564+7	9076  FE44    					CP		'D'
-  13:  571+7+5	9078  2801    					JR		Z,validInput
-  14:  578+10	907A  C9      					RET
-  15:     -	907B          	validInput:		
-  16:  588+13	907B  320381  					LD		(pacNDir), A
+   1:     -	9072          	input:
+   2:  563+11	9072  DF      					RST		18H
+   3:  574+5+6	9073  C8      					RET		Z
+   4:  579+11	9074  D7      					RST		10H
+   5:  590+7	9075  E6DF    					AND     11011111b       ; lower to uppercase
+   6:  597+7	9077  FE57    					CP		'W'
+   7:  604+7+5	9079  280D    					JR		Z,validInput
+   8:  611+7	907B  FE41    					CP		'A'
+   9:  618+7+5	907D  2809    					JR		Z,validInput
+  10:  625+7	907F  FE53    					CP		'S'
+  11:  632+7+5	9081  2805    					JR		Z,validInput
+  12:  639+7	9083  FE44    					CP		'D'
+  13:  646+7+5	9085  2801    					JR		Z,validInput
+  14:  653+10	9087  C9      					RET
+  15:     -	9088          	validInput:		
+  16:  663+13	9088  320381  					LD		(pacNDir), A
 **** main.asm ****
-  54:  601+10	907E  C9      					RET
-  55:				;----------Pacman------;
-  56:				include	pacman.asm
+  59:  676+10	908B  C9      					RET
+  60:				;----------Pacman------;
+  61:				include	pacman.asm
 **** pacman.asm ****
    1:				;Packman
    2:     -	8100          	pacx			.EQU	8100H
@@ -82,751 +87,1472 @@
    7:     -	000E          	initPacx		.EQU	14
    8:     -	000E          	initPacy		.EQU	14
    9:				
-  10:     -	907F          	clearPM:
-  11:  611+13	907F  3A0081  					LD		A, (pacx)		;Push X to stack
-  12:  624+4	9082  4F      					LD		C,A
-  13:  628+13	9083  3A0181  					LD		A, (pacy)		;Push Y to stack
-  14:  641+4	9086  47      					LD		B,A
-  15:  645+17	9087  CD6A92  					CALL 	printMapAt
-  16:  662+10	908A  C9      					RET
-  17:								
-  18:     -	908B          	printPM:
-  19:  672+13	908B  3A0081  					LD		A, (pacx)		;Push X to stack
-  20:  685+4	908E  3C      					INC		A
-  21:  689+4	908F  6F      					LD		L,A
-  22:  693+7	9090  2600    					LD		H, $00			;We dont care about msb
-  23:  700+11	9092  E5      					PUSH	HL
-  24:  711+13	9093  3A0181  					LD		A, (pacy)		;Push Y to stack
-  25:  724+4	9096  3C      					INC		A
-  26:  728+4	9097  6F      					LD		L,A
-  27:  732+7	9098  2600    					LD		H, $00			;Again we dont care
-  28:  739+11	909A  E5      					PUSH	HL
-  29:  750+17	909B  CDDB93  					CALL	moveCursor
-  30:  767+10	909E  219194  					LD		HL, pacman
-  31:  777+17	90A1  CD4B94  					CALL 	print
-  32:  794+10	90A4  C9      					RET
-  33:     -	90A5          	getPMMapData:	
-  34:  804+13	90A5  3A0081  					LD		A, (pacx)
-  35:  817+4	90A8  4F      					LD		C,A
-  36:  821+13	90A9  3A0181  					LD		A, (pacy)
-  37:  834+4	90AC  47      					LD		B,A
-  38:  838+17	90AD  CD3A92  					CALL	getMapAddress
-  39:  855+7	90B0  7E      	                LD      A,(HL)
-  40:  862+10	90B1  C9      					ret
-  41:     -	90B2          	eatPellet:		;Eat pellet at packman location
-  42:  872+17	90B2  CDA590  					CALL 	getPMMapData
-  43:  889+8	90B5  CB6F    					BIT		pelletBit,A
-  44:  897+7+5	90B7  2001    					JR		NZ,eatSPellet
-  45:  904+10	90B9  C9      					RET
-  46:								
-  47:     -	90BA          	eatSPellet:		
-  48:  914+11	90BA  E5      					PUSH	HL		
-  49:  925+16	90BB  2A0089  					LD		HL,(score)
-  50:  941+6	90BE  23      					INC		HL
-  51:  947+6	90BF  23      					INC		HL
-  52:  953+16	90C0  220089  					LD		(score),HL
-  53:  969+10	90C3  E1      					POP		HL
-  54:  979+15	90C4  CBAE    					RES		pelletBit,(HL)
-  55:  994+10	90C6  C9      					RET
-  56:								
-  57:     -	90C7          	getMove:		;Sets the current move var
-  58: 1004+17	90C7  CDA590  					CALL	getPMMapData
-  59: 1021+4	90CA  57      					LD		D,A
-  60: 1025+13	90CB  3A0381  					LD		A,(pacNDir)			;Is the next move valid
-  61: 1038+17	90CE  CD2092  					CALL	isMoveValid
-  62: 1055+7+5	90D1  2009    					JR		NZ,nextMoveValid
-  63: 1062+13	90D3  3A0281  					LD		A,(pacCDir)			;Is the current move valid
-  64: 1075+17	90D6  CD2092  					CALL	isMoveValid
-  65: 1092+5+6	90D9  C0      					RET		NZ
-  66: 1097+12	90DA  1807    					JR		calcNextMove
+  10:     -	0020          	pPelletTics     .EQU    20H         ;Power Pellet last time
+  11:				
+  12:     -	8104          	pPActive        .EQU    8104H       ;Power Pellet Timer
+  13:				
+  14:     -	908C          	clearPM:
+  15:  686+13	908C  3A0081  					LD		A, (pacx)		;Push X to stack
+  16:  699+4	908F  4F      					LD		C,A
+  17:  703+13	9090  3A0181  					LD		A, (pacy)		;Push Y to stack
+  18:  716+4	9093  47      					LD		B,A
+  19:  720+17	9094  CD0497  					CALL 	printMapAt
+  20:  737+10	9097  C9      					RET
+  21:								
+  22:     -	9098          	printPM:
+  23:  747+13	9098  3A0081  					LD		A, (pacx)		;Push X to stack
+  24:  760+4	909B  3C      					INC		A
+  25:  764+4	909C  6F      					LD		L,A
+  26:  768+7	909D  2600    					LD		H, $00			;We dont care about msb
+  27:  775+11	909F  E5      					PUSH	HL
+  28:  786+13	90A0  3A0181  					LD		A, (pacy)		;Push Y to stack
+  29:  799+4	90A3  3C      					INC		A
+  30:  803+4	90A4  6F      					LD		L,A
+  31:  807+7	90A5  2600    					LD		H, $00			;Again we dont care
+  32:  814+11	90A7  E5      					PUSH	HL
+  33:  825+17	90A8  CD7598  					CALL	moveCursor
+  34:  842+10	90AB  212D99  					LD		HL, pacman
+  35:  852+17	90AE  CDE798  					CALL 	print
+  36:  869+10	90B1  C9      					RET
+  37:     -	90B2          	getPMMapData:	
+  38:  879+13	90B2  3A0081  					LD		A, (pacx)
+  39:  892+4	90B5  4F      					LD		C,A
+  40:  896+13	90B6  3A0181  					LD		A, (pacy)
+  41:  909+4	90B9  47      					LD		B,A
+  42:  913+17	90BA  CDD496  					CALL	getMapAddress
+  43:  930+7	90BD  7E      	                LD      A,(HL)
+  44:  937+10	90BE  C9      					ret
+  45:     -	90BF          	eatPellet:		;Eat pellet at packman location
+  46:  947+17	90BF  CDB290  					CALL 	getPMMapData
+  47:  964+8	90C2  CB6F    					BIT		pelletBit,A
+  48:  972+7+5	90C4  2005    					JR		NZ,eatSPellet
+  49:  979+8	90C6  CB67    	                BIT		powerPBit,A
+  50:  987+7+5	90C8  200D    					JR		NZ,eatPPellet
+  51:  994+10	90CA  C9      					RET
+  52:								
+  53:     -	90CB          	eatSPellet:		
+  54: 1004+11	90CB  E5      					PUSH	HL		
+  55: 1015+16	90CC  2A0089  					LD		HL,(score)
+  56: 1031+6	90CF  23      					INC		HL
+  57: 1037+16	90D0  220089  					LD		(score),HL
+  58: 1053+10	90D3  E1      					POP		HL
+  59: 1063+15	90D4  CBAE    					RES		pelletBit,(HL)
+  60: 1078+10	90D6  C9      					RET
+  61:				
+  62:     -	90D7          	eatPPellet:		
+  63: 1088+7	90D7  3E20    					LD      A,pPelletTics
+  64: 1095+13	90D9  320481  	                LD      (pPActive),A
+  65: 1108+15	90DC  CBA6    	                RES		powerPBit,(HL)
+  66: 1123+10	90DE  C9      					RET
   67:								
-  68:     -	90DC          	nextMoveValid:
-  69: 1109+13	90DC  320281  					LD		(pacCDir),A
-  70: 1122+13	90DF  320381  					LD		(pacNDir),A
-  71: 1135+10	90E2  C9      					RET
-  72:								
-  73:     -	90E3          	calcNextMove:	
-  74: 1145+7	90E3  FE41    					CP		'A'
-  75: 1152+7+5	90E5  2814    					JR		Z,checkV
-  76: 1159+7	90E7  FE44    					CP		'D'
-  77: 1166+7+5	90E9  2810    					JR		Z,checkV
-  78: 1173+12	90EB  1800    					JR		checkH
-  79:     -	90ED          	checkH:
-  80: 1185+7	90ED  3E41    					LD		A,'A'
-  81: 1192+17	90EF  CD2092  					CALL	isMoveValid
-  82: 1209+7+5	90F2  20E8    					JR		NZ,nextMoveValid
-  83: 1216+7	90F4  3E44    					LD		A,'D'
-  84: 1223+17	90F6  CD2092  					CALL	isMoveValid
-  85: 1240+7+5	90F9  20E1    					JR		NZ,nextMoveValid
-  86:     -	90FB          	checkV:
-  87: 1247+7	90FB  3E57    					LD		A,'W'
-  88: 1254+17	90FD  CD2092  					CALL	isMoveValid
-  89: 1271+7+5	9100  20DA    					JR		NZ,nextMoveValid
-  90: 1278+7	9102  3E53    					LD		A,'S'
-  91: 1285+17	9104  CD2092  					CALL	isMoveValid
-  92: 1302+7+5	9107  20D3    					JR		NZ,nextMoveValid
-  93: 1309+12	9109  18E2    					JR		checkH
-  94:				;Move
-  95:     -	910B          	movePM:
-  96: 1321+13	910B  3A0281  					LD		A,(pacCDir)
-  97: 1334+10	910E  110081  					LD		DE,pacx
-  98: 1344+10	9111  010181  					LD		BC,pacy
+  68:     -	90DF          	getMove:		;Sets the current move var
+  69: 1133+17	90DF  CDB290  					CALL	getPMMapData
+  70: 1150+4	90E2  57      					LD		D,A
+  71: 1154+13	90E3  3A0381  					LD		A,(pacNDir)			;Is the next move valid
+  72: 1167+17	90E6  CDBA96  					CALL	isMoveValid
+  73: 1184+7+5	90E9  2009    					JR		NZ,nextMoveValid
+  74: 1191+13	90EB  3A0281  					LD		A,(pacCDir)			;Is the current move valid
+  75: 1204+17	90EE  CDBA96  					CALL	isMoveValid
+  76: 1221+5+6	90F1  C0      					RET		NZ
+  77: 1226+12	90F2  1807    					JR		calcNextMove
+  78:								
+  79:     -	90F4          	nextMoveValid:
+  80: 1238+13	90F4  320281  					LD		(pacCDir),A
+  81: 1251+13	90F7  320381  					LD		(pacNDir),A
+  82: 1264+10	90FA  C9      					RET
+  83:								
+  84:     -	90FB          	calcNextMove:	
+  85: 1274+7	90FB  FE41    					CP		'A'
+  86: 1281+7+5	90FD  2814    					JR		Z,checkV
+  87: 1288+7	90FF  FE44    					CP		'D'
+  88: 1295+7+5	9101  2810    					JR		Z,checkV
+  89: 1302+12	9103  1800    					JR		checkH
+  90:     -	9105          	checkH:
+  91: 1314+7	9105  3E41    					LD		A,'A'
+  92: 1321+17	9107  CDBA96  					CALL	isMoveValid
+  93: 1338+7+5	910A  20E8    					JR		NZ,nextMoveValid
+  94: 1345+7	910C  3E44    					LD		A,'D'
+  95: 1352+17	910E  CDBA96  					CALL	isMoveValid
+  96: 1369+7+5	9111  20E1    					JR		NZ,nextMoveValid
+  97:     -	9113          	checkV:
+  98: 1376+7	9113  3E57    					LD		A,'W'
+  99: 1383+17	9115  CDBA96  					CALL	isMoveValid
+ 100: 1400+7+5	9118  20DA    					JR		NZ,nextMoveValid
+ 101: 1407+7	911A  3E53    					LD		A,'S'
+ 102: 1414+17	911C  CDBA96  					CALL	isMoveValid
+ 103: 1431+7+5	911F  20D3    					JR		NZ,nextMoveValid
+ 104: 1438+12	9121  18E2    					JR		checkH
+ 105:				;Move
+ 106:     -	9123          	movePM:
+ 107: 1450+13	9123  3A0481  					LD      A,(pPActive)
+ 108: 1463+4	9126  B7      	                OR      A
+ 109: 1467+10	9127  CA2E91  	                JP      Z,movePMA
+ 110: 1477+4	912A  3D      	                DEC     A
+ 111: 1481+13	912B  320481  	                LD      (pPActive),A
+ 112: 1494+13	912E  3A0281  	movePMA:        LD		A,(pacCDir)
+ 113: 1507+10	9131  110081  					LD		DE,pacx
+ 114: 1517+10	9134  010181  					LD		BC,pacy
+ 115: 1527+10	9137  C39496  					JP		move
+ 116:				
+ 117:     -	913A          	killPacman:
+ 118: 1537+10	913A  214999  	                LD		HL, showCursor	;Hide Cursor
+ 119: 1547+17	913D  CDE798  				    CALL	print
+ 120: 1564+20	9140  ED7BF089	                LD		SP,(oldStackPointer)
 **** main.asm ****
-  57: 1354+10	9114  C3FA91  					JP		move
-  58:				;------------Ghost
-  59:				include ghosts.asm
+  62: 1584+10	9144  C9      					ret	
+  63:				;------------Ghost
+  64:				include ghosts.asm
 **** ghosts.asm ****
    1:     -	8113          	ghostDis		.EQU	8113H		;ghost move distance from pacman
-   2:				
-   3:				;Ghost
-   4:				;Red
-   5:     -	0014          	initRedGhostX	.EQU	20
-   6:     -	0001          	initRedGhostY	.EQU	1
-   7:     -	000F          	storeRedGhostX	.EQU	15
-   8:     -	000F          	storeRedGhostY	.EQU	15
-   9:				
-  10:     -	8110          	redGhostX		.EQU	8110H		
-  11:     -	8111          	redGhostY		.EQU	8111H
-  12:     -	8112          	redGhostDir		.EQU	8112H
-  13:				
-  14:				;Orange
-  15:     -	0014          	initOGhostX     .EQU	20
-  16:     -	0001          	initOGhostY	    .EQU	1
-  17:     -	000F          	storeOGhostX	.EQU	15
-  18:     -	000F          	storeOGhostY	.EQU	15
-  19:				
-  20:				;Teal
-  21:     -	0014          	initRedGhostX	.EQU	20
-  22:     -	0001          	initRedGhostY	.EQU	1
-  23:     -	000F          	storeRedGhostX	.EQU	15
-  24:     -	000F          	storeRedGhostY	.EQU	15
-  25:				
-  26:				;Prink
-  27:     -	0014          	initRedGhostX	.EQU	20
-  28:     -	0001          	initRedGhostY	.EQU	1
-  29:     -	000F          	storeRedGhostX	.EQU	15
-  30:     -	000F          	storeRedGhostY	.EQU	15
-  31:				
-  32:				
-  33:				;Red
-  34:     -	9117          	clearRedGhost:
-  35: 1364+13	9117  3A1081  					LD		A, (redGhostX)		;Push X to stack
-  36: 1377+4	911A  4F      					LD		C,A
-  37: 1381+13	911B  3A1181  					LD		A, (redGhostY)		;Push Y to stack
-  38: 1394+4	911E  47      					LD		B,A
-  39: 1398+17	911F  CD6A92  					CALL 	printMapAt
-  40: 1415+10	9122  C9      					RET
-  41:								
-  42:     -	9123          	printRedGhost:
-  43: 1425+13	9123  3A1081  					LD		A, (redGhostX)		;Push X to stack
-  44: 1438+4	9126  3C      					INC		A
-  45: 1442+4	9127  6F      					LD		L,A
-  46: 1446+7	9128  2600    					LD		H, $00			;We dont care about msb
-  47: 1453+11	912A  E5      					PUSH	HL
-  48: 1464+13	912B  3A1181  					LD		A, (redGhostY)		;Push Y to stack
-  49: 1477+4	912E  3C      					INC		A
-  50: 1481+4	912F  6F      					LD		L,A
-  51: 1485+7	9130  2600    					LD		H, $00			;Again we dont care
-  52: 1492+11	9132  E5      					PUSH	HL
-  53: 1503+17	9133  CDDB93  					CALL	moveCursor
-  54: 1520+10	9136  21CE91  					LD		HL, redGhost
-  55: 1530+17	9139  CD4B94  					CALL 	print
-  56: 1547+10	913C  C9      					RET
-  57:     -	913D          	getRedGhostMapData:	
-  58: 1557+13	913D  3A1081  					LD		A, (redGhostX)
-  59: 1570+4	9140  4F      					LD		C,A
-  60: 1574+13	9141  3A1181  					LD		A, (redGhostY)
-  61: 1587+4	9144  47      					LD		B,A
-  62: 1591+17	9145  CD3A92  					CALL	getMapAddress
-  63: 1608+7	9148  7E      	                LD      A,(HL)
-  64: 1615+10	9149  C9      					ret
-  65:				;Move
-  66:     -	914A          	moveRedGhost:
-  67: 1625+13	914A  3A1281  					LD		A,(redGhostDir)
-  68: 1638+10	914D  111081  					LD		DE,redGhostX
-  69: 1648+10	9150  011181  					LD		BC,redGhostY
-  70: 1658+10	9153  C3FA91  					JP		move
-  71:     -	9156          	getRedGhostNextMove:
-  72: 1668+7	9156  3EFF    					LD		A, 0FFH
-  73: 1675+13	9158  321381  					LD		(ghostDis),A
-  74: 1688+17	915B  CD3D91  					CALL	getRedGhostMapData
-  75: 1705+4	915E  57      					LD		D,A
-  76: 1709+7	915F  3E57    					LD		A,	'W'			;check up
-  77: 1716+17	9161  CD2092  					CALL	isMoveValid
-  78: 1733+10+7	9164  C48091  					CALL	NZ,redGhostCheckU
-  79: 1743+7	9167  3E53    					LD		A,	'S'			;down
-  80: 1750+17	9169  CD2092  					CALL	isMoveValid
-  81: 1767+10+7	916C  C48E91  					CALL	NZ,redGhostCheckD
-  82: 1777+7	916F  3E41    					LD		A,	'A'			;left
-  83: 1784+17	9171  CD2092  					CALL	isMoveValid
-  84: 1801+10+7	9174  C49C91  					CALL	NZ,redGhostCheckL
-  85: 1811+7	9177  3E44    					LD		A,	'D'			;right
-  86: 1818+17	9179  CD2092  					CALL	isMoveValid
-  87: 1835+10+7	917C  C4AA91  					CALL	NZ,redGhostCheckR
-  88: 1845+10	917F  C9      					RET
-  89:								
-  90:     -	9180          	redGhostCheckU:	
-  91: 1855+11	9180  F5      					PUSH	AF
-  92: 1866+13	9181  3A1181  					LD		A, (redGhostY)
-  93: 1879+4	9184  3D      					DEC		A
-  94: 1883+7	9185  E61F    					AND		00011111B
-  95: 1890+4	9187  47      					LD		B,A
-  96: 1894+13	9188  3A1081  					LD		A,(redGhostX)
-  97: 1907+4	918B  4F      					LD		C,A
-  98: 1911+12	918C  182A    					JR		redGhostPathFind
-  99:     -	918E          	redGhostCheckD:			
- 100: 1923+11	918E  F5      					PUSH	AF
- 101: 1934+13	918F  3A1181  					LD		A, (redGhostY)
- 102: 1947+4	9192  3C      					INC		A
- 103: 1951+7	9193  E61F    					AND		00011111B
- 104: 1958+4	9195  47      					LD		B,A
- 105: 1962+13	9196  3A1081  					LD		A,(redGhostX)
- 106: 1975+4	9199  4F      					LD		C,A
- 107: 1979+12	919A  181C    					JR		redGhostPathFind
- 108:     -	919C          	redGhostCheckL:		
- 109: 1991+11	919C  F5      					PUSH	AF	
- 110: 2002+13	919D  3A1081  					LD		A, (redGhostX)
- 111: 2015+4	91A0  3D      					DEC		A
- 112: 2019+7	91A1  E61F    					AND		00011111B
- 113: 2026+4	91A3  4F      					LD		C,A
- 114: 2030+13	91A4  3A1181  					LD		A,(redGhostY)
- 115: 2043+4	91A7  47      					LD		B,A
- 116: 2047+12	91A8  180E    					JR		redGhostPathFind
- 117:     -	91AA          	redGhostCheckR:
- 118: 2059+11	91AA  F5      					PUSH	AF	
- 119: 2070+13	91AB  3A1081  					LD		A, (redGhostX)
- 120: 2083+4	91AE  3C      					INC		A
- 121: 2087+7	91AF  E61F    					AND		00011111B
- 122: 2094+4	91B1  4F      					LD		C,A
- 123: 2098+13	91B2  3A1181  					LD		A,(redGhostY)
- 124: 2111+4	91B5  47      					LD		B,A
- 125: 2115+12	91B6  1800    					JR		redGhostPathFind
- 126:				
- 127:     -	91B8          	redGhostPathFind:
- 128: 2127+17	91B8  CD5292  					CALL	getAddressPF
- 129: 2144+13	91BB  3A1381  					LD		A,(ghostDis)
- 130: 2157+7	91BE  5E      					LD		E,(HL)
- 131: 2164+4	91BF  BB      					CP		E
- 132: 2168+10	91C0  D2C591  					JP		NC,redGhostSetNewDir
- 133: 2178+10	91C3  F1      					POP		AF
- 134: 2188+10	91C4  C9      					RET
- 135:     -	91C5          	redGhostSetNewDir:
- 136: 2198+4	91C5  7B      					LD		A,E
- 137: 2202+13	91C6  321381  					LD		(ghostDis),A
- 138: 2215+10	91C9  F1      					POP		AF
- 139: 2225+13	91CA  321281  					LD		(redGhostDir),A
- 140: 2238+10	91CD  C9      					RET
- 141:				
- 142:				
- 143:     -	91CE  1B5B3931	redGhost:		.BYTE	1BH,"[91mM",1BH,"[0m",0
+   2:     -	0020          	caughtJaleTime  .EQU    20H
+   3:				
+   4:     -	9145          	ghostNextMove:
+   5: 1594+17	9145  CD1A92  	                CALL    rGhostNextMove
+   6: 1611+17	9148  CD5093  	                CALL    oGhostNextMove
+   7: 1628+17	914B  CD8694  	                CALL    pGhostNextMove
+   8: 1645+17	914E  CDBC95  	                CALL    tGhostNextMove
+   9: 1662+10	9151  C9      	                RET
+  10:     -	9152          	clearGhost:
+  11: 1672+17	9152  CDA691  	                CALL    rGhostClear
+  12: 1689+17	9155  CDDC92  	                CALL    oGhostClear
+  13: 1706+17	9158  CD1294  	                CALL    pGhostClear
+  14: 1723+17	915B  CD4895  	                CALL    tGhostClear
+  15: 1740+10	915E  C9      	                RET
+  16:     -	915F          	printGhost:
+  17: 1750+17	915F  CDB291  	                CALL    rGhostPrint
+  18: 1767+17	9162  CDE892  	                CALL    oGhostPrint
+  19: 1784+17	9165  CD1E94  	                CALL    pGhostPrint
+  20: 1801+17	9168  CD5495  	                CALL    tGhostPrint
+  21: 1818+10	916B  C9      	                RET
+  22:     -	916C          	colideGhost:
+  23: 1828+17	916C  CDA892  	                CALL    rGhostColide
+  24: 1845+17	916F  CDDE93  	                CALL    oGhostColide
+  25: 1862+17	9172  CD1495  	                CALL    pGhostColide
+  26: 1879+17	9175  CD4A96  	                CALL    tGhostColide
+  27: 1896+10	9178  C9      	                RET
+  28:     -	9179          	initGhost:
+  29: 1906+17	9179  CDE091  	                CALL    rGhostInit
+  30: 1923+17	917C  CD1693  	                CALL    oGhostInit
+  31: 1940+17	917F  CD4C94  	                CALL    pGhostInit
+  32: 1957+17	9182  CD8295  	                CALL    tGhostInit
+  33: 1974+10	9185  C9      	                RET
+  34:     -	9186          	moveGhost:
+  35: 1984+17	9186  CDF091  	                CALL    rGhostMove
+  36: 2001+17	9189  CD2693  	                CALL    oGhostMove
+  37: 2018+17	918C  CD5C94  	                CALL    pGhostMove
+  38: 2035+17	918F  CD9295  	                CALL    tGhostMove
+  39: 2052+10	9192  C9      	                RET
+  40:				
+  41:     -	9193          	printSGhost:
+  42: 2062+8	9193  CB47    	                BIT     0,A
+  43: 2070+10	9195  CA9F91  	                JP      Z,sGhost1Print
+  44: 2080+10	9198  217E96  	                LD		HL, sGhost0
+  45: 2090+17	919B  CDE798  					CALL 	print
+  46: 2107+10	919E  C9      					RET
+  47:     -	919F          	sGhost1Print:
+  48: 2117+10	919F  218996  	                LD		HL, sGhost1
+  49: 2127+17	91A2  CDE798  					CALL 	print
+  50: 2144+10	91A5  C9      					RET
+  51:				
+  52:				include ghosts/red.asm
+**** ghosts/red.asm ****
+   1:     -	000F          	rGhostInitX	    .EQU	15
+   2:     -	0008          	rGhostInitY	    .EQU	8
+   3:     -	0008          	rGhostInitTimer .EQU    08H
+   4:     -	000E          	rGhostStoreX	.EQU	14
+   5:     -	000B          	rGhostStoreY	.EQU	11
+   6:				
+   7:     -	8110          	rGhostX		    .EQU	8110H		
+   8:     -	8111          	rGhostY		    .EQU	8111H
+   9:     -	8112          	rGhostDir		.EQU	8112H
+  10:     -	8115          	rGhostTimer     .EQU    8115H
+  11:				
+  12:     -	91A6          	rGhostClear:
+  13: 2154+13	91A6  3A1081  					LD		A, (rGhostX)		;Push X to stack
+  14: 2167+4	91A9  4F      					LD		C,A
+  15: 2171+13	91AA  3A1181  					LD		A, (rGhostY)		;Push Y to stack
+  16: 2184+4	91AD  47      					LD		B,A
+  17: 2188+17	91AE  CD0497  					CALL 	printMapAt
+  18: 2205+10	91B1  C9      					RET
+  19:								
+  20:     -	91B2          	rGhostPrint:
+  21: 2215+13	91B2  3A1081  					LD		A, (rGhostX)		;Push X to stack
+  22: 2228+4	91B5  3C      					INC		A
+  23: 2232+4	91B6  6F      					LD		L,A
+  24: 2236+7	91B7  2600    					LD		H, $00			;We dont care about msb
+  25: 2243+11	91B9  E5      					PUSH	HL
+  26: 2254+13	91BA  3A1181  					LD		A, (rGhostY)		;Push Y to stack
+  27: 2267+4	91BD  3C      					INC		A
+  28: 2271+4	91BE  6F      					LD		L,A
+  29: 2275+7	91BF  2600    					LD		H, $00			;Again we dont care
+  30: 2282+11	91C1  E5      					PUSH	HL
+  31: 2293+17	91C2  CD7598  					CALL	moveCursor
+  32: 2310+13	91C5  3A0481  	                LD      A,(pPActive)
+  33: 2323+4	91C8  B7      	                OR      A
+  34: 2327+10	91C9  C29391  	                JP      NZ, printSGhost
+  35: 2337+10	91CC  21D192  					LD		HL, rGhost
+  36: 2347+17	91CF  CDE798  					CALL 	print
+  37: 2364+10	91D2  C9      					RET
+  38:     -	91D3          	rGhostMapData:	
+  39: 2374+13	91D3  3A1081  					LD		A, (rGhostX)
+  40: 2387+4	91D6  4F      					LD		C,A
+  41: 2391+13	91D7  3A1181  					LD		A, (rGhostY)
+  42: 2404+4	91DA  47      					LD		B,A
+  43: 2408+17	91DB  CDD496  					CALL	getMapAddress
+  44: 2425+7	91DE  7E      	                LD      A,(HL)
+  45: 2432+10	91DF  C9      					ret
+  46:				
+  47:				
+  48:     -	91E0          	rGhostInit:   
+  49: 2442+7	91E0  3E0E    	                LD		a, rGhostStoreX	;set rGhost Pos
+  50: 2449+13	91E2  321081  				    LD		(rGhostX),a
+  51: 2462+7	91E5  3E0B    				    LD		a, rGhostStoreY
+  52: 2469+13	91E7  321181  				    LD		(rGhostY),a
+  53: 2482+7	91EA  3E08    	                LD		a, rGhostInitTimer
+  54: 2489+13	91EC  321581  				    LD		(rGhostTimer),a
+  55: 2502+10	91EF  C9      	                RET
+  56:				
+  57:     -	91F0          	rGhostMove:
+  58: 2512+13	91F0  3A1581  	                LD      A,(rGhostTimer)     ;Dont move if the ghost is in jale
+  59: 2525+4	91F3  B7      	                OR      A                
+  60: 2529+10	91F4  C20992  	                JP      NZ,rGhostDecTimer   ;Decrement the timer if its x
+  61: 2539+13	91F7  3A0481  	                LD      A,(pPActive)
+  62: 2552+8	91FA  CB47    	                BIT     0,A                 ;Move every other tick, bit 0 will always 0 when the power pellet isnt active
+  63: 2560+5+6	91FC  C0      	                RET     NZ
+  64: 2565+13	91FD  3A1281  					LD		A,(rGhostDir)
+  65: 2578+10	9200  111081  					LD		DE,rGhostX
+  66: 2588+10	9203  011181  					LD		BC,rGhostY
+  67: 2598+10	9206  C39496  					JP		move
+  68:				
+  69:     -	9209          	rGhostDecTimer:
+  70: 2608+4	9209  3D      	                DEC     A
+  71: 2612+13	920A  321581  	                LD      (rGhostTimer),A
+  72: 2625+4	920D  B7      	                OR      A
+  73: 2629+5+6	920E  C0      	                RET     NZ              ;IF Zero move ghost out of jale
+  74: 2634+7	920F  3E0F    	                LD		a, rGhostInitX	;set rGhost Pos
+  75: 2641+13	9211  321081  				    LD		(rGhostX),a
+  76: 2654+7	9214  3E08    				    LD		a, rGhostInitY
+  77: 2661+13	9216  321181  				    LD		(rGhostY),a
+  78: 2674+10	9219  C9      	                RET
+  79:				
+  80:     -	921A          	rGhostNextMove:
+  81: 2684+7	921A  3EFF    					LD		A, 0FFH
+  82: 2691+13	921C  321381  					LD		(ghostDis),A
+  83: 2704+17	921F  CDD391  					CALL	rGhostMapData
+  84: 2721+4	9222  57      					LD		D,A
+  85: 2725+7	9223  3E57    					LD		A,	'W'			;check up
+  86: 2732+17	9225  CDBA96  					CALL	isMoveValid
+  87: 2749+10+7	9228  C44492  					CALL	NZ,rGhostCheckU
+  88: 2759+7	922B  3E53    					LD		A,	'S'			;down
+  89: 2766+17	922D  CDBA96  					CALL	isMoveValid
+  90: 2783+10+7	9230  C45292  					CALL	NZ,rGhostCheckD
+  91: 2793+7	9233  3E41    					LD		A,	'A'			;left
+  92: 2800+17	9235  CDBA96  					CALL	isMoveValid
+  93: 2817+10+7	9238  C46092  					CALL	NZ,rGhostCheckL
+  94: 2827+7	923B  3E44    					LD		A,	'D'			;right
+  95: 2834+17	923D  CDBA96  					CALL	isMoveValid
+  96: 2851+10+7	9240  C46E92  					CALL	NZ,rGhostCheckR
+  97: 2861+10	9243  C9      					RET
+  98:								
+  99:     -	9244          	rGhostCheckU:	
+ 100: 2871+11	9244  F5      					PUSH	AF
+ 101: 2882+13	9245  3A1181  					LD		A, (rGhostY)
+ 102: 2895+4	9248  3D      					DEC		A
+ 103: 2899+7	9249  E61F    					AND		00011111B
+ 104: 2906+4	924B  47      					LD		B,A
+ 105: 2910+13	924C  3A1081  					LD		A,(rGhostX)
+ 106: 2923+4	924F  4F      					LD		C,A
+ 107: 2927+12	9250  182A    					JR		rGhostPathFind
+ 108:     -	9252          	rGhostCheckD:			
+ 109: 2939+11	9252  F5      					PUSH	AF
+ 110: 2950+13	9253  3A1181  					LD		A, (rGhostY)
+ 111: 2963+4	9256  3C      					INC		A
+ 112: 2967+7	9257  E61F    					AND		00011111B
+ 113: 2974+4	9259  47      					LD		B,A
+ 114: 2978+13	925A  3A1081  					LD		A,(rGhostX)
+ 115: 2991+4	925D  4F      					LD		C,A
+ 116: 2995+12	925E  181C    					JR		rGhostPathFind
+ 117:     -	9260          	rGhostCheckL:		
+ 118: 3007+11	9260  F5      					PUSH	AF	
+ 119: 3018+13	9261  3A1081  					LD		A, (rGhostX)
+ 120: 3031+4	9264  3D      					DEC		A
+ 121: 3035+7	9265  E61F    					AND		00011111B
+ 122: 3042+4	9267  4F      					LD		C,A
+ 123: 3046+13	9268  3A1181  					LD		A,(rGhostY)
+ 124: 3059+4	926B  47      					LD		B,A
+ 125: 3063+12	926C  180E    					JR		rGhostPathFind
+ 126:     -	926E          	rGhostCheckR:
+ 127: 3075+11	926E  F5      					PUSH	AF	
+ 128: 3086+13	926F  3A1081  					LD		A, (rGhostX)
+ 129: 3099+4	9272  3C      					INC		A
+ 130: 3103+7	9273  E61F    					AND		00011111B
+ 131: 3110+4	9275  4F      					LD		C,A
+ 132: 3114+13	9276  3A1181  					LD		A,(rGhostY)
+ 133: 3127+4	9279  47      					LD		B,A
+ 134: 3131+12	927A  1800    					JR		rGhostPathFind
+ 135:				
+ 136:     -	927C          	rGhostPathFind:
+ 137: 3143+17	927C  CDEC96  					CALL	getAddressPF
+ 138: 3160+13	927F  3A1381  					LD		A,(ghostDis)
+ 139: 3173+7	9282  5E      					LD		E,(HL)
+ 140: 3180+4	9283  BB      					CP		E
+ 141: 3184+11	9284  F5      	                PUSH    AF
+ 142: 3195+13	9285  3A0481  	                LD      A,(pPActive)            ;Check power pellet is not activ, if it is, run away
+ 143: 3208+4	9288  B7      	                OR      A
+ 144: 3212+10	9289  C29392  	                JP      NZ,rGhostPFPP
+ 145: 3222+10	928C  F1      	                POP     AF
+ 146: 3232+10	928D  D29F92  					JP		NC,rGhostSetNewDir
+ 147: 3242+10	9290  F1      	                POP     AF
+ 148: 3252+10	9291  F1      					POP		AF
+ 149: 3262+10	9292  C9      					RET
+ 150:     -	9293          	rGhostPFPP:
+ 151: 3272+10	9293  F1      	                POP     AF
+ 152: 3282+10	9294  DA9F92  	                JP		C,rGhostSetNewDir
+ 153: 3292+7	9297  FEFF    	                CP      0FFH
+ 154: 3299+10	9299  CA9F92  	                JP      Z,rGhostSetNewDir
+ 155: 3309+10	929C  F1      	                POP     AF
+ 156: 3319+10	929D  F1      					POP		AF
+ 157: 3329+10	929E  C9      	                RET
+ 158:				
+ 159:     -	929F          	rGhostSetNewDir:
+ 160: 3339+4	929F  7B      					LD		A,E
+ 161: 3343+13	92A0  321381  					LD		(ghostDis),A
+ 162: 3356+10	92A3  F1      					POP		AF
+ 163: 3366+13	92A4  321281  					LD		(rGhostDir),A
+ 164: 3379+10	92A7  C9      					RET
+ 165:				
+ 166:     -	92A8          	rGhostColide:   
+ 167: 3389+13	92A8  3A0081  	                LD      A,(pacx)                ;Compair X
+ 168:								;CALL	NumToHex
+ 169: 3402+4	92AB  47      	                LD      B,A
+ 170: 3406+13	92AC  3A1081  	                LD      A,(rGhostX)
+ 171:								;CALL	NumToHex
+ 172: 3419+4	92AF  B8      	                CP      B
+ 173: 3423+5+6	92B0  C0      	                RET     NZ
+ 174: 3428+13	92B1  3A0181  	                LD      A,(pacy)                ;Compair Y
+ 175:								;CALL	NumToHex
+ 176: 3441+4	92B4  47      	                LD      B,A
+ 177: 3445+13	92B5  3A1181  	                LD      A,(rGhostY)
+ 178:								;CALL	NumToHex
+ 179: 3458+4	92B8  B8      	                CP      B
+ 180: 3462+5+6	92B9  C0      	                RET     NZ
+ 181: 3467+13	92BA  3A0481  	                LD      A,(pPActive)              ;Colishion Happened
+ 182: 3480+4	92BD  B7      	                OR      A
+ 183: 3484+10	92BE  CA3A91  	                JP      Z,killPacman               ;If power pellet not active, run genric deth lib
+ 184: 3494+7	92C1  3E0E    	                LD		a, rGhostStoreX	           ;set rGhost Pos
+ 185: 3501+13	92C3  321081  				    LD		(rGhostX),a
+ 186: 3514+7	92C6  3E0B    				    LD		a, rGhostStoreY
+ 187: 3521+13	92C8  321181  				    LD		(rGhostY),a
+ 188: 3534+7	92CB  3E20    	                LD		a, caughtJaleTime
+ 189: 3541+13	92CD  321581  				    LD		(rGhostTimer),a
+ 190: 3554+10	92D0  C9      	                RET
+ 191:				
+**** ghosts.asm ****
+  53:     -	92D1  1B5B3931	rGhost:		.BYTE	1BH,"[91mM",1BH,"[0m",0
 	              6D4D1B5B
 	              306D00
- 144:     -	91D9  1B5B3932	greenGhost:		.BYTE	1BH,"[92mM",1BH,"[0m",0
+  54:				include ghosts/orange.asm
+**** ghosts/orange.asm ****
+   1:     -	000F          	oGhostInitX	    .EQU	15
+   2:     -	0008          	oGhostInitY	    .EQU	8
+   3:     -	0010          	oGhostInitTimer .EQU    10H
+   4:     -	000F          	oGhostStoreX	.EQU	15
+   5:     -	000B          	oGhostStoreY	.EQU	11
+   6:				
+   7:     -	8120          	oGhostX		    .EQU	8120H		
+   8:     -	8121          	oGhostY		    .EQU	8121H
+   9:     -	8122          	oGhostDir		.EQU	8122H
+  10:     -	8125          	oGhostTimer     .EQU    8125H
+  11:				
+  12:     -	92DC          	oGhostClear:
+  13: 3564+13	92DC  3A2081  					LD		A, (oGhostX)		;Push X to stack
+  14: 3577+4	92DF  4F      					LD		C,A
+  15: 3581+13	92E0  3A2181  					LD		A, (oGhostY)		;Push Y to stack
+  16: 3594+4	92E3  47      					LD		B,A
+  17: 3598+17	92E4  CD0497  					CALL 	printMapAt
+  18: 3615+10	92E7  C9      					RET
+  19:								
+  20:     -	92E8          	oGhostPrint:
+  21: 3625+13	92E8  3A2081  					LD		A, (oGhostX)		;Push X to stack
+  22: 3638+4	92EB  3C      					INC		A
+  23: 3642+4	92EC  6F      					LD		L,A
+  24: 3646+7	92ED  2600    					LD		H, $00			;We dont care about msb
+  25: 3653+11	92EF  E5      					PUSH	HL
+  26: 3664+13	92F0  3A2181  					LD		A, (oGhostY)		;Push Y to stack
+  27: 3677+4	92F3  3C      					INC		A
+  28: 3681+4	92F4  6F      					LD		L,A
+  29: 3685+7	92F5  2600    					LD		H, $00			;Again we dont care
+  30: 3692+11	92F7  E5      					PUSH	HL
+  31: 3703+17	92F8  CD7598  					CALL	moveCursor
+  32: 3720+13	92FB  3A0481  	                LD      A,(pPActive)
+  33: 3733+4	92FE  B7      	                OR      A
+  34: 3737+10	92FF  C29391  	                JP      NZ, printSGhost
+  35: 3747+10	9302  210794  					LD		HL, oGhost
+  36: 3757+17	9305  CDE798  					CALL 	print
+  37: 3774+10	9308  C9      					RET
+  38:     -	9309          	oGhostMapData:	
+  39: 3784+13	9309  3A2081  					LD		A, (oGhostX)
+  40: 3797+4	930C  4F      					LD		C,A
+  41: 3801+13	930D  3A2181  					LD		A, (oGhostY)
+  42: 3814+4	9310  47      					LD		B,A
+  43: 3818+17	9311  CDD496  					CALL	getMapAddress
+  44: 3835+7	9314  7E      	                LD      A,(HL)
+  45: 3842+10	9315  C9      					ret
+  46:				
+  47:				
+  48:     -	9316          	oGhostInit:   
+  49: 3852+7	9316  3E0F    	                LD		a, oGhostStoreX	;set oGhost Pos
+  50: 3859+13	9318  322081  				    LD		(oGhostX),a
+  51: 3872+7	931B  3E0B    				    LD		a, oGhostStoreY
+  52: 3879+13	931D  322181  				    LD		(oGhostY),a
+  53: 3892+7	9320  3E10    	                LD		a, oGhostInitTimer
+  54: 3899+13	9322  322581  				    LD		(oGhostTimer),a
+  55: 3912+10	9325  C9      	                RET
+  56:				
+  57:     -	9326          	oGhostMove:
+  58: 3922+13	9326  3A2581  	                LD      A,(oGhostTimer)     ;Dont move if the ghost is in jale
+  59: 3935+4	9329  B7      	                OR      A                
+  60: 3939+10	932A  C23F93  	                JP      NZ,oGhostDecTimer   ;Decrement the timer if its x
+  61: 3949+13	932D  3A0481  	                LD      A,(pPActive)
+  62: 3962+8	9330  CB47    	                BIT     0,A                 ;Move every other tick, bit 0 will always 0 when the power pellet isnt active
+  63: 3970+5+6	9332  C0      	                RET     NZ
+  64: 3975+13	9333  3A2281  					LD		A,(oGhostDir)
+  65: 3988+10	9336  112081  					LD		DE,oGhostX
+  66: 3998+10	9339  012181  					LD		BC,oGhostY
+  67: 4008+10	933C  C39496  					JP		move
+  68:				
+  69:     -	933F          	oGhostDecTimer:
+  70: 4018+4	933F  3D      	                DEC     A
+  71: 4022+13	9340  322581  	                LD      (oGhostTimer),A
+  72: 4035+4	9343  B7      	                OR      A
+  73: 4039+5+6	9344  C0      	                RET     NZ              ;IF Zero move ghost out of jale
+  74: 4044+7	9345  3E0F    	                LD		a, oGhostInitX	;set oGhost Pos
+  75: 4051+13	9347  322081  				    LD		(oGhostX),a
+  76: 4064+7	934A  3E08    				    LD		a, oGhostInitY
+  77: 4071+13	934C  322181  				    LD		(oGhostY),a
+  78: 4084+10	934F  C9      	                RET
+  79:				
+  80:     -	9350          	oGhostNextMove:
+  81: 4094+7	9350  3EFF    					LD		A, 0FFH
+  82: 4101+13	9352  321381  					LD		(ghostDis),A
+  83: 4114+17	9355  CD0993  					CALL	oGhostMapData
+  84: 4131+4	9358  57      					LD		D,A
+  85: 4135+7	9359  3E57    					LD		A,	'W'			;check up
+  86: 4142+17	935B  CDBA96  					CALL	isMoveValid
+  87: 4159+10+7	935E  C47A93  					CALL	NZ,oGhostCheckU
+  88: 4169+7	9361  3E53    					LD		A,	'S'			;down
+  89: 4176+17	9363  CDBA96  					CALL	isMoveValid
+  90: 4193+10+7	9366  C48893  					CALL	NZ,oGhostCheckD
+  91: 4203+7	9369  3E41    					LD		A,	'A'			;left
+  92: 4210+17	936B  CDBA96  					CALL	isMoveValid
+  93: 4227+10+7	936E  C49693  					CALL	NZ,oGhostCheckL
+  94: 4237+7	9371  3E44    					LD		A,	'D'			;right
+  95: 4244+17	9373  CDBA96  					CALL	isMoveValid
+  96: 4261+10+7	9376  C4A493  					CALL	NZ,oGhostCheckR
+  97: 4271+10	9379  C9      					RET
+  98:								
+  99:     -	937A          	oGhostCheckU:	
+ 100: 4281+11	937A  F5      					PUSH	AF
+ 101: 4292+13	937B  3A2181  					LD		A, (oGhostY)
+ 102: 4305+4	937E  3D      					DEC		A
+ 103: 4309+7	937F  E61F    					AND		00011111B
+ 104: 4316+4	9381  47      					LD		B,A
+ 105: 4320+13	9382  3A2081  					LD		A,(oGhostX)
+ 106: 4333+4	9385  4F      					LD		C,A
+ 107: 4337+12	9386  182A    					JR		oGhostPathFind
+ 108:     -	9388          	oGhostCheckD:			
+ 109: 4349+11	9388  F5      					PUSH	AF
+ 110: 4360+13	9389  3A2181  					LD		A, (oGhostY)
+ 111: 4373+4	938C  3C      					INC		A
+ 112: 4377+7	938D  E61F    					AND		00011111B
+ 113: 4384+4	938F  47      					LD		B,A
+ 114: 4388+13	9390  3A2081  					LD		A,(oGhostX)
+ 115: 4401+4	9393  4F      					LD		C,A
+ 116: 4405+12	9394  181C    					JR		oGhostPathFind
+ 117:     -	9396          	oGhostCheckL:		
+ 118: 4417+11	9396  F5      					PUSH	AF	
+ 119: 4428+13	9397  3A2081  					LD		A, (oGhostX)
+ 120: 4441+4	939A  3D      					DEC		A
+ 121: 4445+7	939B  E61F    					AND		00011111B
+ 122: 4452+4	939D  4F      					LD		C,A
+ 123: 4456+13	939E  3A2181  					LD		A,(oGhostY)
+ 124: 4469+4	93A1  47      					LD		B,A
+ 125: 4473+12	93A2  180E    					JR		oGhostPathFind
+ 126:     -	93A4          	oGhostCheckR:
+ 127: 4485+11	93A4  F5      					PUSH	AF	
+ 128: 4496+13	93A5  3A2081  					LD		A, (oGhostX)
+ 129: 4509+4	93A8  3C      					INC		A
+ 130: 4513+7	93A9  E61F    					AND		00011111B
+ 131: 4520+4	93AB  4F      					LD		C,A
+ 132: 4524+13	93AC  3A2181  					LD		A,(oGhostY)
+ 133: 4537+4	93AF  47      					LD		B,A
+ 134: 4541+12	93B0  1800    					JR		oGhostPathFind
+ 135:				
+ 136:     -	93B2          	oGhostPathFind:
+ 137: 4553+17	93B2  CDEC96  					CALL	getAddressPF
+ 138: 4570+13	93B5  3A1381  					LD		A,(ghostDis)
+ 139: 4583+7	93B8  5E      					LD		E,(HL)
+ 140: 4590+4	93B9  BB      					CP		E
+ 141: 4594+11	93BA  F5      	                PUSH    AF
+ 142: 4605+13	93BB  3A0481  	                LD      A,(pPActive)            ;Check power pellet is not activ, if it is, run away
+ 143: 4618+4	93BE  B7      	                OR      A
+ 144: 4622+10	93BF  C2C993  	                JP      NZ,oGhostPFPP
+ 145: 4632+10	93C2  F1      	                POP     AF
+ 146: 4642+10	93C3  D2D593  					JP		NC,oGhostSetNewDir
+ 147: 4652+10	93C6  F1      	                POP     AF
+ 148: 4662+10	93C7  F1      					POP		AF
+ 149: 4672+10	93C8  C9      					RET
+ 150:     -	93C9          	oGhostPFPP:
+ 151: 4682+10	93C9  F1      	                POP     AF
+ 152: 4692+10	93CA  DAD593  	                JP		C,oGhostSetNewDir
+ 153: 4702+7	93CD  FEFF    	                CP      0FFH
+ 154: 4709+10	93CF  CAD593  	                JP      Z,oGhostSetNewDir
+ 155: 4719+10	93D2  F1      	                POP     AF
+ 156: 4729+10	93D3  F1      					POP		AF
+ 157: 4739+10	93D4  C9      	                RET
+ 158:				
+ 159:     -	93D5          	oGhostSetNewDir:
+ 160: 4749+4	93D5  7B      					LD		A,E
+ 161: 4753+13	93D6  321381  					LD		(ghostDis),A
+ 162: 4766+10	93D9  F1      					POP		AF
+ 163: 4776+13	93DA  322281  					LD		(oGhostDir),A
+ 164: 4789+10	93DD  C9      					RET
+ 165:				
+ 166:     -	93DE          	oGhostColide:   
+ 167: 4799+13	93DE  3A0081  	                LD      A,(pacx)                ;Compair X
+ 168:								;CALL	NumToHex
+ 169: 4812+4	93E1  47      	                LD      B,A
+ 170: 4816+13	93E2  3A2081  	                LD      A,(oGhostX)
+ 171:								;CALL	NumToHex
+ 172: 4829+4	93E5  B8      	                CP      B
+ 173: 4833+5+6	93E6  C0      	                RET     NZ
+ 174: 4838+13	93E7  3A0181  	                LD      A,(pacy)                ;Compair Y
+ 175:								;CALL	NumToHex
+ 176: 4851+4	93EA  47      	                LD      B,A
+ 177: 4855+13	93EB  3A2181  	                LD      A,(oGhostY)
+ 178:								;CALL	NumToHex
+ 179: 4868+4	93EE  B8      	                CP      B
+ 180: 4872+5+6	93EF  C0      	                RET     NZ
+ 181: 4877+13	93F0  3A0481  	                LD      A,(pPActive)              ;Colishion Happened
+ 182: 4890+4	93F3  B7      	                OR      A
+ 183: 4894+10	93F4  CA3A91  	                JP      Z,killPacman               ;If power pellet not active, run genric deth lib
+ 184: 4904+7	93F7  3E0F    	                LD		a, oGhostStoreX	           ;set oGhost Pos
+ 185: 4911+13	93F9  322081  				    LD		(oGhostX),a
+ 186: 4924+7	93FC  3E0B    				    LD		a, oGhostStoreY
+ 187: 4931+13	93FE  322181  				    LD		(oGhostY),a
+ 188: 4944+7	9401  3E20    	                LD		a, caughtJaleTime
+ 189: 4951+13	9403  322581  				    LD		(oGhostTimer),a
+ 190: 4964+10	9406  C9      	                RET
+ 191:				
+**** ghosts.asm ****
+  55:     -	9407  1B5B3333	oGhost:		.BYTE	1BH,"[33mM",1BH,"[0m",0
 	              6D4D1B5B
 	              306D00
- 145:     -	91E4  1B5B3336	blueGhost:		.BYTE	1BH,"[36mM",1BH,"[0m",0
+  56:				include ghosts/pink.asm
+**** ghosts/pink.asm ****
+   1:     -	000F          	pGhostInitX	    .EQU	15
+   2:     -	0008          	pGhostInitY	    .EQU	8
+   3:     -	0018          	pGhostInitTimer .EQU    18H
+   4:     -	0010          	pGhostStoreX	.EQU	16
+   5:     -	000B          	pGhostStoreY	.EQU	11
+   6:				
+   7:     -	8130          	pGhostX		    .EQU	8130H		
+   8:     -	8131          	pGhostY		    .EQU	8131H
+   9:     -	8132          	pGhostDir		.EQU	8132H
+  10:     -	8135          	pGhostTimer     .EQU    8135H
+  11:				
+  12:     -	9412          	pGhostClear:
+  13: 4974+13	9412  3A3081  					LD		A, (pGhostX)		;Push X to stack
+  14: 4987+4	9415  4F      					LD		C,A
+  15: 4991+13	9416  3A3181  					LD		A, (pGhostY)		;Push Y to stack
+  16: 5004+4	9419  47      					LD		B,A
+  17: 5008+17	941A  CD0497  					CALL 	printMapAt
+  18: 5025+10	941D  C9      					RET
+  19:								
+  20:     -	941E          	pGhostPrint:
+  21: 5035+13	941E  3A3081  					LD		A, (pGhostX)		;Push X to stack
+  22: 5048+4	9421  3C      					INC		A
+  23: 5052+4	9422  6F      					LD		L,A
+  24: 5056+7	9423  2600    					LD		H, $00			;We dont care about msb
+  25: 5063+11	9425  E5      					PUSH	HL
+  26: 5074+13	9426  3A3181  					LD		A, (pGhostY)		;Push Y to stack
+  27: 5087+4	9429  3C      					INC		A
+  28: 5091+4	942A  6F      					LD		L,A
+  29: 5095+7	942B  2600    					LD		H, $00			;Again we dont care
+  30: 5102+11	942D  E5      					PUSH	HL
+  31: 5113+17	942E  CD7598  					CALL	moveCursor
+  32: 5130+13	9431  3A0481  	                LD      A,(pPActive)
+  33: 5143+4	9434  B7      	                OR      A
+  34: 5147+10	9435  C29391  	                JP      NZ, printSGhost
+  35: 5157+10	9438  213D95  					LD		HL, pGhost
+  36: 5167+17	943B  CDE798  					CALL 	print
+  37: 5184+10	943E  C9      					RET
+  38:     -	943F          	pGhostMapData:	
+  39: 5194+13	943F  3A3081  					LD		A, (pGhostX)
+  40: 5207+4	9442  4F      					LD		C,A
+  41: 5211+13	9443  3A3181  					LD		A, (pGhostY)
+  42: 5224+4	9446  47      					LD		B,A
+  43: 5228+17	9447  CDD496  					CALL	getMapAddress
+  44: 5245+7	944A  7E      	                LD      A,(HL)
+  45: 5252+10	944B  C9      					ret
+  46:				
+  47:				
+  48:     -	944C          	pGhostInit:   
+  49: 5262+7	944C  3E10    	                LD		a, pGhostStoreX	;set pGhost Pos
+  50: 5269+13	944E  323081  				    LD		(pGhostX),a
+  51: 5282+7	9451  3E0B    				    LD		a, pGhostStoreY
+  52: 5289+13	9453  323181  				    LD		(pGhostY),a
+  53: 5302+7	9456  3E18    	                LD		a, pGhostInitTimer
+  54: 5309+13	9458  323581  				    LD		(pGhostTimer),a
+  55: 5322+10	945B  C9      	                RET
+  56:				
+  57:     -	945C          	pGhostMove:
+  58: 5332+13	945C  3A3581  	                LD      A,(pGhostTimer)     ;Dont move if the ghost is in jale
+  59: 5345+4	945F  B7      	                OR      A                
+  60: 5349+10	9460  C27594  	                JP      NZ,pGhostDecTimer   ;Decrement the timer if its x
+  61: 5359+13	9463  3A0481  	                LD      A,(pPActive)
+  62: 5372+8	9466  CB47    	                BIT     0,A                 ;Move every other tick, bit 0 will always 0 when the power pellet isnt active
+  63: 5380+5+6	9468  C0      	                RET     NZ
+  64: 5385+13	9469  3A3281  					LD		A,(pGhostDir)
+  65: 5398+10	946C  113081  					LD		DE,pGhostX
+  66: 5408+10	946F  013181  					LD		BC,pGhostY
+  67: 5418+10	9472  C39496  					JP		move
+  68:				
+  69:     -	9475          	pGhostDecTimer:
+  70: 5428+4	9475  3D      	                DEC     A
+  71: 5432+13	9476  323581  	                LD      (pGhostTimer),A
+  72: 5445+4	9479  B7      	                OR      A
+  73: 5449+5+6	947A  C0      	                RET     NZ              ;IF Zero move ghost out of jale
+  74: 5454+7	947B  3E0F    	                LD		a, pGhostInitX	;set pGhost Pos
+  75: 5461+13	947D  323081  				    LD		(pGhostX),a
+  76: 5474+7	9480  3E08    				    LD		a, pGhostInitY
+  77: 5481+13	9482  323181  				    LD		(pGhostY),a
+  78: 5494+10	9485  C9      	                RET
+  79:				
+  80:     -	9486          	pGhostNextMove:
+  81: 5504+7	9486  3EFF    					LD		A, 0FFH
+  82: 5511+13	9488  321381  					LD		(ghostDis),A
+  83: 5524+17	948B  CD3F94  					CALL	pGhostMapData
+  84: 5541+4	948E  57      					LD		D,A
+  85: 5545+7	948F  3E57    					LD		A,	'W'			;check up
+  86: 5552+17	9491  CDBA96  					CALL	isMoveValid
+  87: 5569+10+7	9494  C4B094  					CALL	NZ,pGhostCheckU
+  88: 5579+7	9497  3E53    					LD		A,	'S'			;down
+  89: 5586+17	9499  CDBA96  					CALL	isMoveValid
+  90: 5603+10+7	949C  C4BE94  					CALL	NZ,pGhostCheckD
+  91: 5613+7	949F  3E41    					LD		A,	'A'			;left
+  92: 5620+17	94A1  CDBA96  					CALL	isMoveValid
+  93: 5637+10+7	94A4  C4CC94  					CALL	NZ,pGhostCheckL
+  94: 5647+7	94A7  3E44    					LD		A,	'D'			;right
+  95: 5654+17	94A9  CDBA96  					CALL	isMoveValid
+  96: 5671+10+7	94AC  C4DA94  					CALL	NZ,pGhostCheckR
+  97: 5681+10	94AF  C9      					RET
+  98:								
+  99:     -	94B0          	pGhostCheckU:	
+ 100: 5691+11	94B0  F5      					PUSH	AF
+ 101: 5702+13	94B1  3A3181  					LD		A, (pGhostY)
+ 102: 5715+4	94B4  3D      					DEC		A
+ 103: 5719+7	94B5  E61F    					AND		00011111B
+ 104: 5726+4	94B7  47      					LD		B,A
+ 105: 5730+13	94B8  3A3081  					LD		A,(pGhostX)
+ 106: 5743+4	94BB  4F      					LD		C,A
+ 107: 5747+12	94BC  182A    					JR		pGhostPathFind
+ 108:     -	94BE          	pGhostCheckD:			
+ 109: 5759+11	94BE  F5      					PUSH	AF
+ 110: 5770+13	94BF  3A3181  					LD		A, (pGhostY)
+ 111: 5783+4	94C2  3C      					INC		A
+ 112: 5787+7	94C3  E61F    					AND		00011111B
+ 113: 5794+4	94C5  47      					LD		B,A
+ 114: 5798+13	94C6  3A3081  					LD		A,(pGhostX)
+ 115: 5811+4	94C9  4F      					LD		C,A
+ 116: 5815+12	94CA  181C    					JR		pGhostPathFind
+ 117:     -	94CC          	pGhostCheckL:		
+ 118: 5827+11	94CC  F5      					PUSH	AF	
+ 119: 5838+13	94CD  3A3081  					LD		A, (pGhostX)
+ 120: 5851+4	94D0  3D      					DEC		A
+ 121: 5855+7	94D1  E61F    					AND		00011111B
+ 122: 5862+4	94D3  4F      					LD		C,A
+ 123: 5866+13	94D4  3A3181  					LD		A,(pGhostY)
+ 124: 5879+4	94D7  47      					LD		B,A
+ 125: 5883+12	94D8  180E    					JR		pGhostPathFind
+ 126:     -	94DA          	pGhostCheckR:
+ 127: 5895+11	94DA  F5      					PUSH	AF	
+ 128: 5906+13	94DB  3A3081  					LD		A, (pGhostX)
+ 129: 5919+4	94DE  3C      					INC		A
+ 130: 5923+7	94DF  E61F    					AND		00011111B
+ 131: 5930+4	94E1  4F      					LD		C,A
+ 132: 5934+13	94E2  3A3181  					LD		A,(pGhostY)
+ 133: 5947+4	94E5  47      					LD		B,A
+ 134: 5951+12	94E6  1800    					JR		pGhostPathFind
+ 135:				
+ 136:     -	94E8          	pGhostPathFind:
+ 137: 5963+17	94E8  CDEC96  					CALL	getAddressPF
+ 138: 5980+13	94EB  3A1381  					LD		A,(ghostDis)
+ 139: 5993+7	94EE  5E      					LD		E,(HL)
+ 140: 6000+4	94EF  BB      					CP		E
+ 141: 6004+11	94F0  F5      	                PUSH    AF
+ 142: 6015+13	94F1  3A0481  	                LD      A,(pPActive)            ;Check power pellet is not activ, if it is, run away
+ 143: 6028+4	94F4  B7      	                OR      A
+ 144: 6032+10	94F5  C2FF94  	                JP      NZ,pGhostPFPP
+ 145: 6042+10	94F8  F1      	                POP     AF
+ 146: 6052+10	94F9  D20B95  					JP		NC,pGhostSetNewDir
+ 147: 6062+10	94FC  F1      	                POP     AF
+ 148: 6072+10	94FD  F1      					POP		AF
+ 149: 6082+10	94FE  C9      					RET
+ 150:     -	94FF          	pGhostPFPP:
+ 151: 6092+10	94FF  F1      	                POP     AF
+ 152: 6102+10	9500  DA0B95  	                JP		C,pGhostSetNewDir
+ 153: 6112+7	9503  FEFF    	                CP      0FFH
+ 154: 6119+10	9505  CA0B95  	                JP      Z,pGhostSetNewDir
+ 155: 6129+10	9508  F1      	                POP     AF
+ 156: 6139+10	9509  F1      					POP		AF
+ 157: 6149+10	950A  C9      	                RET
+ 158:				
+ 159:     -	950B          	pGhostSetNewDir:
+ 160: 6159+4	950B  7B      					LD		A,E
+ 161: 6163+13	950C  321381  					LD		(ghostDis),A
+ 162: 6176+10	950F  F1      					POP		AF
+ 163: 6186+13	9510  323281  					LD		(pGhostDir),A
+ 164: 6199+10	9513  C9      					RET
+ 165:				
+ 166:     -	9514          	pGhostColide:   
+ 167: 6209+13	9514  3A0081  	                LD      A,(pacx)                ;Compair X
+ 168:								;CALL	NumToHex
+ 169: 6222+4	9517  47      	                LD      B,A
+ 170: 6226+13	9518  3A3081  	                LD      A,(pGhostX)
+ 171:								;CALL	NumToHex
+ 172: 6239+4	951B  B8      	                CP      B
+ 173: 6243+5+6	951C  C0      	                RET     NZ
+ 174: 6248+13	951D  3A0181  	                LD      A,(pacy)                ;Compair Y
+ 175:								;CALL	NumToHex
+ 176: 6261+4	9520  47      	                LD      B,A
+ 177: 6265+13	9521  3A3181  	                LD      A,(pGhostY)
+ 178:								;CALL	NumToHex
+ 179: 6278+4	9524  B8      	                CP      B
+ 180: 6282+5+6	9525  C0      	                RET     NZ
+ 181: 6287+13	9526  3A0481  	                LD      A,(pPActive)              ;Colishion Happened
+ 182: 6300+4	9529  B7      	                OR      A
+ 183: 6304+10	952A  CA3A91  	                JP      Z,killPacman               ;If power pellet not active, run genric deth lib
+ 184: 6314+7	952D  3E10    	                LD		a, pGhostStoreX	           ;set pGhost Pos
+ 185: 6321+13	952F  323081  				    LD		(pGhostX),a
+ 186: 6334+7	9532  3E0B    				    LD		a, pGhostStoreY
+ 187: 6341+13	9534  323181  				    LD		(pGhostY),a
+ 188: 6354+7	9537  3E20    	                LD		a, caughtJaleTime
+ 189: 6361+13	9539  323581  				    LD		(pGhostTimer),a
+ 190: 6374+10	953C  C9      	                RET
+ 191:				
+**** ghosts.asm ****
+  57:     -	953D  1B5B3935	pGhost:		.BYTE	1BH,"[95mM",1BH,"[0m",0
+	              6D4D1B5B
+	              306D00
+  58:				include ghosts/teal.asm
+**** ghosts/teal.asm ****
+   1:     -	000F          	tGhostInitX	    .EQU	15
+   2:     -	0008          	tGhostInitY	    .EQU	8
+   3:     -	0020          	tGhostInitTimer .EQU    20H
+   4:     -	0011          	tGhostStoreX	.EQU	17 
+   5:     -	000B          	tGhostStoreY	.EQU	11
+   6:				
+   7:     -	8140          	tGhostX		    .EQU	8140H		
+   8:     -	8141          	tGhostY		    .EQU	8141H
+   9:     -	8142          	tGhostDir		.EQU	8142H
+  10:     -	8145          	tGhostTimer     .EQU    8145H
+  11:				
+  12:     -	9548          	tGhostClear:
+  13: 6384+13	9548  3A4081  					LD		A, (tGhostX)		;Push X to stack
+  14: 6397+4	954B  4F      					LD		C,A
+  15: 6401+13	954C  3A4181  					LD		A, (tGhostY)		;Push Y to stack
+  16: 6414+4	954F  47      					LD		B,A
+  17: 6418+17	9550  CD0497  					CALL 	printMapAt
+  18: 6435+10	9553  C9      					RET
+  19:								
+  20:     -	9554          	tGhostPrint:
+  21: 6445+13	9554  3A4081  					LD		A, (tGhostX)		;Push X to stack
+  22: 6458+4	9557  3C      					INC		A
+  23: 6462+4	9558  6F      					LD		L,A
+  24: 6466+7	9559  2600    					LD		H, $00			;We dont care about msb
+  25: 6473+11	955B  E5      					PUSH	HL
+  26: 6484+13	955C  3A4181  					LD		A, (tGhostY)		;Push Y to stack
+  27: 6497+4	955F  3C      					INC		A
+  28: 6501+4	9560  6F      					LD		L,A
+  29: 6505+7	9561  2600    					LD		H, $00			;Again we dont care
+  30: 6512+11	9563  E5      					PUSH	HL
+  31: 6523+17	9564  CD7598  					CALL	moveCursor
+  32: 6540+13	9567  3A0481  	                LD      A,(pPActive)
+  33: 6553+4	956A  B7      	                OR      A
+  34: 6557+10	956B  C29391  	                JP      NZ, printSGhost
+  35: 6567+10	956E  217396  					LD		HL, tGhost
+  36: 6577+17	9571  CDE798  					CALL 	print
+  37: 6594+10	9574  C9      					RET
+  38:     -	9575          	tGhostMapData:	
+  39: 6604+13	9575  3A4081  					LD		A, (tGhostX)
+  40: 6617+4	9578  4F      					LD		C,A
+  41: 6621+13	9579  3A4181  					LD		A, (tGhostY)
+  42: 6634+4	957C  47      					LD		B,A
+  43: 6638+17	957D  CDD496  					CALL	getMapAddress
+  44: 6655+7	9580  7E      	                LD      A,(HL)
+  45: 6662+10	9581  C9      					ret
+  46:				
+  47:				
+  48:     -	9582          	tGhostInit:   
+  49: 6672+7	9582  3E11    	                LD		a, tGhostStoreX	;set tGhost Pos
+  50: 6679+13	9584  324081  				    LD		(tGhostX),a
+  51: 6692+7	9587  3E0B    				    LD		a, tGhostStoreY
+  52: 6699+13	9589  324181  				    LD		(tGhostY),a
+  53: 6712+7	958C  3E20    	                LD		a, tGhostInitTimer
+  54: 6719+13	958E  324581  				    LD		(tGhostTimer),a
+  55: 6732+10	9591  C9      	                RET
+  56:				
+  57:     -	9592          	tGhostMove:
+  58: 6742+13	9592  3A4581  	                LD      A,(tGhostTimer)     ;Dont move if the ghost is in jale
+  59: 6755+4	9595  B7      	                OR      A                
+  60: 6759+10	9596  C2AB95  	                JP      NZ,tGhostDecTimer   ;Decrement the timer if its x
+  61: 6769+13	9599  3A0481  	                LD      A,(pPActive)
+  62: 6782+8	959C  CB47    	                BIT     0,A                 ;Move every other tick, bit 0 will always 0 when the power pellet isnt active
+  63: 6790+5+6	959E  C0      	                RET     NZ
+  64: 6795+13	959F  3A4281  					LD		A,(tGhostDir)
+  65: 6808+10	95A2  114081  					LD		DE,tGhostX
+  66: 6818+10	95A5  014181  					LD		BC,tGhostY
+  67: 6828+10	95A8  C39496  					JP		move
+  68:				
+  69:     -	95AB          	tGhostDecTimer:
+  70: 6838+4	95AB  3D      	                DEC     A
+  71: 6842+13	95AC  324581  	                LD      (tGhostTimer),A
+  72: 6855+4	95AF  B7      	                OR      A
+  73: 6859+5+6	95B0  C0      	                RET     NZ              ;IF Zero move ghost out of jale
+  74: 6864+7	95B1  3E0F    	                LD		a, tGhostInitX	;set tGhost Pos
+  75: 6871+13	95B3  324081  				    LD		(tGhostX),a
+  76: 6884+7	95B6  3E08    				    LD		a, tGhostInitY
+  77: 6891+13	95B8  324181  				    LD		(tGhostY),a
+  78: 6904+10	95BB  C9      	                RET
+  79:				
+  80:     -	95BC          	tGhostNextMove:
+  81: 6914+7	95BC  3EFF    					LD		A, 0FFH
+  82: 6921+13	95BE  321381  					LD		(ghostDis),A
+  83: 6934+17	95C1  CD7595  					CALL	tGhostMapData
+  84: 6951+4	95C4  57      					LD		D,A
+  85: 6955+7	95C5  3E57    					LD		A,	'W'			;check up
+  86: 6962+17	95C7  CDBA96  					CALL	isMoveValid
+  87: 6979+10+7	95CA  C4E695  					CALL	NZ,tGhostCheckU
+  88: 6989+7	95CD  3E53    					LD		A,	'S'			;down
+  89: 6996+17	95CF  CDBA96  					CALL	isMoveValid
+  90: 7013+10+7	95D2  C4F495  					CALL	NZ,tGhostCheckD
+  91: 7023+7	95D5  3E41    					LD		A,	'A'			;left
+  92: 7030+17	95D7  CDBA96  					CALL	isMoveValid
+  93: 7047+10+7	95DA  C40296  					CALL	NZ,tGhostCheckL
+  94: 7057+7	95DD  3E44    					LD		A,	'D'			;right
+  95: 7064+17	95DF  CDBA96  					CALL	isMoveValid
+  96: 7081+10+7	95E2  C41096  					CALL	NZ,tGhostCheckR
+  97: 7091+10	95E5  C9      					RET
+  98:								
+  99:     -	95E6          	tGhostCheckU:	
+ 100: 7101+11	95E6  F5      					PUSH	AF
+ 101: 7112+13	95E7  3A4181  					LD		A, (tGhostY)
+ 102: 7125+4	95EA  3D      					DEC		A
+ 103: 7129+7	95EB  E61F    					AND		00011111B
+ 104: 7136+4	95ED  47      					LD		B,A
+ 105: 7140+13	95EE  3A4081  					LD		A,(tGhostX)
+ 106: 7153+4	95F1  4F      					LD		C,A
+ 107: 7157+12	95F2  182A    					JR		tGhostPathFind
+ 108:     -	95F4          	tGhostCheckD:			
+ 109: 7169+11	95F4  F5      					PUSH	AF
+ 110: 7180+13	95F5  3A4181  					LD		A, (tGhostY)
+ 111: 7193+4	95F8  3C      					INC		A
+ 112: 7197+7	95F9  E61F    					AND		00011111B
+ 113: 7204+4	95FB  47      					LD		B,A
+ 114: 7208+13	95FC  3A4081  					LD		A,(tGhostX)
+ 115: 7221+4	95FF  4F      					LD		C,A
+ 116: 7225+12	9600  181C    					JR		tGhostPathFind
+ 117:     -	9602          	tGhostCheckL:		
+ 118: 7237+11	9602  F5      					PUSH	AF	
+ 119: 7248+13	9603  3A4081  					LD		A, (tGhostX)
+ 120: 7261+4	9606  3D      					DEC		A
+ 121: 7265+7	9607  E61F    					AND		00011111B
+ 122: 7272+4	9609  4F      					LD		C,A
+ 123: 7276+13	960A  3A4181  					LD		A,(tGhostY)
+ 124: 7289+4	960D  47      					LD		B,A
+ 125: 7293+12	960E  180E    					JR		tGhostPathFind
+ 126:     -	9610          	tGhostCheckR:
+ 127: 7305+11	9610  F5      					PUSH	AF	
+ 128: 7316+13	9611  3A4081  					LD		A, (tGhostX)
+ 129: 7329+4	9614  3C      					INC		A
+ 130: 7333+7	9615  E61F    					AND		00011111B
+ 131: 7340+4	9617  4F      					LD		C,A
+ 132: 7344+13	9618  3A4181  					LD		A,(tGhostY)
+ 133: 7357+4	961B  47      					LD		B,A
+ 134: 7361+12	961C  1800    					JR		tGhostPathFind
+ 135:				
+ 136:     -	961E          	tGhostPathFind:
+ 137: 7373+17	961E  CDEC96  					CALL	getAddressPF
+ 138: 7390+13	9621  3A1381  					LD		A,(ghostDis)
+ 139: 7403+7	9624  5E      					LD		E,(HL)
+ 140: 7410+4	9625  BB      					CP		E
+ 141: 7414+11	9626  F5      	                PUSH    AF
+ 142: 7425+13	9627  3A0481  	                LD      A,(pPActive)            ;Check power pellet is not activ, if it is, run away
+ 143: 7438+4	962A  B7      	                OR      A
+ 144: 7442+10	962B  C23596  	                JP      NZ,tGhostPFPP
+ 145: 7452+10	962E  F1      	                POP     AF
+ 146: 7462+10	962F  D24196  					JP		NC,tGhostSetNewDir
+ 147: 7472+10	9632  F1      	                POP     AF
+ 148: 7482+10	9633  F1      					POP		AF
+ 149: 7492+10	9634  C9      					RET
+ 150:     -	9635          	tGhostPFPP:
+ 151: 7502+10	9635  F1      	                POP     AF
+ 152: 7512+10	9636  DA4196  	                JP		C,tGhostSetNewDir
+ 153: 7522+7	9639  FEFF    	                CP      0FFH
+ 154: 7529+10	963B  CA4196  	                JP      Z,tGhostSetNewDir
+ 155: 7539+10	963E  F1      	                POP     AF
+ 156: 7549+10	963F  F1      					POP		AF
+ 157: 7559+10	9640  C9      	                RET
+ 158:				
+ 159:     -	9641          	tGhostSetNewDir:
+ 160: 7569+4	9641  7B      					LD		A,E
+ 161: 7573+13	9642  321381  					LD		(ghostDis),A
+ 162: 7586+10	9645  F1      					POP		AF
+ 163: 7596+13	9646  324281  					LD		(tGhostDir),A
+ 164: 7609+10	9649  C9      					RET
+ 165:				
+ 166:     -	964A          	tGhostColide:   
+ 167: 7619+13	964A  3A0081  	                LD      A,(pacx)                ;Compair X
+ 168:								;CALL	NumToHex
+ 169: 7632+4	964D  47      	                LD      B,A
+ 170: 7636+13	964E  3A4081  	                LD      A,(tGhostX)
+ 171:								;CALL	NumToHex
+ 172: 7649+4	9651  B8      	                CP      B
+ 173: 7653+5+6	9652  C0      	                RET     NZ
+ 174: 7658+13	9653  3A0181  	                LD      A,(pacy)                ;Compair Y
+ 175:								;CALL	NumToHex
+ 176: 7671+4	9656  47      	                LD      B,A
+ 177: 7675+13	9657  3A4181  	                LD      A,(tGhostY)
+ 178:								;CALL	NumToHex
+ 179: 7688+4	965A  B8      	                CP      B
+ 180: 7692+5+6	965B  C0      	                RET     NZ
+ 181: 7697+13	965C  3A0481  	                LD      A,(pPActive)              ;Colishion Happened
+ 182: 7710+4	965F  B7      	                OR      A
+ 183: 7714+10	9660  CA3A91  	                JP      Z,killPacman               ;If power pellet not active, run genric deth lib
+ 184: 7724+7	9663  3E11    	                LD		a, tGhostStoreX	           ;set tGhost Pos
+ 185: 7731+13	9665  324081  				    LD		(tGhostX),a
+ 186: 7744+7	9668  3E0B    				    LD		a, tGhostStoreY
+ 187: 7751+13	966A  324181  				    LD		(tGhostY),a
+ 188: 7764+7	966D  3E20    	                LD		a, caughtJaleTime
+ 189: 7771+13	966F  324581  				    LD		(tGhostTimer),a
+ 190: 7784+10	9672  C9      	                RET
+ 191:				
+**** ghosts.asm ****
+  59:     -	9673  1B5B3936	tGhost:		.BYTE	1BH,"[96mM",1BH,"[0m",0
+	              6D4D1B5B
+	              306D00
+  60:				
+  61:				
+  62:     -	967E  1B5B3334	sGhost0:	.BYTE	1BH,"[34mM",1BH,"[0m",0
 	              6D4D1B5B
 	              306D00
 **** main.asm ****
-  60:     -	91EF  1B5B3935	pinkGhost:		.BYTE	1BH,"[95mM",1BH,"[0m",0
+  65:     -	9689  1B5B3937	sGhost1:	.BYTE	1BH,"[97mM",1BH,"[0m",0
 	              6D4D1B5B
 	              306D00
-  61:				;-----------Spesific Libs -----;
-  62:				include movelibs.asm	
+  66:				;-----------Spesific Libs -----;
+  67:				include movelibs.asm	
 **** movelibs.asm ****
-   1:     -	91FA          	move:
-   2: 2248+7	91FA  FE57    					CP		'W'
-   3: 2255+7+5	91FC  280A    					JR		Z,moveU
-   4: 2262+7	91FE  FE41    					CP		'A'
-   5: 2269+7+5	9200  2812    					JR		Z,moveL
-   6: 2276+7	9202  FE53    					CP		'S'
-   7: 2283+7+5	9204  2808    					JR		Z,moveD
-   8: 2290+12	9206  1812    					JR		moveR
+   1:     -	9694          	move:
+   2: 7794+7	9694  FE57    					CP		'W'
+   3: 7801+7+5	9696  280A    					JR		Z,moveU
+   4: 7808+7	9698  FE41    					CP		'A'
+   5: 7815+7+5	969A  2812    					JR		Z,moveL
+   6: 7822+7	969C  FE53    					CP		'S'
+   7: 7829+7+5	969E  2808    					JR		Z,moveD
+   8: 7836+12	96A0  1812    					JR		moveR
    9:				
-  10:     -	9208          	moveU:			
-  11: 2302+7	9208  0A      					LD		A, (BC)
-  12: 2309+4	9209  3D      					DEC		A
-  13: 2313+7	920A  E61F    					AND		00011111B
-  14: 2320+7	920C  02      					LD		(BC),A
-  15: 2327+10	920D  C9      					RET
-  16:     -	920E          	moveD:			
-  17: 2337+7	920E  0A      					LD		A, (BC)
-  18: 2344+4	920F  3C      					INC		A
-  19: 2348+7	9210  E61F    					AND		00011111B
-  20: 2355+7	9212  02      					LD		(BC),A
-  21: 2362+10	9213  C9      					RET
-  22:     -	9214          	moveL:			
-  23: 2372+7	9214  1A      					LD		A, (DE)
-  24: 2379+4	9215  3D      					DEC		A
-  25: 2383+7	9216  E61F    					AND		00011111B
-  26: 2390+7	9218  12      					LD		(DE),A
-  27: 2397+10	9219  C9      					RET
-  28:     -	921A          	moveR:			
-  29: 2407+7	921A  1A      					LD		A, (DE)
-  30: 2414+4	921B  3C      					INC		A
-  31: 2418+7	921C  E61F    					AND		00011111B
-  32: 2425+7	921E  12      					LD		(DE),A
-  33: 2432+10	921F  C9      					RET
-  34:     -	9220          	isMoveValid:
-  35: 2442+7	9220  FE57    					CP		'W'
-  36: 2449+7+5	9222  280A    					JR		Z,moveUValid
-  37: 2456+7	9224  FE41    					CP		'A'
-  38: 2463+7+5	9226  280C    					JR		Z,moveLValid
-  39: 2470+7	9228  FE53    					CP		'S'
-  40: 2477+7+5	922A  2805    					JR		Z,moveDValid
-  41: 2484+12	922C  1809    					JR		moveRValid
-  42:     -	922E          	moveUValid:			
-  43: 2496+8	922E  CB42    					BIT		upBit,D
-  44: 2504+10	9230  C9      					RET
-  45:     -	9231          	moveDValid:			
-  46: 2514+8	9231  CB4A    					BIT		downBit,D
-  47: 2522+10	9233  C9      					RET
-  48:     -	9234          	moveLValid:			
-  49: 2532+8	9234  CB52    					BIT		leftBit,D
-  50: 2540+10	9236  C9      					RET
-  51:     -	9237          	moveRValid:			
-  52: 2550+8	9237  CB5A    					BIT		rightBit,D
+  10:     -	96A2          	moveU:			
+  11: 7848+7	96A2  0A      					LD		A, (BC)
+  12: 7855+4	96A3  3D      					DEC		A
+  13: 7859+7	96A4  E61F    					AND		00011111B
+  14: 7866+7	96A6  02      					LD		(BC),A
+  15: 7873+10	96A7  C9      					RET
+  16:     -	96A8          	moveD:			
+  17: 7883+7	96A8  0A      					LD		A, (BC)
+  18: 7890+4	96A9  3C      					INC		A
+  19: 7894+7	96AA  E61F    					AND		00011111B
+  20: 7901+7	96AC  02      					LD		(BC),A
+  21: 7908+10	96AD  C9      					RET
+  22:     -	96AE          	moveL:			
+  23: 7918+7	96AE  1A      					LD		A, (DE)
+  24: 7925+4	96AF  3D      					DEC		A
+  25: 7929+7	96B0  E61F    					AND		00011111B
+  26: 7936+7	96B2  12      					LD		(DE),A
+  27: 7943+10	96B3  C9      					RET
+  28:     -	96B4          	moveR:			
+  29: 7953+7	96B4  1A      					LD		A, (DE)
+  30: 7960+4	96B5  3C      					INC		A
+  31: 7964+7	96B6  E61F    					AND		00011111B
+  32: 7971+7	96B8  12      					LD		(DE),A
+  33: 7978+10	96B9  C9      					RET
+  34:     -	96BA          	isMoveValid:
+  35: 7988+7	96BA  FE57    					CP		'W'
+  36: 7995+7+5	96BC  280A    					JR		Z,moveUValid
+  37: 8002+7	96BE  FE41    					CP		'A'
+  38: 8009+7+5	96C0  280C    					JR		Z,moveLValid
+  39: 8016+7	96C2  FE53    					CP		'S'
+  40: 8023+7+5	96C4  2805    					JR		Z,moveDValid
+  41: 8030+12	96C6  1809    					JR		moveRValid
+  42:     -	96C8          	moveUValid:			
+  43: 8042+8	96C8  CB42    					BIT		upBit,D
+  44: 8050+10	96CA  C9      					RET
+  45:     -	96CB          	moveDValid:			
+  46: 8060+8	96CB  CB4A    					BIT		downBit,D
+  47: 8068+10	96CD  C9      					RET
+  48:     -	96CE          	moveLValid:			
+  49: 8078+8	96CE  CB52    					BIT		leftBit,D
+  50: 8086+10	96D0  C9      					RET
+  51:     -	96D1          	moveRValid:			
+  52: 8096+8	96D1  CB5A    					BIT		rightBit,D
 **** main.asm ****
-  63: 2558+10	9239  C9      					RET
-  64:				include	mapLibs.asm	
+  68: 8104+10	96D3  C9      					RET
+  69:				include	mapLibs.asm	
 **** mapLibs.asm ****
    1:     -	0030          	pathFindDepth   .EQU	30H
    2:				
    3:				;------- Get Map Data ----;
    4:				; C - X
    5:				; B	- Y
-   6:     -	923A          	getMapAddress:
-   7: 2568+11	923A  C5      					push	bc
-   8: 2579+8	923B  CB00    					rlc		b			;Shift b left 5
-   9: 2587+8	923D  CB00    					rlc		b			;Shift b left 5
-  10: 2595+8	923F  CB00    					rlc		b			;Shift b left 5
-  11: 2603+8	9241  CB00    					rlc		b			;Shift b left 5
-  12: 2611+8	9243  CB00    					rlc		b			;Shift b left 5
-  13: 2619+4	9245  78      					ld		a,b
-  14: 2623+7	9246  E6E0    					and		11100000b	;Mask lower adress
-  15: 2630+4	9248  B1      					or		c			;Combine with C
-  16: 2634+4	9249  6F      					ld		l,a			;A is now low byte of adress
-  17: 2638+4	924A  78      					ld		a,b
-  18: 2642+7	924B  E603    					and		00000011b	;Mask upper adress
-  19: 2649+7	924D  F6E0    					or		0E0H		;Start of map
-  20: 2656+4	924F  67      					ld		h,a
-  21: 2660+10	9250  C1      					pop		bc
-  22: 2670+10	9251  C9      					ret
+   6:     -	96D4          	getMapAddress:
+   7: 8114+11	96D4  C5      					push	bc
+   8: 8125+8	96D5  CB00    					rlc		b			;Shift b left 5
+   9: 8133+8	96D7  CB00    					rlc		b			;Shift b left 5
+  10: 8141+8	96D9  CB00    					rlc		b			;Shift b left 5
+  11: 8149+8	96DB  CB00    					rlc		b			;Shift b left 5
+  12: 8157+8	96DD  CB00    					rlc		b			;Shift b left 5
+  13: 8165+4	96DF  78      					ld		a,b
+  14: 8169+7	96E0  E6E0    					and		11100000b	;Mask lower adress
+  15: 8176+4	96E2  B1      					or		c			;Combine with C
+  16: 8180+4	96E3  6F      					ld		l,a			;A is now low byte of adress
+  17: 8184+4	96E4  78      					ld		a,b
+  18: 8188+7	96E5  E603    					and		00000011b	;Mask upper adress
+  19: 8195+7	96E7  F6E0    					or		0E0H		;Start of map
+  20: 8202+4	96E9  67      					ld		h,a
+  21: 8206+10	96EA  C1      					pop		bc
+  22: 8216+10	96EB  C9      					ret
   23:				
   24:				;------- Get Path Find Map Address----;
   25:				; C - X
   26:				; B	- Y
-  27:     -	9252          	getAddressPF:
-  28: 2680+11	9252  C5      					push	bc
-  29: 2691+8	9253  CB00    					rlc		b			;Shift b left 5
-  30: 2699+8	9255  CB00    					rlc		b			;Shift b left 5
-  31: 2707+8	9257  CB00    					rlc		b			;Shift b left 5
-  32: 2715+8	9259  CB00    					rlc		b			;Shift b left 5
-  33: 2723+8	925B  CB00    					rlc		b			;Shift b left 5
-  34: 2731+4	925D  78      					ld		a,b
-  35: 2735+7	925E  E6E0    					and		11100000b	;Mask lower adress
-  36: 2742+4	9260  B1      					or		c			;Combine with C
-  37: 2746+4	9261  6F      					ld		l,a			;A is now low byte of adress
-  38: 2750+4	9262  78      					ld		a,b
-  39: 2754+7	9263  E603    					and		00000011b	;Mask upper adress
-  40: 2761+7	9265  F6D0    					or		0D0H		;Start of map
-  41: 2768+4	9267  67      					ld		h,a
-  42: 2772+10	9268  C1      					pop		bc
-  43: 2782+10	9269  C9      					ret
+  27:     -	96EC          	getAddressPF:
+  28: 8226+11	96EC  C5      					push	bc
+  29: 8237+8	96ED  CB00    					rlc		b			;Shift b left 5
+  30: 8245+8	96EF  CB00    					rlc		b			;Shift b left 5
+  31: 8253+8	96F1  CB00    					rlc		b			;Shift b left 5
+  32: 8261+8	96F3  CB00    					rlc		b			;Shift b left 5
+  33: 8269+8	96F5  CB00    					rlc		b			;Shift b left 5
+  34: 8277+4	96F7  78      					ld		a,b
+  35: 8281+7	96F8  E6E0    					and		11100000b	;Mask lower adress
+  36: 8288+4	96FA  B1      					or		c			;Combine with C
+  37: 8292+4	96FB  6F      					ld		l,a			;A is now low byte of adress
+  38: 8296+4	96FC  78      					ld		a,b
+  39: 8300+7	96FD  E603    					and		00000011b	;Mask upper adress
+  40: 8307+7	96FF  F6D0    					or		0D0H		;Start of map
+  41: 8314+4	9701  67      					ld		h,a
+  42: 8318+10	9702  C1      					pop		bc
+  43: 8328+10	9703  C9      					ret
   44:				
   45:				
   46:				;--------- Map print -------- ;
   47:				; C - X
   48:				; B	- Y
-  49:     -	926A          	printMapAt:	
-  50: 2792+11	926A  C5      				PUSH	BC
-  51: 2803+4	926B  0C      				INC		C
-  52: 2807+4	926C  69      				LD		L,C
-  53: 2811+7	926D  2600    				LD		H, $00			;We dont care about msb
-  54: 2818+11	926F  E5      				PUSH	HL
-  55: 2829+4	9270  04      				INC		B
-  56: 2833+4	9271  68      				LD		L,B
-  57: 2837+7	9272  2600    				LD		H, $00			;Again we dont care
-  58: 2844+11	9274  E5      				PUSH	HL
-  59: 2855+17	9275  CDDB93  				CALL	moveCursor
-  60: 2872+10	9278  C1      				POP 	BC
-  61: 2882+17	9279  CD3A92  				CALL	getMapAddress
-  62: 2899+7	927C  7E      				LD		A,(HL)
-  63: 2906+17	927D  CD9C92  				CALL	pmChar
-  64: 2923+10	9280  C9      				RET
+  49:     -	9704          	printMapAt:	
+  50: 8338+11	9704  C5      				PUSH	BC
+  51: 8349+4	9705  0C      				INC		C
+  52: 8353+4	9706  69      				LD		L,C
+  53: 8357+7	9707  2600    				LD		H, $00			;We dont care about msb
+  54: 8364+11	9709  E5      				PUSH	HL
+  55: 8375+4	970A  04      				INC		B
+  56: 8379+4	970B  68      				LD		L,B
+  57: 8383+7	970C  2600    				LD		H, $00			;Again we dont care
+  58: 8390+11	970E  E5      				PUSH	HL
+  59: 8401+17	970F  CD7598  				CALL	moveCursor
+  60: 8418+10	9712  C1      				POP 	BC
+  61: 8428+17	9713  CDD496  				CALL	getMapAddress
+  62: 8445+7	9716  7E      				LD		A,(HL)
+  63: 8452+17	9717  CD3697  				CALL	pmChar
+  64: 8469+10	971A  C9      				RET
   65:				
-  66:     -	9281          	printMap:
-  67: 2933+7	9281  3E20    					ld		a,32
-  68: 2940+4	9283  47      					ld		b,a			; 32 chars per line
-  69: 2944+4	9284  4F      					ld		c,a			; 32 lines per map
-  70: 2948+10	9285  2100E0  					ld		hl,map
-  71: 2958+7	9288  7E      	pmLoop:			ld		a,(hl)		; get char
-  72: 2965+17	9289  CD9C92  					call	pmChar		; decode what to print
-  73: 2982+6	928C  23      					inc		hl			; next char
-  74: 2988+8+5	928D  10F9    					djnz	pmLoop		; if were not at the end of a line, print next char
-  75: 2996+17	928F  CDD293  					call	newline		; if we are, print a new line
-  76: 3013+4	9292  41      					ld		b,c			;are we at the end of a block
-  77: 3017+8+5	9293  1001    					djnz	pmNextLine
-  78: 3025+10	9295  C9      					ret
-  79:     -	9296          	pmNextLine:	
-  80: 3035+4	9296  48      					ld		c,b			;copy decremented b back to c
-  81: 3039+7	9297  3E20    					ld 		a,32		;refill b withj 32
-  82: 3046+4	9299  47      					ld		b,a
-  83: 3050+12	929A  18EC    					jr		pmLoop		;draw next char
+  66:     -	971B          	printMap:
+  67: 8479+7	971B  3E20    					ld		a,32
+  68: 8486+4	971D  47      					ld		b,a			; 32 chars per line
+  69: 8490+4	971E  4F      					ld		c,a			; 32 lines per map
+  70: 8494+10	971F  2100E0  					ld		hl,map
+  71: 8504+7	9722  7E      	pmLoop:			ld		a,(hl)		; get char
+  72: 8511+17	9723  CD3697  					call	pmChar		; decode what to print
+  73: 8528+6	9726  23      					inc		hl			; next char
+  74: 8534+8+5	9727  10F9    					djnz	pmLoop		; if were not at the end of a line, print next char
+  75: 8542+17	9729  CD6C98  					call	newline		; if we are, print a new line
+  76: 8559+4	972C  41      					ld		b,c			;are we at the end of a block
+  77: 8563+8+5	972D  1001    					djnz	pmNextLine
+  78: 8571+10	972F  C9      					ret
+  79:     -	9730          	pmNextLine:	
+  80: 8581+4	9730  48      					ld		c,b			;copy decremented b back to c
+  81: 8585+7	9731  3E20    					ld 		a,32		;refill b withj 32
+  82: 8592+4	9733  47      					ld		b,a
+  83: 8596+12	9734  18EC    					jr		pmLoop		;draw next char
   84:				
   85:				
-  86:     -	929C          	pmChar:		;-- Print map char a
-  87: 3062+11	929C  E5      					push	hl
-  88: 3073+8	929D  CB67    					bit		powerpBit,a
-  89: 3081+7+5	929F  200E    					jr		nz,printPP
-  90: 3088+8	92A1  CB6F    					bit		pelletBit,a
-  91: 3096+7+5	92A3  2012    					jr		nz,printP
-  92: 3103+8	92A5  CB77    					bit		wallBit,a
-  93: 3111+7+5	92A7  2016    					jr		nz,printWall
-  94: 3118+8	92A9  CB7F    					bit		sfBit,a
-  95: 3126+7+5	92AB  201A    					jr		nz,printSF
-  96: 3133+12	92AD  1820    					jr	 	printVoid
+  86:     -	9736          	pmChar:		;-- Print map char a
+  87: 8608+11	9736  E5      					push	hl
+  88: 8619+8	9737  CB67    					bit		powerpBit,a
+  89: 8627+7+5	9739  200E    					jr		nz,printPP
+  90: 8634+8	973B  CB6F    					bit		pelletBit,a
+  91: 8642+7+5	973D  2012    					jr		nz,printP
+  92: 8649+8	973F  CB77    					bit		wallBit,a
+  93: 8657+7+5	9741  2016    					jr		nz,printWall
+  94: 8664+8	9743  CB7F    					bit		sfBit,a
+  95: 8672+7+5	9745  201A    					jr		nz,printSF
+  96: 8679+12	9747  1820    					jr	 	printVoid
   97:							
-  98:     -	92AF          	printPP:
-  99: 3145+10	92AF  216894  					ld		hl,powerPellet
- 100: 3155+17	92B2  CD4B94  					call	print
- 101: 3172+12	92B5  1820    					jr		pmCharRet
- 102:     -	92B7          	printP:
- 103: 3184+10	92B7  217394  					ld		hl,pellet
- 104: 3194+17	92BA  CD4B94  					call	print
- 105: 3211+12	92BD  1818    					jr		pmCharRet
- 106:     -	92BF          	printWall:
- 107: 3223+10	92BF  215D94  					ld		hl,wall
- 108: 3233+17	92C2  CD4B94  					call	print
- 109: 3250+12	92C5  1810    					jr		pmCharRet
- 110:     -	92C7          	printSF:
- 111: 3262+10	92C7  217E94  					ld		hl,superFruit
- 112: 3272+17	92CA  CD4B94  					call	print
- 113: 3289+12	92CD  1808    					jr		pmCharRet
- 114:     -	92CF          	printVoid:
- 115: 3301+10	92CF  219C94  					ld		hl,void
- 116: 3311+17	92D2  CD4B94  					call	print
- 117: 3328+12	92D5  1800    					jr		pmCharRet
- 118:     -	92D7          	pmCharRet:	
- 119: 3340+10	92D7  E1      					pop 	hl
- 120: 3350+10	92D8  C9      					ret
+  98:     -	9749          	printPP:
+  99: 8691+10	9749  210499  					ld		hl,powerPellet
+ 100: 8701+17	974C  CDE798  					call	print
+ 101: 8718+12	974F  1820    					jr		pmCharRet
+ 102:     -	9751          	printP:
+ 103: 8730+10	9751  210F99  					ld		hl,pellet
+ 104: 8740+17	9754  CDE798  					call	print
+ 105: 8757+12	9757  1818    					jr		pmCharRet
+ 106:     -	9759          	printWall:
+ 107: 8769+10	9759  21F998  					ld		hl,wall
+ 108: 8779+17	975C  CDE798  					call	print
+ 109: 8796+12	975F  1810    					jr		pmCharRet
+ 110:     -	9761          	printSF:
+ 111: 8808+10	9761  211A99  					ld		hl,superFruit
+ 112: 8818+17	9764  CDE798  					call	print
+ 113: 8835+12	9767  1808    					jr		pmCharRet
+ 114:     -	9769          	printVoid:
+ 115: 8847+10	9769  213899  					ld		hl,void
+ 116: 8857+17	976C  CDE798  					call	print
+ 117: 8874+12	976F  1800    					jr		pmCharRet
+ 118:     -	9771          	pmCharRet:	
+ 119: 8886+10	9771  E1      					pop 	hl
+ 120: 8896+10	9772  C9      					ret
  121:								
  122:				;-------- Path Find Map -------;
  123:				;Initi Path Find Map
- 124:     -	92D9          	initPathFind:
- 125: 3360+7	92D9  3E20    					ld		a,32
- 126: 3367+4	92DB  47      					ld		b,a			; 32 chars per line
- 127: 3371+4	92DC  4F      					ld		c,a			; 32 lines per map
- 128: 3375+10	92DD  2100D0  					ld		hl,pathFindMap
- 129: 3385+7	92E0  16FF    	initpPFLoop:	ld		D,0FFH		; set char
- 130: 3392+7	92E2  72      					LD		(HL),D
- 131: 3399+6	92E3  23      					inc		hl			; next char
- 132: 3405+8+5	92E4  10FA    					djnz	initpPFLoop		; if were not at the end of a line, print next char
- 133: 3413+4	92E6  41      					ld		b,c			;are we at the end of a block
- 134: 3417+8+5	92E7  1001    					djnz	pfNextRow
- 135: 3425+10	92E9  C9      					ret
- 136:     -	92EA          	pfNextRow:	
- 137: 3435+4	92EA  48      					ld		c,b			;copy decremented b back to c
- 138: 3439+7	92EB  3E20    					ld 		a,32		;refill b withj 32
- 139: 3446+4	92ED  47      					ld		b,a
- 140: 3450+10	92EE  C3E092  					jp		initpPFLoop		;draw next char
+ 124:     -	9773          	initPathFind:
+ 125: 8906+7	9773  3E20    					ld		a,32
+ 126: 8913+4	9775  47      					ld		b,a			; 32 chars per line
+ 127: 8917+4	9776  4F      					ld		c,a			; 32 lines per map
+ 128: 8921+10	9777  2100D0  					ld		hl,pathFindMap
+ 129: 8931+7	977A  16FF    	initpPFLoop:	ld		D,0FFH		; set char
+ 130: 8938+7	977C  72      					LD		(HL),D
+ 131: 8945+6	977D  23      					inc		hl			; next char
+ 132: 8951+8+5	977E  10FA    					djnz	initpPFLoop		; if were not at the end of a line, print next char
+ 133: 8959+4	9780  41      					ld		b,c			;are we at the end of a block
+ 134: 8963+8+5	9781  1001    					djnz	pfNextRow
+ 135: 8971+10	9783  C9      					ret
+ 136:     -	9784          	pfNextRow:	
+ 137: 8981+4	9784  48      					ld		c,b			;copy decremented b back to c
+ 138: 8985+7	9785  3E20    					ld 		a,32		;refill b withj 32
+ 139: 8992+4	9787  47      					ld		b,a
+ 140: 8996+10	9788  C37A97  					jp		initpPFLoop		;draw next char
  141:				
  142:				;Calculate Map
- 143:     -	92F1          	calculatePathMap:
- 144: 3460+10	92F1  01FFFF  					ld		BC,0FFFFH		;Push Stack terminator		
- 145: 3470+11	92F4  C5      					PUSH	BC
- 146: 3481+13	92F5  3A0081  					LD		A, (pacx)		;Push X to stack
- 147: 3494+4	92F8  4F      					LD		C,A
- 148: 3498+13	92F9  3A0181  					LD		A, (pacy)		;Push Y to stack
- 149: 3511+4	92FC  47      					LD		B,A
- 150: 3515+17	92FD  CD5292  					CALL	getAddressPF
- 151: 3532+10	9300  3600    					LD		(HL),00H
- 152: 3542+11	9302  C5      					PUSH	BC
- 153:     -	9303          	calculatePathMapLoop:
- 154: 3553+10	9303  C1      					POP		BC			;Get node to visit
- 155: 3563+4	9304  78      					LD		A,B			;Check Its not FFFF
- 156: 3567+4	9305  B7      					OR		A
- 157: 3571+7	9306  FEFF    					CP		0FFH
- 158: 3578+5+6	9308  C8      					RET		Z			;We only have to check half the byte as its imposable to have a cord more than 20h
- 159: 3583+20	9309  ED43F289					LD		(originalBC),BC
- 160: 3603+17	930D  CD5292  					CALL	getAddressPF
- 161: 3620+7	9310  7E      					LD		A,(HL)
- 162: 3627+4	9311  3C      					INC		A
- 163: 3631+7	9312  FE30    	                CP      pathFindDepth
- 164: 3638+10	9314  CA0393  					JP 		Z,calculatePathMapLoop	;Skip if wer getting too long
- 165: 3648+4	9317  5F      					LD		E,A			;Keep the distance were working with safe
- 166: 3652+17	9318  CD3A92  					CALL	getMapAddress
- 167: 3669+7	931B  56      					LD		D,(HL)
- 168: 3676+7	931C  3E57    					LD		A,	'W'			;check up
- 169: 3683+17	931E  CD2092  					CALL	isMoveValid
- 170: 3700+10+7	9321  C43F93  					CALL	NZ,calculateMapU
- 171: 3710+7	9324  3E53    					LD		A,	'S'			;down
- 172: 3717+17	9326  CD2092  					CALL	isMoveValid
- 173: 3734+10+7	9329  C44B93  					CALL	NZ,calculateMapD
- 174: 3744+7	932C  3E41    					LD		A,	'A'			;left
- 175: 3751+17	932E  CD2092  					CALL	isMoveValid
- 176: 3768+10+7	9331  C45793  					CALL	NZ,calculateMapL
- 177: 3778+7	9334  3E44    					LD		A,	'D'			;right
- 178: 3785+17	9336  CD2092  					CALL	isMoveValid
- 179: 3802+10+7	9339  C46393  					CALL	NZ,calculateMapR
- 180: 3812+10	933C  C30393  					JP		calculatePathMapLoop
+ 143:     -	978B          	calculatePathMap:
+ 144: 9006+10	978B  01FFFF  					ld		BC,0FFFFH		;Push Stack terminator		
+ 145: 9016+11	978E  C5      					PUSH	BC
+ 146: 9027+13	978F  3A0081  					LD		A, (pacx)		;Push X to stack
+ 147: 9040+4	9792  4F      					LD		C,A
+ 148: 9044+13	9793  3A0181  					LD		A, (pacy)		;Push Y to stack
+ 149: 9057+4	9796  47      					LD		B,A
+ 150: 9061+17	9797  CDEC96  					CALL	getAddressPF
+ 151: 9078+10	979A  3600    					LD		(HL),00H
+ 152: 9088+11	979C  C5      					PUSH	BC
+ 153:     -	979D          	calculatePathMapLoop:
+ 154: 9099+10	979D  C1      					POP		BC			;Get node to visit
+ 155: 9109+4	979E  78      					LD		A,B			;Check Its not FFFF
+ 156: 9113+4	979F  B7      					OR		A
+ 157: 9117+7	97A0  FEFF    					CP		0FFH
+ 158: 9124+5+6	97A2  C8      					RET		Z			;We only have to check half the byte as its imposable to have a cord more than 20h
+ 159: 9129+20	97A3  ED43F289					LD		(originalBC),BC
+ 160: 9149+17	97A7  CDEC96  					CALL	getAddressPF
+ 161: 9166+7	97AA  7E      					LD		A,(HL)
+ 162: 9173+4	97AB  3C      					INC		A
+ 163: 9177+7	97AC  FE30    	                CP      pathFindDepth
+ 164: 9184+10	97AE  CA9D97  					JP 		Z,calculatePathMapLoop	;Skip if wer getting too long
+ 165: 9194+4	97B1  5F      					LD		E,A			;Keep the distance were working with safe
+ 166: 9198+17	97B2  CDD496  					CALL	getMapAddress
+ 167: 9215+7	97B5  56      					LD		D,(HL)
+ 168: 9222+7	97B6  3E57    					LD		A,	'W'			;check up
+ 169: 9229+17	97B8  CDBA96  					CALL	isMoveValid
+ 170: 9246+10+7	97BB  C4D997  					CALL	NZ,calculateMapU
+ 171: 9256+7	97BE  3E53    					LD		A,	'S'			;down
+ 172: 9263+17	97C0  CDBA96  					CALL	isMoveValid
+ 173: 9280+10+7	97C3  C4E597  					CALL	NZ,calculateMapD
+ 174: 9290+7	97C6  3E41    					LD		A,	'A'			;left
+ 175: 9297+17	97C8  CDBA96  					CALL	isMoveValid
+ 176: 9314+10+7	97CB  C4F197  					CALL	NZ,calculateMapL
+ 177: 9324+7	97CE  3E44    					LD		A,	'D'			;right
+ 178: 9331+17	97D0  CDBA96  					CALL	isMoveValid
+ 179: 9348+10+7	97D3  C4FD97  					CALL	NZ,calculateMapR
+ 180: 9358+10	97D6  C39D97  					JP		calculatePathMapLoop
  181:								
- 182:     -	933F          	calculateMapU:	
- 183: 3822+20	933F  ED4BF289					LD		BC,(originalBC)			;We want to preserve the OG BC Through this process so it can be used again in sub directions		
- 184: 3842+4	9343  78      					LD		A, B				;Make modifications to corod
- 185: 3846+4	9344  3D      					DEC		A
- 186: 3850+7	9345  E61F    					AND		00011111B			;Mask for looping
- 187: 3857+4	9347  47      					LD		B,A
- 188: 3861+10	9348  C36F93  					JP		calculateMapCell
- 189:     -	934B          	calculateMapD:	
- 190: 3871+20	934B  ED4BF289					LD		BC,(originalBC)	
- 191: 3891+4	934F  78      					LD		A, B
- 192: 3895+4	9350  3C      					INC		A
- 193: 3899+7	9351  E61F    					AND		00011111B
- 194: 3906+4	9353  47      					LD		B,A
- 195: 3910+10	9354  C36F93  					JP		calculateMapCell
- 196:     -	9357          	calculateMapL:	
- 197: 3920+20	9357  ED4BF289					LD		BC,(originalBC)
- 198: 3940+4	935B  79      					LD		A, C
- 199: 3944+4	935C  3D      					DEC		A
- 200: 3948+7	935D  E61F    					AND		00011111B
- 201: 3955+4	935F  4F      					LD		C,A
- 202: 3959+10	9360  C36F93  					JP		calculateMapCell
- 203:     -	9363          	calculateMapR:
- 204: 3969+20	9363  ED4BF289					LD		BC,(originalBC)
- 205: 3989+4	9367  79      					LD		A, C
- 206: 3993+4	9368  3C      					INC		A
- 207: 3997+7	9369  E61F    					AND		00011111B
- 208: 4004+4	936B  4F      					LD		C,A
- 209: 4008+10	936C  C36F93  					JP		calculateMapCell
+ 182:     -	97D9          	calculateMapU:	
+ 183: 9368+20	97D9  ED4BF289					LD		BC,(originalBC)			;We want to preserve the OG BC Through this process so it can be used again in sub directions		
+ 184: 9388+4	97DD  78      					LD		A, B				;Make modifications to corod
+ 185: 9392+4	97DE  3D      					DEC		A
+ 186: 9396+7	97DF  E61F    					AND		00011111B			;Mask for looping
+ 187: 9403+4	97E1  47      					LD		B,A
+ 188: 9407+10	97E2  C30998  					JP		calculateMapCell
+ 189:     -	97E5          	calculateMapD:	
+ 190: 9417+20	97E5  ED4BF289					LD		BC,(originalBC)	
+ 191: 9437+4	97E9  78      					LD		A, B
+ 192: 9441+4	97EA  3C      					INC		A
+ 193: 9445+7	97EB  E61F    					AND		00011111B
+ 194: 9452+4	97ED  47      					LD		B,A
+ 195: 9456+10	97EE  C30998  					JP		calculateMapCell
+ 196:     -	97F1          	calculateMapL:	
+ 197: 9466+20	97F1  ED4BF289					LD		BC,(originalBC)
+ 198: 9486+4	97F5  79      					LD		A, C
+ 199: 9490+4	97F6  3D      					DEC		A
+ 200: 9494+7	97F7  E61F    					AND		00011111B
+ 201: 9501+4	97F9  4F      					LD		C,A
+ 202: 9505+10	97FA  C30998  					JP		calculateMapCell
+ 203:     -	97FD          	calculateMapR:
+ 204: 9515+20	97FD  ED4BF289					LD		BC,(originalBC)
+ 205: 9535+4	9801  79      					LD		A, C
+ 206: 9539+4	9802  3C      					INC		A
+ 207: 9543+7	9803  E61F    					AND		00011111B
+ 208: 9550+4	9805  4F      					LD		C,A
+ 209: 9554+10	9806  C30998  					JP		calculateMapCell
  210:				
- 211:     -	936F          	calculateMapCell:
- 212: 4018+17	936F  CD5292  					CALL	getAddressPF
- 213: 4035+7	9372  7E      					LD		A,(HL)
+ 211:     -	9809          	calculateMapCell:
+ 212: 9564+17	9809  CDEC96  					CALL	getAddressPF
+ 213: 9581+7	980C  7E      					LD		A,(HL)
  214:				
- 215: 4042+4	9373  BB      					CP		E			;Compare current data (A) with E (the path were looking at)
- 216: 4046+5+6	9374  D8      					RET		C			;If carry is set (A < E)(whats there already < our path) then this route is a dud
- 217: 4051+5+6	9375  C8      					RET		Z			;If its equal we dont want to continue as we alreay have an equally fast route
- 218: 4056+7	9376  73      					LD		(HL),E
- 219: 4063+10	9377  E1      					POP		HL			;We need the return adress on the top of the stack
- 220: 4073+11	9378  C5      					PUSH	BC			;Push Cell so it can be visited
- 221: 4084+11	9379  E5      					PUSH	HL
- 222: 4095+10	937A  C9      					RET
+ 215: 9588+4	980D  BB      					CP		E			;Compare current data (A) with E (the path were looking at)
+ 216: 9592+5+6	980E  D8      					RET		C			;If carry is set (A < E)(whats there already < our path) then this route is a dud
+ 217: 9597+5+6	980F  C8      					RET		Z			;If its equal we dont want to continue as we alreay have an equally fast route
+ 218: 9602+7	9810  73      					LD		(HL),E
+ 219: 9609+10	9811  E1      					POP		HL			;We need the return adress on the top of the stack
+ 220: 9619+11	9812  C5      					PUSH	BC			;Push Cell so it can be visited
+ 221: 9630+11	9813  E5      					PUSH	HL
+ 222: 9641+10	9814  C9      					RET
  223:				
- 224:     -	937B          	printPFMap:
- 225: 4105+10	937B  210100  	                LD		HL, $01
- 226: 4115+11	937E  E5      					PUSH	HL
- 227: 4126+10	937F  211A00  					LD		HL, $1A
- 228: 4136+11	9382  E5      					PUSH	HL
- 229: 4147+17	9383  CDDB93  					CALL	moveCursor
- 230: 4164+7	9386  3E20    					ld		a,32
- 231: 4171+4	9388  47      					ld		b,a			; 32 chars per line
- 232: 4175+7	9389  3E1A    	                ld		a,$1A
- 233: 4182+4	938B  4F      					ld		c,a			; 32 lines per map
- 234: 4186+10	938C  2100D0  					ld		hl,pathFindMap
- 235: 4196+7	938F  7E      	pmPFLoop:		ld		a,(hl)		; get char
- 236: 4203+7	9390  FEFF    	                cp      0FFH
- 237: 4210+10	9392  CAAB93  	                JP      Z,pmPFSkip
- 238: 4220+17	9395  CD1D94  					call	NumToHex	; decode what to print
- 239: 4237+7	9398  3E20    	pmPFAfterSkip:  ld      a,' '
- 240: 4244+11	939A  CF      	                rst     08H
- 241: 4255+6	939B  23      					inc		hl			; next char
- 242: 4261+8+5	939C  10F1    					djnz	pmPFLoop		; if were not at the end of a line, print next char
- 243: 4269+17	939E  CDD293  					call	newline		; if we are, print a new line
- 244: 4286+4	93A1  41      					ld		b,c			;are we at the end of a block
- 245: 4290+8+5	93A2  1001    					djnz	pmPFNextLine
- 246: 4298+10	93A4  C9      					ret
- 247:     -	93A5          	pmPFNextLine:	
- 248: 4308+4	93A5  48      					ld		c,b			;copy decremented b back to c
- 249: 4312+7	93A6  3E20    					ld 		a,32		;refill b withj 32
- 250: 4319+4	93A8  47      					ld		b,a
- 251: 4323+12	93A9  18E4    					jr		pmPFLoop	;draw next char
- 252:     -	93AB          	pmPFSkip:       
- 253: 4335+7	93AB  3E20    	                ld      a,' '
- 254: 4342+11	93AD  CF      	                rst     08H
- 255: 4353+7	93AE  3E20    	                ld      a,' '
- 256: 4360+11	93B0  CF      	                rst     08H
+ 224:     -	9815          	printPFMap:
+ 225: 9651+10	9815  210100  	                LD		HL, $01
+ 226: 9661+11	9818  E5      					PUSH	HL
+ 227: 9672+10	9819  211A00  					LD		HL, $1A
+ 228: 9682+11	981C  E5      					PUSH	HL
+ 229: 9693+17	981D  CD7598  					CALL	moveCursor
+ 230: 9710+7	9820  3E20    					ld		a,32
+ 231: 9717+4	9822  47      					ld		b,a			; 32 chars per line
+ 232: 9721+7	9823  3E1A    	                ld		a,$1A
+ 233: 9728+4	9825  4F      					ld		c,a			; 32 lines per map
+ 234: 9732+10	9826  2100D0  					ld		hl,pathFindMap
+ 235: 9742+7	9829  7E      	pmPFLoop:		ld		a,(hl)		; get char
+ 236: 9749+7	982A  FEFF    	                cp      0FFH
+ 237: 9756+10	982C  CA4598  	                JP      Z,pmPFSkip
+ 238: 9766+17	982F  CDB798  					call	NumToHex	; decode what to print
+ 239: 9783+7	9832  3E20    	pmPFAfterSkip:  ld      a,' '
+ 240: 9790+11	9834  CF      	                rst     08H
+ 241: 9801+6	9835  23      					inc		hl			; next char
+ 242: 9807+8+5	9836  10F1    					djnz	pmPFLoop		; if were not at the end of a line, print next char
+ 243: 9815+17	9838  CD6C98  					call	newline		; if we are, print a new line
+ 244: 9832+4	983B  41      					ld		b,c			;are we at the end of a block
+ 245: 9836+8+5	983C  1001    					djnz	pmPFNextLine
+ 246: 9844+10	983E  C9      					ret
+ 247:     -	983F          	pmPFNextLine:	
+ 248: 9854+4	983F  48      					ld		c,b			;copy decremented b back to c
+ 249: 9858+7	9840  3E20    					ld 		a,32		;refill b withj 32
+ 250: 9865+4	9842  47      					ld		b,a
+ 251: 9869+12	9843  18E4    					jr		pmPFLoop	;draw next char
+ 252:     -	9845          	pmPFSkip:       
+ 253: 9881+7	9845  3E20    	                ld      a,' '
+ 254: 9888+11	9847  CF      	                rst     08H
+ 255: 9899+7	9848  3E20    	                ld      a,' '
+ 256: 9906+11	984A  CF      	                rst     08H
 **** main.asm ****
-  65: 4371+10	93B1  C39893  	                JP      pmPFAfterSkip
-  66:				
-  67:				;------HUD;
-  68:				include hud.asm
+  70: 9917+10	984B  C33298  	                JP      pmPFAfterSkip
+  71:				
+  72:				;------HUD;
+  73:				include hud.asm
 **** hud.asm ****
    1:     -	8900          	score			.EQU	8900H		;Score
    2:				
-   3:     -	93B4          	printScore:					
-   4: 4381+10	93B4  210200  					LD		HL, $02
-   5: 4391+11	93B7  E5      					PUSH	HL
-   6: 4402+10	93B8  212300  					LD		HL, $23
-   7: 4412+11	93BB  E5      					PUSH	HL
-   8: 4423+17	93BC  CDDB93  					CALL	moveCursor
-   9: 4440+10	93BF  218994  					LD		HL, scoreHUD
-  10: 4450+17	93C2  CD4B94  					CALL 	print
-  11: 4467+16	93C5  2A0089  					LD		HL, (score)
-  12: 4483+17	93C8  CDF293  					CALL	HLToDec
-  13: 4500+7	93CB  3E0A    					LD		A,LF
-  14: 4507+11	93CD  CF      					RST     08H
-  15: 4518+7	93CE  3E0D    					LD		A,CR
-  16: 4525+11	93D0  CF      					RST     08H
+   3:     -	984E          	printScore:					
+   4: 9927+10	984E  210200  					LD		HL, $02
+   5: 9937+11	9851  E5      					PUSH	HL
+   6: 9948+10	9852  212300  					LD		HL, $23
+   7: 9958+11	9855  E5      					PUSH	HL
+   8: 9969+17	9856  CD7598  					CALL	moveCursor
+   9: 9986+10	9859  212599  					LD		HL, scoreHUD
+  10: 9996+17	985C  CDE798  					CALL 	print
+  11:10013+16	985F  2A0089  					LD		HL, (score)
+  12:10029+17	9862  CD8C98  					CALL	HLToDec
+  13:10046+7	9865  3E0A    					LD		A,LF
+  14:10053+11	9867  CF      					RST     08H
+  15:10064+7	9868  3E0D    					LD		A,CR
+  16:10071+11	986A  CF      					RST     08H
 **** main.asm ****
-  69: 4536+10	93D1  C9      					RET
-  70:							
-  71:				;------- Libs ------------;
-  72:				include libs.asm
+  74:10082+10	986B  C9      					RET
+  75:							
+  76:				;------- Libs ------------;
+  77:				include libs.asm
 **** libs.asm ****
    1:     -	8888          	seed			.EQU	8888H		;Random seed
    2:				
-   3:     -	93D2          	newline:			
-   4: 4546+11	93D2  F5      					push 	af
-   5: 4557+7	93D3  3E0D    					ld		a, CR
-   6: 4564+11	93D5  CF      					rst 	08H
-   7: 4575+7	93D6  3E0A    					ld		a, LF
-   8: 4582+11	93D8  CF      					rst 	08H
-   9: 4593+10	93D9  F1      					pop 	af
-  10: 4603+10	93DA  C9      					ret
+   3:     -	986C          	newline:			
+   4:10092+11	986C  F5      					push 	af
+   5:10103+7	986D  3E0D    					ld		a, CR
+   6:10110+11	986F  CF      					rst 	08H
+   7:10121+7	9870  3E0A    					ld		a, LF
+   8:10128+11	9872  CF      					rst 	08H
+   9:10139+10	9873  F1      					pop 	af
+  10:10149+10	9874  C9      					ret
   11:							
   12:				;move cursor to (sp,sp-2)				
-  13:     -	93DB          	moveCursor:		
-  14: 4613+10	93DB  D1      					POP		DE
-  15: 4623+7	93DC  3E1B    					LD		A,$1B
-  16: 4630+11	93DE  CF      					RST     08H
-  17: 4641+7	93DF  3E5B    					LD		A,'['
-  18: 4648+11	93E1  CF      					RST     08H
-  19: 4659+10	93E2  E1      					POP		HL
-  20: 4669+17	93E3  CDF293  					CALL	HLToDec
-  21: 4686+7	93E6  3E3B    					LD		A,$3B
-  22: 4693+11	93E8  CF      					RST     08H
-  23: 4704+10	93E9  E1      					POP		HL
-  24: 4714+17	93EA  CDF293  					CALL	HLToDec
-  25: 4731+7	93ED  3E66    					LD		A,'f'
-  26: 4738+11	93EF  CF      					RST     08H
-  27: 4749+11	93F0  D5      					PUSH	DE
-  28: 4760+10	93F1  C9      					RET
+  13:     -	9875          	moveCursor:		
+  14:10159+10	9875  D1      					POP		DE
+  15:10169+7	9876  3E1B    					LD		A,$1B
+  16:10176+11	9878  CF      					RST     08H
+  17:10187+7	9879  3E5B    					LD		A,'['
+  18:10194+11	987B  CF      					RST     08H
+  19:10205+10	987C  E1      					POP		HL
+  20:10215+17	987D  CD8C98  					CALL	HLToDec
+  21:10232+7	9880  3E3B    					LD		A,$3B
+  22:10239+11	9882  CF      					RST     08H
+  23:10250+10	9883  E1      					POP		HL
+  24:10260+17	9884  CD8C98  					CALL	HLToDec
+  25:10277+7	9887  3E66    					LD		A,'f'
+  26:10284+11	9889  CF      					RST     08H
+  27:10295+11	988A  D5      					PUSH	DE
+  28:10306+10	988B  C9      					RET
   29:				
   30:				;Prints	hl as decimal			
-  31:     -	93F2          	HLToDec:
-  32: 4770+11	93F2  F5      					PUSH	AF
-  33: 4781+11	93F3  C5      					PUSH	BC
-  34: 4792+17	93F4  CDFA93  					CALL	DispHL
-  35: 4809+10	93F7  C1      					POP		BC
-  36: 4819+10	93F8  F1      					POP		AF
-  37: 4829+10	93F9  C9      					RET
-  38:     -	93FA          	DispHL:
-  39: 4839+10	93FA  01F0D8  					ld		bc,-10000
-  40: 4849+17	93FD  CD1394  					call	Num1
-  41: 4866+10	9400  0118FC  					ld		bc,-1000
-  42: 4876+17	9403  CD1394  					call	Num1
-  43: 4893+10	9406  019CFF  					ld		bc,-100
-  44: 4903+17	9409  CD1394  					call	Num1
-  45: 4920+7	940C  0EF6    					ld		c,-10
-  46: 4927+17	940E  CD1394  					call	Num1
-  47: 4944+7	9411  0EFF    					ld		c,-1
-  48: 4951+7	9413  3E2F    	Num1:			ld		a,'0'-1
-  49: 4958+4	9415  3C      	Num2:			inc		a
-  50: 4962+11	9416  09      					add		hl,bc
-  51: 4973+7+5	9417  38FC    					jr		c,Num2
-  52: 4980+15	9419  ED42    					sbc		hl,bc
-  53: 4995+11	941B  CF      					RST     08H
-  54: 5006+10	941C  C9      					ret
+  31:     -	988C          	HLToDec:
+  32:10316+11	988C  F5      					PUSH	AF
+  33:10327+11	988D  C5      					PUSH	BC
+  34:10338+17	988E  CD9498  					CALL	DispHL
+  35:10355+10	9891  C1      					POP		BC
+  36:10365+10	9892  F1      					POP		AF
+  37:10375+10	9893  C9      					RET
+  38:     -	9894          	DispHL:
+  39:10385+10	9894  01F0D8  					ld		bc,-10000
+  40:10395+17	9897  CDAD98  					call	Num1
+  41:10412+10	989A  0118FC  					ld		bc,-1000
+  42:10422+17	989D  CDAD98  					call	Num1
+  43:10439+10	98A0  019CFF  					ld		bc,-100
+  44:10449+17	98A3  CDAD98  					call	Num1
+  45:10466+7	98A6  0EF6    					ld		c,-10
+  46:10473+17	98A8  CDAD98  					call	Num1
+  47:10490+7	98AB  0EFF    					ld		c,-1
+  48:10497+7	98AD  3E2F    	Num1:			ld		a,'0'-1
+  49:10504+4	98AF  3C      	Num2:			inc		a
+  50:10508+11	98B0  09      					add		hl,bc
+  51:10519+7+5	98B1  38FC    					jr		c,Num2
+  52:10526+15	98B3  ED42    					sbc		hl,bc
+  53:10541+11	98B5  CF      					RST     08H
+  54:10552+10	98B6  C9      					ret
   55:				;Print A as HEX				
-  56:     -	941D          	NumToHex:    	
-  57: 5016+11	941D  C5      					push	bc
-  58: 5027+4	941E  4F      					ld 		c, a   		; a = number to convert
-  59: 5031+17	941F  CD2A94  	            	call 	Num1H
-  60: 5048+11	9422  CF      	            	RST     08H
-  61: 5059+4	9423  79      	            	ld 		a, c
-  62: 5063+17	9424  CD2E94  	            	call 	Num2H
-  63: 5080+11	9427  CF      	            	RST     08H
-  64: 5091+10	9428  C1      					pop		bc
-  65: 5101+10	9429  C9      	            	ret
-  66:				
-  67: 5111+4	942A  1F      	Num1H:        	rra
-  68: 5115+4	942B  1F      	            	rra
-  69: 5119+4	942C  1F      	            	rra
-  70: 5123+4	942D  1F      	           		rra
-  71: 5127+7	942E  F6F0    	Num2H:        	or 		$F0
-  72: 5134+4	9430  27      	            	daa
-  73: 5138+7	9431  C6A0    	            	add 	a, $A0
-  74: 5145+7	9433  CE40    	            	adc 	a, $40 		; Ascii hex at this point (0 to F)   
-  75: 5152+10	9435  C9      	            	ret
-  76:				
-  77:				;Get ABS of A
-  78:     -	9436          	absA:
-  79: 5162+4	9436  B7      	     or a
-  80: 5166+5+6	9437  F0      	     ret p
-  81: 5171+8	9438  ED44    	     neg
-  82: 5179+10	943A  C9      	     ret
-  83:				
-  84:				;getArAndomA	 
-  85:     -	943B          	randomA:				
-  86: 5189+13	943B  3A8888  					ld a, 	(seed)
-  87: 5202+4	943E  47      					ld b, 	a 
-  88:				
-  89: 5206+4	943F  0F      					rrca ; multiply by 32
-  90: 5210+4	9440  0F      					rrca
-  91: 5214+4	9441  0F      					rrca
-  92: 5218+7	9442  EE1F    					xor $1f
-  93:				
-  94: 5225+4	9444  80      					add 	a, b
-  95: 5229+7	9445  DEFF    					sbc a, 255 ; carry
-  96:				
-  97: 5236+13	9447  328888  					ld (seed), a
-  98: 5249+10	944A  C9      					ret
-  99:				
- 100:				;------- Print string
- 101: 5259+11	944B  F5      	print:			PUSH 	AF				; Preserve AF				
- 102: 5270+7	944C  7E      	printLoop:      LD      A,(HL)          ; Get character
- 103: 5277+4	944D  B7      	                OR      A               ; Is it $00 ?
- 104: 5281+7+5	944E  2804    	                JR     	Z,printRet      ; Then RETurn on terminator
- 105: 5288+11	9450  CF      	                RST     08H             ; Print it
- 106: 5299+6	9451  23      	                INC     HL              ; Next Character
- 107: 5305+12	9452  18F8    	                JR      printLoop       ; Continue until $00
- 108:								
- 109:				;delay loop
- 110:     -	9454          	printRet:		
- 111: 5317+10	9454  F1      					POP		AF
- 112: 5327+10	9455  C9      					RET
- 113:     -	9456          	delay:
- 114: 5337+4	9456  00      					NOP
- 115: 5341+6	9457  0B      					DEC 	BC
- 116: 5347+4	9458  78      					LD 		A,B
- 117: 5351+4	9459  B1      					OR 		C
- 118: 5355+5+6	945A  C8      					RET 	Z
+  56:     -	98B7          	NumToHex:    	
+  57:10562+11	98B7  C5      					push	bc
+  58:10573+11	98B8  F5      	                push    af
+  59:10584+4	98B9  4F      					ld 		c, a   		; a = number to convert
+  60:10588+17	98BA  CDC698  	            	call 	Num1H
+  61:10605+11	98BD  CF      	            	RST     08H
+  62:10616+4	98BE  79      	            	ld 		a, c
+  63:10620+17	98BF  CDCA98  	            	call 	Num2H
+  64:10637+11	98C2  CF      	            	RST     08H
+  65:10648+10	98C3  F1      	                pop     af
+  66:10658+10	98C4  C1      					pop		bc
+  67:10668+10	98C5  C9      	            	ret
+  68:				
+  69:10678+4	98C6  1F      	Num1H:        	rra
+  70:10682+4	98C7  1F      	            	rra
+  71:10686+4	98C8  1F      	            	rra
+  72:10690+4	98C9  1F      	           		rra
+  73:10694+7	98CA  F6F0    	Num2H:        	or 		$F0
+  74:10701+4	98CC  27      	            	daa
+  75:10705+7	98CD  C6A0    	            	add 	a, $A0
+  76:10712+7	98CF  CE40    	            	adc 	a, $40 		; Ascii hex at this point (0 to F)   
+  77:10719+10	98D1  C9      	            	ret
+  78:				
+  79:				;Get ABS of A
+  80:     -	98D2          	absA:
+  81:10729+4	98D2  B7      	     or a
+  82:10733+5+6	98D3  F0      	     ret p
+  83:10738+8	98D4  ED44    	     neg
+  84:10746+10	98D6  C9      	     ret
+  85:				
+  86:				;getArAndomA	 
+  87:     -	98D7          	randomA:				
+  88:10756+13	98D7  3A8888  					ld a, 	(seed)
+  89:10769+4	98DA  47      					ld b, 	a 
+  90:				
+  91:10773+4	98DB  0F      					rrca ; multiply by 32
+  92:10777+4	98DC  0F      					rrca
+  93:10781+4	98DD  0F      					rrca
+  94:10785+7	98DE  EE1F    					xor $1f
+  95:				
+  96:10792+4	98E0  80      					add 	a, b
+  97:10796+7	98E1  DEFF    					sbc a, 255 ; carry
+  98:				
+  99:10803+13	98E3  328888  					ld (seed), a
+ 100:10816+10	98E6  C9      					ret
+ 101:				
+ 102:				;------- Print string
+ 103:10826+11	98E7  F5      	print:			PUSH 	AF				; Preserve AF				
+ 104:10837+7	98E8  7E      	printLoop:      LD      A,(HL)          ; Get character
+ 105:10844+4	98E9  B7      	                OR      A               ; Is it $00 ?
+ 106:10848+7+5	98EA  2804    	                JR     	Z,printRet      ; Then RETurn on terminator
+ 107:10855+11	98EC  CF      	                RST     08H             ; Print it
+ 108:10866+6	98ED  23      	                INC     HL              ; Next Character
+ 109:10872+12	98EE  18F8    	                JR      printLoop       ; Continue until $00
+ 110:								
+ 111:				;delay loop
+ 112:     -	98F0          	printRet:		
+ 113:10884+10	98F0  F1      					POP		AF
+ 114:10894+10	98F1  C9      					RET
+ 115:     -	98F2          	delay:
+ 116:10904+4	98F2  00      					NOP
+ 117:10908+6	98F3  0B      					DEC 	BC
+ 118:10914+4	98F4  78      					LD 		A,B
+ 119:10918+4	98F5  B1      					OR 		C
+ 120:10922+5+6	98F6  C8      					RET 	Z
 **** main.asm ****
-  73: 5360+12	945B  18F9    					JR 		delay
-  74:				
-  75:				;Strings
-  76:     -	945D  1B5B3334	wall:			.BYTE	1BH,"[34m#",1BH,"[0m",0
+  78:10927+12	98F7  18F9    					JR 		delay
+  79:				
+  80:				;Strings
+  81:     -	98F9  1B5B3334	wall:			.BYTE	1BH,"[34m#",1BH,"[0m",0
 	              6D231B5B
 	              306D00
-  77:     -	9468  1B5B3937	powerPellet:	.BYTE	1BH,"[97mo",1BH,"[0m",0
+  82:     -	9904  1B5B3937	powerPellet:	.BYTE	1BH,"[97mo",1BH,"[0m",0
 	              6D6F1B5B
 	              306D00
-  78:     -	9473  1B5B3337	pellet:			.BYTE	1BH,"[37m*",1BH,"[0m",0
+  83:     -	990F  1B5B3337	pellet:			.BYTE	1BH,"[37m*",1BH,"[0m",0
 	              6D2A1B5B
 	              306D00
-  79:     -	947E  1B5B3331	superFruit:		.BYTE	1BH,"[31m@",1BH,"[0m",0
+  84:     -	991A  1B5B3331	superFruit:		.BYTE	1BH,"[31m@",1BH,"[0m",0
 	              6D401B5B
 	              306D00
-  80:				
-  81:     -	9489  53636F72	scoreHUD:     	.BYTE "Score: ",0
+  85:				
+  86:     -	9925  53636F72	scoreHUD:     	.BYTE "Score: ",0
 	              653A2000
-  82:				
-  83:     -	9491  1B5B3933	pacman:			.BYTE	1BH,"[93mC",1BH,"[0m",0
+  87:				
+  88:     -	992D  1B5B3933	pacman:			.BYTE	1BH,"[93mC",1BH,"[0m",0
 	              6D431B5B
 	              306D00
-  84:				
-  85:     -	949C  2000    	void:			.BYTE	" ",0
-  86:				
-  87:     -	949E  1B5B481B	cls:      	  	.BYTE 1BH,"[H",1BH,"[2J",0
+  89:				
+  90:     -	9938  2000    	void:			.BYTE	" ",0
+  91:				
+  92:     -	993A  1B5B481B	cls:      	  	.BYTE 1BH,"[H",1BH,"[2J",0
 	              5B324A00
-  88:				;-----Path find map
-  89:     -	D000          		.ORG 0D000H
-  90:     -	D000          	pathFindMap:
-  91:				;----- Map ------		
-  92:     -	E000          		.ORG 0E000H
+  93:     -	9942  1B5B3F32	hideCursor:	  	.BYTE	1BH,"[?25l",0
+	              356C00
+  94:     -	9949  1B5B3F32	showCursor:	  	.BYTE	1BH,"[?25h",0
+	              356800
+  95:				;-----Path find map
+  96:     -	D000          		.ORG 0D000H
+  97:     -	D000          	pathFindMap:
+  98:				;----- Map ------		
+  99:     -	E000          		.ORG 0E000H
 **** main.asm ****
-  93:					include map.asm
+ 100:					include map.asm
 **** map.asm ****
    1:				;----- Map data bit positions
    2:     -	0000          	upBit			.EQU	0
@@ -1136,7 +1862,7 @@
 	              00000000
 	              00000000
 **** main.asm ****
-  94:     -	E3E0  00000000			.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+ 101:     -	E3E0  00000000			.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
 	              00000000
 	              00000000
 	              00000000
@@ -1151,69 +1877,68 @@ Statistics:
 
      4	passes
      0	jr promotions
-   160	symbols
-  2214	bytes
+   252	symbols
+  3408	bytes
 
 
 
 Symbol Table:
 
-absa            9436     
-blueghost       91e4     
+absa            98d2     
 bn             =   b     
 bp             =  2b     
 bs             =  1b     
-calcnextmove    90e3     
-calculatemapcell 936f     
-calculatemapd   934b     
-calculatemapl   9357     
-calculatemapr   9363     
-calculatemapu   933f     
-calculatepathmap 92f1     
-calculatepathmaploop 9303     
-checkh          90ed     
-checkv          90fb     
-clearpm         907f     
-clearredghost   9117     
-cls             949e     
+calcnextmove    90fb     
+calculatemapcell 9809     
+calculatemapd   97e5     
+calculatemapl   97f1     
+calculatemapr   97fd     
+calculatemapu   97d9     
+calculatepathmap 978b     
+calculatepathmaploop 979d     
+caughtjaletime =  20     
+checkh          9105     
+checkv          9113     
+clearghost      9152     
+clearpm         908c     
+cls             993a     
 cn             =   7     
+colideghost     916c     
 cp             =  27     
 cr             =   d     
 cs             =  17     
-delay           9456     
-disphl          93fa     
+delay           98f2     
+disphl          9894     
 dn             =   9     
 downbit        =   1     
 dp             =  29     
 ds             =  19     
-eatpellet       90b2     
-eatspellet      90ba     
-gameloop        9032     
-getaddresspf    9252     
-getmapaddress   923a     
-getmove         90c7     
-getpmmapdata    90a5     
-getredghostmapdata 913d     
-getredghostnextmove 9156     
+eatpellet       90bf     
+eatppellet      90d7     
+eatspellet      90cb     
+gameloop        9036     
+getaddresspf    96ec     
+getmapaddress   96d4     
+getmove         90df     
+getpmmapdata    90b2     
 ghostdis       =8113     
+ghostnextmove   9145     
 gn             =   3     
 gp             =  23     
-greenghost      91d9     
 gs             =  13     
-hltodec         93f2     
+hidecursor      9942     
+hltodec         988c     
 hn             =   c     
 hp             =  2c     
 hs             =  1c     
-initoghostx    =  14     
-initoghosty    =   1     
+initghost       9179     
 initpacx       =   e     
 initpacy       =   e     
-initpathfind    92d9     
-initppfloop     92e0     
-initredghostx  =  14     
-initredghosty  =   1     
-input           9065     
-ismovevalid     9220     
+initpathfind    9773     
+initppfloop     977a     
+input           9072     
+ismovevalid     96ba     
+killpacman      913a     
 kn             =   d     
 kp             =  2d     
 ks             =  1d     
@@ -1223,96 +1948,189 @@ ln             =   6
 lp             =  26     
 ls             =  16     
 map             e000     
-move            91fa     
-movecursor      93db     
-moved           920e     
-movedvalid      9231     
-movel           9214     
-movelvalid      9234     
-movepm          910b     
-mover           921a     
-moveredghost    914a     
-movervalid      9237     
-moveu           9208     
-moveuvalid      922e     
-newline         93d2     
-nextmovevalid   90dc     
-num1            9413     
-num1h           942a     
-num2            9415     
-num2h           942e     
-numtohex        941d     
+move            9694     
+movecursor      9875     
+moved           96a8     
+movedvalid      96cb     
+moveghost       9186     
+movel           96ae     
+movelvalid      96ce     
+movepm          9123     
+movepma         912e     
+mover           96b4     
+movervalid      96d1     
+moveu           96a2     
+moveuvalid      96c8     
+newline         986c     
+nextmovevalid   90f4     
+num1            98ad     
+num1h           98c6     
+num2            98af     
+num2h           98ca     
+numtohex        98b7     
+oghost          9407     
+oghostcheckd    9388     
+oghostcheckl    9396     
+oghostcheckr    93a4     
+oghostchecku    937a     
+oghostclear     92dc     
+oghostcolide    93de     
+oghostdectimer  933f     
+oghostdir      =8122     
+oghostinit      9316     
+oghostinittimer=  10     
+oghostinitx    =   f     
+oghostinity    =   8     
+oghostmapdata   9309     
+oghostmove      9326     
+oghostnextmove  9350     
+oghostpathfind  93b2     
+oghostpfpp      93c9     
+oghostprint     92e8     
+oghostsetnewdir 93d5     
+oghoststorex   =   f     
+oghoststorey   =   b     
+oghosttimer    =8125     
+oghostx        =8120     
+oghosty        =8121     
 oldstackpointer=89f0     
 originalbc     =89f2     
 paccdir        =8102     
-pacman          9491     
+pacman          992d     
 pacndir        =8103     
 pacx           =8100     
 pacy           =8101     
 pathfinddepth  =  30     
 pathfindmap     d000     
-pellet          9473     
+pellet          990f     
 pelletbit      =   5     
-pfnextrow       92ea     
-pinkghost       91ef     
-pmchar          929c     
-pmcharret       92d7     
-pmloop          9288     
-pmnextline      9296     
-pmpfafterskip   9398     
-pmpfloop        938f     
-pmpfnextline    93a5     
-pmpfskip        93ab     
+pfnextrow       9784     
+pghost          953d     
+pghostcheckd    94be     
+pghostcheckl    94cc     
+pghostcheckr    94da     
+pghostchecku    94b0     
+pghostclear     9412     
+pghostcolide    9514     
+pghostdectimer  9475     
+pghostdir      =8132     
+pghostinit      944c     
+pghostinittimer=  18     
+pghostinitx    =   f     
+pghostinity    =   8     
+pghostmapdata   943f     
+pghostmove      945c     
+pghostnextmove  9486     
+pghostpathfind  94e8     
+pghostpfpp      94ff     
+pghostprint     941e     
+pghostsetnewdir 950b     
+pghoststorex   =  10     
+pghoststorey   =   b     
+pghosttimer    =8135     
+pghostx        =8130     
+pghosty        =8131     
+pmchar          9736     
+pmcharret       9771     
+pmloop          9722     
+pmnextline      9730     
+pmpfafterskip   9832     
+pmpfloop        9829     
+pmpfnextline    983f     
+pmpfskip        9845     
 powerpbit      =   4     
-powerpellet     9468     
-print           944b     
-printloop       944c     
-printmap        9281     
-printmapat      926a     
-printp          92b7     
-printpfmap      937b     
-printpm         908b     
-printpp         92af     
-printredghost   9123     
-printret        9454     
-printscore      93b4     
-printsf         92c7     
-printvoid       92cf     
-printwall       92bf     
-randoma         943b     
-redghost        91ce     
-redghostcheckd  918e     
-redghostcheckl  919c     
-redghostcheckr  91aa     
-redghostchecku  9180     
-redghostdir    =8112     
-redghostpathfind 91b8     
-redghostsetnewdir 91c5     
-redghostx      =8110     
-redghosty      =8111     
+powerpellet     9904     
+ppactive       =8104     
+ppellettics    =  20     
+print           98e7     
+printghost      915f     
+printloop       98e8     
+printmap        971b     
+printmapat      9704     
+printp          9751     
+printpfmap      9815     
+printpm         9098     
+printpp         9749     
+printret        98f0     
+printscore      984e     
+printsf         9761     
+printsghost     9193     
+printvoid       9769     
+printwall       9759     
+randoma         98d7     
+rghost          92d1     
+rghostcheckd    9252     
+rghostcheckl    9260     
+rghostcheckr    926e     
+rghostchecku    9244     
+rghostclear     91a6     
+rghostcolide    92a8     
+rghostdectimer  9209     
+rghostdir      =8112     
+rghostinit      91e0     
+rghostinittimer=   8     
+rghostinitx    =   f     
+rghostinity    =   8     
+rghostmapdata   91d3     
+rghostmove      91f0     
+rghostnextmove  921a     
+rghostpathfind  927c     
+rghostpfpp      9293     
+rghostprint     91b2     
+rghostsetnewdir 929f     
+rghoststorex   =   e     
+rghoststorey   =   b     
+rghosttimer    =8115     
+rghostx        =8110     
+rghosty        =8111     
 rightbit       =   3     
 rn             =   a     
 rp             =  2a     
 rs             =  1a     
 score          =8900     
-scorehud        9489     
+scorehud        9925     
 seed           =8888     
 sfbit          =   7     
-storeoghostx   =   f     
-storeoghosty   =   f     
-storeredghostx =   f     
-storeredghosty =   f     
-superfruit      947e     
+sghost0         967e     
+sghost1         9689     
+sghost1print    919f     
+showcursor      9949     
+superfruit      991a     
+tghost          9673     
+tghostcheckd    95f4     
+tghostcheckl    9602     
+tghostcheckr    9610     
+tghostchecku    95e6     
+tghostclear     9548     
+tghostcolide    964a     
+tghostdectimer  95ab     
+tghostdir      =8142     
+tghostinit      9582     
+tghostinittimer=  20     
+tghostinitx    =   f     
+tghostinity    =   8     
+tghostmapdata   9575     
+tghostmove      9592     
+tghostnextmove  95bc     
+tghostpathfind  961e     
+tghostpfpp      9635     
+tghostprint     9554     
+tghostsetnewdir 9641     
+tghoststorex   =  11     
+tghoststorey   =   b     
+tghosttimer    =8145     
+tghostx        =8140     
+tghosty        =8141     
 un             =   5     
 up             =  25     
 upbit          =   0     
 us             =  15     
-validinput      907b     
+validinput      9088     
 vn             =   e     
-void            949c     
+void            9938     
 vp             =  2e     
 vs             =  1e     
-wall            945d     
+wall            98f9     
 wallbit        =   6     
 ww             =  40     
 xn             =   f     
