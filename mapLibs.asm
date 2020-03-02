@@ -1,5 +1,14 @@
 pathFindDepth   .EQU	30H
 
+;-------- Map -------;
+;InitiMap
+initMap:
+				LD		BC,400H
+				LD		HL,map
+				LD		DE,liveMap
+				LDIR
+				RET
+
 ;------- Get Map Data ----;
 ; C - X
 ; B	- Y
@@ -67,7 +76,7 @@ printMap:
 				ld		a,32
 				ld		b,a			; 32 chars per line
 				ld		c,a			; 32 lines per map
-				ld		hl,map
+				ld		hl,liveMap
 pmLoop:			ld		a,(hl)		; get char
 				call	pmChar		; decode what to print
 				inc		hl			; next char

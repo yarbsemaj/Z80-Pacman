@@ -19,6 +19,7 @@ originalBC		.EQU	89F2H		;BC before manipulation, used for calculating board posi
 			ld		a,0
 			ld		(pPActive),A
 			CALL	initGhost
+			CALL	initMap
 			LD		HL, cls			;Clear screen
 			CALL	print
 			LD		HL, hideCursor	;Hide Cursor
@@ -85,9 +86,12 @@ void:			.BYTE	" ",0
 cls:      	  	.BYTE 1BH,"[H",1BH,"[2J",0
 hideCursor:	  	.BYTE	1BH,"[?25l",0
 showCursor:	  	.BYTE	1BH,"[?25h",0
-;-----Path find map
-	.ORG 0D000H
-pathFindMap:
+
 ;----- Map ------		
-	.ORG 0E000H
-	include map.asm
+	.ORG 0C000H
+include map.asm
+
+;-----Path find map
+pathFindMap	.EQU	0D000H
+
+liveMap		.EQU	0E000H
