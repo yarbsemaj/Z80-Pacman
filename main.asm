@@ -7,17 +7,7 @@ originalBC		.EQU	89F2H		;BC before manipulation, used for calculating board posi
 	.ORG 9000H
 			ld		(oldStackPointer), SP
 			ld		sp,0FFFFH
-			ld		a, initPacx		;set Pacman Pos
-			ld		(pacx),a
-			ld		a, initPacy
-			ld		(pacy),a
-			ld		a, 'D'			;Set start direction
-			ld		(pacCDir),A
-			ld		(pacNDir),A
-			ld		HL, 0H
-			LD		(score), HL
-			ld		a,0
-			ld		(pPActive),A
+			CALL	initPacman
 			CALL	initGhost
 			CALL	initMap
 			LD		HL, cls			;Clear screen
@@ -47,13 +37,18 @@ gameLoop:
 
 			;call 	printPFMap
 			
-			call 	printScore
+			call 	printHUD
 			LD 		B,0FH   ;delay
 			LD		C,0FFH
 			CALL 	DELAY
 			JP		gameLoop
 			LD		SP,(oldStackPointer)
 			ret
+
+endGame:        LD		HL, showCursor	;Hide Cursor
+			    CALL	print
+                LD		SP,(oldStackPointer)
+				RET	
 		
 ;-------------- Input --------------------------					
 include input.asm	
@@ -76,11 +71,6 @@ wall:			.BYTE	1BH,"[34m#",1BH,"[0m",0
 powerPellet:	.BYTE	1BH,"[97mo",1BH,"[0m",0
 pellet:			.BYTE	1BH,"[37m*",1BH,"[0m",0
 superFruit:		.BYTE	1BH,"[31m@",1BH,"[0m",0
-
-scoreHUD:     	.BYTE "Score: ",0
-
-pacman:			.BYTE	1BH,"[93mC",1BH,"[0m",0
-
 void:			.BYTE	" ",0
 
 cls:      	  	.BYTE 1BH,"[H",1BH,"[2J",0

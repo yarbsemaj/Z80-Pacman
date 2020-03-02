@@ -3,13 +3,31 @@ pacx			.EQU	8100H
 pacy			.EQU	8101H
 pacCDir			.EQU	8102H		;Pacmans current direction
 pacNDir			.EQU	8103H		;Pacman next direction (from key press)
+pacLives		.EQU	8105H		;Pacman next direction (from key press)
 
 initPacx		.EQU	14
 initPacy		.EQU	14
+initLives		.EQU	4
 
 pPelletTics     .EQU    20H         ;Power Pellet last time
 
 pPActive        .EQU    8104H       ;Power Pellet Timer
+
+initPacman:
+				LD		HL, 0H
+				LD		(score), HL
+				LD		a,initLives
+				LD		(pacLives),a
+resetPacMan:	LD		a, initPacx		;set Pacman Pos
+				LD		(pacx),a
+				LD		a, initPacy
+				LD		(pacy),a
+				LD		a, 'D'			;Set start direction
+				LD		(pacCDir),A
+				LD		(pacNDir),A
+				LD		a,0
+				LD		(pPActive),A
+				RET
 
 clearPM:
 				LD		A, (pacx)		;Push X to stack
@@ -115,7 +133,15 @@ movePMA:        LD		A,(pacCDir)
 				JP		move
 
 killPacman:
-                LD		HL, showCursor	;Hide Cursor
-			    CALL	print
-                LD		SP,(oldStackPointer)
-				ret	
+				POP		HL
+				POP		HL
+				LD		A,(pacLives)
+				DEC		A
+				OR		A
+				JP		Z,endGame
+				LD		(pacLives),A
+				CALL	resetPacMan
+				CALL	initGhost
+				JP		gameLoop
+
+pacman:			.BYTE	1BH,"[93mC",1BH,"[0m",0
