@@ -64,7 +64,8 @@ pGhostMove:
 				LD		A,(pGhostDir)
 				LD		DE,pGhostX
 				LD		BC,pGhostY
-				JP		move
+				JP		ghostMove
+
 
 pGhostDecTimer:
                 DEC     A
@@ -187,6 +188,20 @@ pGhostColide:
 			    LD		(pGhostY),a
                 LD		a, pGhostInitTimer
 			    LD		(pGhostTimer),a
+                RET
+
+;x = l
+;y = h
+pGhostStack:
+				LD      A,L               		;Compair X
+                LD      B,A
+                LD      A,(pGhostX)
+                CP      B
+                RET     NZ
+                LD      A,h                		;Compair Y
+                LD      B,A
+                LD      A,(pGhostY)
+                CP      B
                 RET
 
 pGhost:		.BYTE	1BH,"[95mM",1BH,"[0m",0

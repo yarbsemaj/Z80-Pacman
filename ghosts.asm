@@ -49,6 +49,82 @@ sGhost1Print:
 				CALL 	print
 				RET
 
+ghostMove:
+				CP		'W'
+				JR		Z,ghostMoveU
+				CP		'A'
+				JR		Z,ghostMoveL
+				CP		'S'
+				JR		Z,ghostMoveD
+				JR		ghostMoveR
+
+ghostMoveU:			
+				LD      A, (DE)
+                LD      L,A         ;ld x
+                LD		A, (BC)
+				DEC		A
+				AND		00011111B
+                LD      H,A         ;ld y
+                CALL    ghostCheckStack
+                RET     Z
+				LD		(BC),A
+				RET
+ghostMoveD:		
+	            LD      A, (DE)
+                LD      L,A         ;ld x
+				LD		A, (BC)
+				INC		A
+				AND		00011111B
+                LD      H,A         ;ld y
+                CALL    ghostCheckStack
+                RET     Z
+				LD		(BC),A
+				RET
+ghostMoveL:		
+                LD      A, (BC)
+                LD      H,A         ;ld y
+				LD		A, (DE)
+				DEC		A
+				AND		00011111B
+                LD      L,A         ;ld x
+                CALL    ghostCheckStack
+                RET     Z
+				LD		(DE),A
+				RET
+ghostMoveR:		
+                LD      A, (BC)
+                LD      H,A         ;ld y
+				LD		A, (DE)
+				INC		A
+				AND		00011111B
+                LD      L,A         ;ld x
+                CALL    ghostCheckStack
+                RET     Z
+				LD		(DE),A
+				RET
+ghostCheckStack:
+                PUSH   AF
+                PUSH   BC
+                PUSH   DE
+                CALL   rGhostStack
+                JP     Z,ghostDoStack
+                CALL   oGhostStack
+                JP     Z,ghostDoStack
+                CALL   pGhostStack
+                JP     Z,ghostDoStack
+                CALL   tGhostStack
+                JP     Z,ghostDoStack
+                POP    DE
+                POP    BC
+                POP    AF
+                RET
+ghostDoStack:   
+                POP    DE
+                POP    BC
+                POP    AF
+                POP    AF
+                RET
+                
 include ghosts/red.asm
 include ghosts/orange.asm
 include ghosts/pink.asm

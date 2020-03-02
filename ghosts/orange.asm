@@ -64,7 +64,7 @@ oGhostMove:
 				LD		A,(oGhostDir)
 				LD		DE,oGhostX
 				LD		BC,oGhostY
-				JP		move
+				JP		ghostMove
 
 oGhostDecTimer:
                 DEC     A
@@ -187,6 +187,19 @@ oGhostColide:
 			    LD		(oGhostY),a
                 LD		a, oGhostInitTimer
 			    LD		(oGhostTimer),a
+                RET
+;x = l
+;y = h
+oGhostStack:
+				LD      A,L               		;Compair X
+                LD      B,A
+                LD      A,(oGhostX)
+                CP      B
+                RET     NZ
+                LD      A,h                		;Compair Y
+                LD      B,A
+                LD      A,(oGhostY)
+                CP      B
                 RET
 
 oGhost:		.BYTE	1BH,"[33mM",1BH,"[0m",0

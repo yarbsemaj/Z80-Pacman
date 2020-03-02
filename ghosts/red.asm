@@ -64,7 +64,8 @@ rGhostMove:
 				LD		A,(rGhostDir)
 				LD		DE,rGhostX
 				LD		BC,rGhostY
-				JP		move
+				JP		ghostMove
+
 
 rGhostDecTimer:
                 DEC     A
@@ -165,17 +166,13 @@ rGhostSetNewDir:
 
 rGhostColide:   
                 LD      A,(pacx)                ;Compair X
-				;CALL	NumToHex
                 LD      B,A
                 LD      A,(rGhostX)
-				;CALL	NumToHex
                 CP      B
                 RET     NZ
                 LD      A,(pacy)                ;Compair Y
-				;CALL	NumToHex
                 LD      B,A
                 LD      A,(rGhostY)
-				;CALL	NumToHex
                 CP      B
                 RET     NZ
                 LD      A,(pPActive)              ;Colishion Happened
@@ -187,6 +184,19 @@ rGhostColide:
 			    LD		(rGhostY),a
                 LD		a, rGhostInitTimer
 			    LD		(rGhostTimer),a
+                RET
+;x = l
+;y = h
+rGhostStack:
+				LD      A,L               		;Compair X
+                LD      B,A
+                LD      A,(rGhostX)
+                CP      B
+                RET     NZ
+                LD      A,h                		;Compair Y
+                LD      B,A
+                LD      A,(rGhostY)
+                CP      B
                 RET
 
 rGhost:		.BYTE	1BH,"[91mM",1BH,"[0m",0
