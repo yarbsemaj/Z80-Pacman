@@ -38,6 +38,8 @@ gameLoop:
 			;call 	printPFMap
 			
 			call 	printHUD
+			call	newline
+			call	checkNextLevel
 			LD 		B,0FH   ;delay
 			LD		C,0FFH
 			CALL 	DELAY

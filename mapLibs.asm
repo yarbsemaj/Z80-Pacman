@@ -30,6 +30,52 @@ getMapAddress:
 				pop		bc
 				ret
 
+;--------Check map for pellets ------;
+checkNextLevel:
+				call	checkMap
+				LD		A,E
+				CALL	NumToHex
+				OR		A
+				RET		NZ
+				LD		A,D
+				CALL	NumToHex
+				OR		A
+				RET		NZ
+
+				CALL	initMap
+				CALL	initGhost
+				CALL	resetPacman
+				ret
+
+checkMap:
+				ld		a,32
+				ld		b,a			; 32 chars per line
+				ld		c,a			; 32 lines per map
+				ld		hl,liveMap
+				ld		de,0
+checkMapLoop:	ld		a,(hl)		; get char
+				call	checkMapChar; check the char
+				inc		hl			; next char
+				djnz	checkMapLoop; if were not at the end of a line, print next char
+				ld		b,c			;are we at the end of a block
+				djnz	checkMapNextLine
+				ret
+checkMapNextLine:	
+				ld		c,b			;copy decremented b back to c
+				ld 		a,32		;refill b withj 32
+				ld		b,a
+				jr		checkMapLoop;draw next char
+
+checkMapChar:
+				bit		pelletBit,a
+				CALL	NZ,incrementDE
+				bit		powerpBit,a
+				CALL	NZ,incrementDE
+				RET
+incrementDE:
+				INC		DE
+				RET
+
 ;------- Get Path Find Map Address----;
 ; C - X
 ; B	- Y

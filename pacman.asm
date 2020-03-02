@@ -140,6 +140,7 @@ killPacman:
 				OR		A
 				JP		Z,endGame
 				LD		(pacLives),A
+				CALL	clearGhost
 				CALL	resetPacMan
 				CALL	initGhost
 				JP		gameLoop
