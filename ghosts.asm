@@ -66,7 +66,6 @@ ghostMoveU:
 				AND		00011111B
                 LD      H,A         ;ld y
                 CALL    ghostCheckStack
-                RET     Z
 				LD		(BC),A
 				RET
 ghostMoveD:		
@@ -77,7 +76,6 @@ ghostMoveD:
 				AND		00011111B
                 LD      H,A         ;ld y
                 CALL    ghostCheckStack
-                RET     Z
 				LD		(BC),A
 				RET
 ghostMoveL:		
@@ -88,7 +86,6 @@ ghostMoveL:
 				AND		00011111B
                 LD      L,A         ;ld x
                 CALL    ghostCheckStack
-                RET     Z
 				LD		(DE),A
 				RET
 ghostMoveR:		
@@ -99,7 +96,6 @@ ghostMoveR:
 				AND		00011111B
                 LD      L,A         ;ld x
                 CALL    ghostCheckStack
-                RET     Z
 				LD		(DE),A
 				RET
 ghostCheckStack:
