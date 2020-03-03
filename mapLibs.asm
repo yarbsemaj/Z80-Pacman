@@ -32,19 +32,18 @@ getMapAddress:
 
 ;--------Check map for pellets ------;
 checkNextLevel:
-				call	checkMap
+				CALL	checkMap
 				LD		A,E
-				CALL	NumToHex
 				OR		A
 				RET		NZ
 				LD		A,D
-				CALL	NumToHex
 				OR		A
 				RET		NZ
 
 				CALL	initMap
 				CALL	initGhost
 				CALL	resetPacman
+				CALL 	printMap
 				ret
 
 checkMap:

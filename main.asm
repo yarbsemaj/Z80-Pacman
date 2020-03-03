@@ -79,8 +79,7 @@ cls:      	  	.BYTE 1BH,"[H",1BH,"[2J",0
 hideCursor:	  	.BYTE	1BH,"[?25l",0
 showCursor:	  	.BYTE	1BH,"[?25h",0
 
-;----- Map ------		
-	.ORG 0C000H
+;----- Map ------
 include map.asm
 
 ;-----Path find map

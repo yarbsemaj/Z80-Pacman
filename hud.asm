@@ -4,6 +4,7 @@ printHud:
 				CALL	printScore
 				CALL	printLives
 				RET
+;Hud elements
 printScore:					
 				LD		HL, $02
 				PUSH	HL
