@@ -9,22 +9,22 @@ newline:
 				pop 	af
 				ret
 			
-;move cursor to (sp,sp-2)				
+;move cursor to (C,B)				
 moveCursor:		
-				POP		DE
 				LD		A,$1B
 				RST     08H
 				LD		A,'['
 				RST     08H
-				POP		HL
+				LD		L,C
+				LD		H,0
 				CALL	HLToDec
 				LD		A,$3B
 				RST     08H
-				POP		HL
+				LD		L,B
+				LD		H,0
 				CALL	HLToDec
 				LD		A,'f'
 				RST     08H
-				PUSH	DE
 				RET
 
 ;Prints	hl as decimal			

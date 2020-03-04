@@ -20,14 +20,10 @@ pGhostClear:
 pGhostPrint:
 				LD		A, (pGhostX)		;Push X to stack
 				INC		A
-				LD		L,A
-				LD		H, $00			;We dont care about msb
-				PUSH	HL
+				LD		C,A
 				LD		A, (pGhostY)		;Push Y to stack
 				INC		A
-				LD		L,A
-				LD		H, $00			;Again we dont care
-				PUSH	HL
+				LD		B,A
 				CALL	moveCursor
                 LD      A,(pPActive)
                 OR      A

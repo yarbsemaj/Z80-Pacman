@@ -103,13 +103,7 @@ getAddressPF:
 printMapAt:	
 			PUSH	BC
 			INC		C
-			LD		L,C
-			LD		H, $00			;We dont care about msb
-			PUSH	HL
 			INC		B
-			LD		L,B
-			LD		H, $00			;Again we dont care
-			PUSH	HL
 			CALL	moveCursor
 			POP 	BC
 			CALL	getMapAddress
@@ -276,10 +270,8 @@ calculateMapCell:
 				RET
 
 printPFMap:
-                LD		HL, $01
-				PUSH	HL
-				LD		HL, $1A
-				PUSH	HL
+                LD		C, $01
+				LD		B, $1A
 				CALL	moveCursor
 				ld		a,32
 				ld		b,a			; 32 chars per line

@@ -40,14 +40,10 @@ clearPM:
 printPM:
 				LD		A, (pacx)		;Push X to stack
 				INC		A
-				LD		L,A
-				LD		H, $00			;We dont care about msb
-				PUSH	HL
+				LD		C,A
 				LD		A, (pacy)		;Push Y to stack
 				INC		A
-				LD		L,A
-				LD		H, $00			;Again we dont care
-				PUSH	HL
+				LD		B,A
 				CALL	moveCursor
 				LD		HL, pacman
 				CALL 	print

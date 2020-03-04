@@ -6,10 +6,8 @@ printHud:
 				RET
 ;Hud elements
 printScore:					
-				LD		HL, $02
-				PUSH	HL
-				LD		HL, $23
-				PUSH	HL
+				LD		C, $02
+				LD		B, $23
 				CALL	moveCursor
 				LD		HL, scoreHUD
 				CALL 	print
@@ -22,10 +20,8 @@ printScore:
 				RET
 
 printLives:					
-				LD		HL, $02
-				PUSH	HL
-				LD		HL, $24
-				PUSH	HL
+				LD		C, $02
+				LD		B, $24
 				CALL	moveCursor
 				LD 		A,(pacLives)
 				DEC		A
