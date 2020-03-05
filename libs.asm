@@ -107,9 +107,20 @@ printLoop:      LD      A,(HL)          ; Get character
                 RST     08H             ; Print it
                 INC     HL              ; Next Character
                 JR      printLoop       ; Continue until $00
-				
-;delay loop
-printRet:		
+
+;--------Print textBlockAtPos
+;HL Start of sprite
+;C  Sprite X
+;B  Sprite Y
+
+printAtPos:		PUSH 	AF					; Preserve AF				
+printAtPosLoop: CALL	moveCursor			; Move cursor to start of line
+				CALL	print				; Print Line
+				INC		B
+				INC		HL
+				LD      A,(HL)          	; Get character
+                OR      A               	; Is it $00 ?
+                JR      NZ,printAtPosLoop   ; Continue until $00		
 				POP		AF
 				RET
 delay:
