@@ -3,1200 +3,3647 @@ binary-debuggable-source
 0000 0000 s CR              .EQU     0DH
 0000 0000 s LF              .EQU     0AH
 0000 0000 s 
-0000 0000 s ;----- Map data bit positions
-0000 0000 s upBit			.EQU	0
-0000 0000 s downBit			.EQU	1
-0000 0000 s leftBit			.EQU	2
-0000 0000 s rightBit		.EQU	3
-0000 0000 s powerpBit		.EQU	4
-0000 0000 s pelletBit		.EQU	5
-0000 0000 s wallBit			.EQU	6
-0000 0000 s sfBit			.EQU	7
-0000 0000 s ;--------Initial Stats
-0000 0000 s initPacx		.EQU	14
-0000 0000 s initPacy		.EQU	14
-0000 0000 s 
-0000 0000 s initRedGhostX	.EQU	20
-0000 0000 s initRedGhostY	.EQU	1
-0000 0000 s 
-0000 0000 s ;-----Varr
-0000 0000 s ;Packman
-0000 0000 s pacx			.EQU	8100H
-0000 0000 s pacy			.EQU	8101H
-0000 0000 s pacCDir			.EQU	8102H		;Pacmans current direction
-0000 0000 s pacNDir			.EQU	8103H		;Pacman next direction (from key press)
-0000 0000 s 
-0000 0000 s ;RedGhost
-0000 0000 s redGhostX		.EQU	8110H		
-0000 0000 s redGhostY		.EQU	8111H
-0000 0000 s redGhostDir		.EQU	8112H
-0000 0000 s redGhostDis		.EQU	8113H		;Red ghost move distance from pacman
-0000 0000 s 
-0000 0000 s seed			.EQU	8888H		;Random seed
-0000 0000 s 
-0000 0000 s 
-0000 0000 s 
-0000 0000 s score			.EQU	8900H		;Score
-0000 0000 s 
-0000 0000 s 
-0000 0000 s 
+0000 0000 s oldStackPointer	.EQU	89F0H		;Old Stack Location 	
+0000 0000 s originalBC		.EQU	89F2H		;BC before manipulation, used for calculating board position
 0000 0000 s 
 9000 9000 s 	.ORG 9000H
-9000 9000 d 3e0e
-9000 9000 s 			ld		a, initPacx		;set Pacman Pos
-9002 9002 d 320081
-9002 9002 s 			ld		(pacx),a
-9005 9005 d 3e0e
-9005 9005 s 			ld		a, initPacy
-9007 9007 d 320181
-9007 9007 s 			ld		(pacy),a
-900a 900a d 3e44
-900a 900a s 			ld		a, 'D'			;Set start direction
-900c 900c d 320281
-900c 900c s 			ld		(pacCDir),A
-900f 900f d 320381
-900f 900f s 			ld		(pacNDir),A
-9012 9012 d 210000
-9012 9012 s 			ld		HL, 0H
-9015 9015 d 220089
-9015 9015 s 			LD		(score), HL
-9018 9018 d 3e14
-9018 9018 s 			ld		a, initRedGhostX	;set RedGhost Pos
-901a 901a d 321081
-901a 901a s 			ld		(redGhostX),a
-901d 901d d 3e01
-901d 901d s 			ld		a, initRedGhostY
-901f 901f d 321181
-901f 901f s 			ld		(redGhostY),a
-9022 9022 d 21be93
-9022 9022 s 			LD		HL, cls			;Clear screen
-9025 9025 d cd3f93
-9025 9025 s 			CALL	print
-9028 9028 d cd5292
-9028 9028 s 			call 	printMap
-902b 902b s gameLoop:		
-902b 902b d cd5790
-902b 902b s 			call	input
-902e 902e d cdb890
-902e 902e s 			call 	getMove
-9031 9031 d cd7190
-9031 9031 s 			call 	clearPM
-9034 9034 d cdfc90
-9034 9034 s 			call	movePM
-9037 9037 d cd7d90
-9037 9037 s 			call 	printPM
-903a 903a d cda390
-903a 903a s 			call	eatPellet
-903d 903d s 			
-903d 903d d cd4691
-903d 903d s 			call	getRedGhostNextMove
-9040 9040 d cd0891
-9040 9040 s 			call	clearRedGhost
-9043 9043 d cd3a91
-9043 9043 s 			call	moveRedGhost
-9046 9046 d cd1491
-9046 9046 s 			call	printRedGhost
-9049 9049 s 			
-9049 9049 d cdaa92
-9049 9049 s 			call 	printScore
-904c 904c d 06ff
-904c 904c s 			LD 		B,0FFH   ;delay
-904e 904e d 0eff
-904e 904e s 			LD		C,0FFH
-9050 9050 d cd4a93
-9050 9050 s 			CALL 	DELAY
-9053 9053 d c32b90
-9053 9053 s 			JP		gameLoop
-9056 9056 d c9
-9056 9056 s 			ret
-9057 9057 s 		
-9057 9057 s ;-------------- Input --------------------------					
-9057 9057 s input:
-9057 9057 d df
-9057 9057 s 				RST		18H
-9058 9058 d c8
-9058 9058 s 				RET		Z
-9059 9059 d d7
-9059 9059 s 				RST		10H
-905a 905a d e6df
-905a 905a s 				AND     11011111b       ; lower to uppercase
-905c 905c d fe57
-905c 905c s 				CP		'W'
-905e 905e d 280d
-905e 905e s 				JR		Z,validInput
-9060 9060 d fe41
-9060 9060 s 				CP		'A'
-9062 9062 d 2809
-9062 9062 s 				JR		Z,validInput
-9064 9064 d fe53
-9064 9064 s 				CP		'S'
-9066 9066 d 2805
-9066 9066 s 				JR		Z,validInput
-9068 9068 d fe44
-9068 9068 s 				CP		'D'
-906a 906a d 2801
-906a 906a s 				JR		Z,validInput
-906c 906c d c9
-906c 906c s 				RET
-906d 906d s validInput:		
-906d 906d d 320381
-906d 906d s 				LD		(pacNDir), A
-9070 9070 d c9
-9070 9070 s 				RET
-9071 9071 s 		
-9071 9071 s ;----------Pacman------;
-9071 9071 s clearPM:
-9071 9071 d 3a0081
-9071 9071 s 				LD		A, (pacx)		;Push X to stack
-9074 9074 d 4f
-9074 9074 s 				LD		C,A
-9075 9075 d 3a0181
-9075 9075 s 				LD		A, (pacy)		;Push Y to stack
-9078 9078 d 47
-9078 9078 s 				LD		B,A
-9079 9079 d cd3c92
-9079 9079 s 				CALL 	printMapAt
-907c 907c d c9
-907c 907c s 				RET
-907d 907d s 				
-907d 907d s printPM:
-907d 907d d 3a0081
-907d 907d s 				LD		A, (pacx)		;Push X to stack
-9080 9080 d 3c
-9080 9080 s 				INC		A
-9081 9081 d 6f
-9081 9081 s 				LD		L,A
-9082 9082 d 2600
-9082 9082 s 				LD		H, $00			;We dont care about msb
-9084 9084 d e5
-9084 9084 s 				PUSH	HL
-9085 9085 d 3a0181
-9085 9085 s 				LD		A, (pacy)		;Push Y to stack
-9088 9088 d 3c
-9088 9088 s 				INC		A
-9089 9089 d 6f
-9089 9089 s 				LD		L,A
-908a 908a d 2600
-908a 908a s 				LD		H, $00			;Again we dont care
-908c 908c d e5
-908c 908c s 				PUSH	HL
-908d 908d d cdd192
-908d 908d s 				CALL	moveCursor
-9090 9090 d 218593
-9090 9090 s 				LD		HL, pacman
-9093 9093 d cd3f93
-9093 9093 s 				CALL 	print
-9096 9096 d c9
-9096 9096 s 				RET
-9097 9097 s getPMMapData:	
-9097 9097 d 3a0081
-9097 9097 s 				LD		A, (pacx)
-909a 909a d 4f
-909a 909a s 				LD		C,A
-909b 909b d 3a0181
-909b 909b s 				LD		A, (pacy)
-909e 909e d 47
-909e 909e s 				LD		B,A
-909f 909f d cd2592
-909f 909f s 				CALL	getDataAtPos
-90a2 90a2 d c9
-90a2 90a2 s 				ret
-90a3 90a3 s eatPellet:		;Eat pellet at packman location
-90a3 90a3 d cd9790
-90a3 90a3 s 				CALL 	getPMMapData
-90a6 90a6 d cb6f
-90a6 90a6 s 				BIT		pelletBit,A
-90a8 90a8 d 2001
-90a8 90a8 s 				JR		NZ,eatSPellet
-90aa 90aa d c9
-90aa 90aa s 				RET
-90ab 90ab s 				
-90ab 90ab s eatSPellet:		
-90ab 90ab d e5
-90ab 90ab s 				PUSH	HL		
-90ac 90ac d 2a0089
-90ac 90ac s 				LD		HL,(score)
-90af 90af d 23
-90af 90af s 				INC		HL
-90b0 90b0 d 23
-90b0 90b0 s 				INC		HL
-90b1 90b1 d 220089
-90b1 90b1 s 				LD		(score),HL
-90b4 90b4 d e1
-90b4 90b4 s 				POP		HL
-90b5 90b5 d cbae
-90b5 90b5 s 				RES		pelletBit,(HL)
-90b7 90b7 d c9
-90b7 90b7 s 				RET
-90b8 90b8 s 				
-90b8 90b8 s getMove:		;Sets the current move var
-90b8 90b8 d cd9790
-90b8 90b8 s 				CALL	getPMMapData
-90bb 90bb d 57
-90bb 90bb s 				LD		D,A
-90bc 90bc d 3a0381
-90bc 90bc s 				LD		A,(pacNDir)			;Is the next move valid
-90bf 90bf d cd0b92
-90bf 90bf s 				CALL	isMoveValid
-90c2 90c2 d 2009
-90c2 90c2 s 				JR		NZ,nextMoveValid
-90c4 90c4 d 3a0281
-90c4 90c4 s 				LD		A,(pacCDir)			;Is the current move valid
-90c7 90c7 d cd0b92
-90c7 90c7 s 				CALL	isMoveValid
-90ca 90ca d c0
-90ca 90ca s 				RET		NZ
-90cb 90cb d 1807
-90cb 90cb s 				JR		calcNextMove
-90cd 90cd s 				
-90cd 90cd s nextMoveValid:
-90cd 90cd d 320281
-90cd 90cd s 				LD		(pacCDir),A
-90d0 90d0 d 320381
-90d0 90d0 s 				LD		(pacNDir),A
-90d3 90d3 d c9
-90d3 90d3 s 				RET
-90d4 90d4 s 				
-90d4 90d4 s calcNextMove:	
-90d4 90d4 d fe41
-90d4 90d4 s 				CP		'A'
-90d6 90d6 d 2814
-90d6 90d6 s 				JR		Z,checkV
-90d8 90d8 d fe44
-90d8 90d8 s 				CP		'D'
-90da 90da d 2810
-90da 90da s 				JR		Z,checkV
-90dc 90dc d 1800
-90dc 90dc s 				JR		checkH
-90de 90de s checkH:
-90de 90de d 3e41
-90de 90de s 				LD		A,'A'
-90e0 90e0 d cd0b92
-90e0 90e0 s 				CALL	isMoveValid
-90e3 90e3 d 20e8
-90e3 90e3 s 				JR		NZ,nextMoveValid
-90e5 90e5 d 3e44
-90e5 90e5 s 				LD		A,'D'
-90e7 90e7 d cd0b92
-90e7 90e7 s 				CALL	isMoveValid
-90ea 90ea d 20e1
-90ea 90ea s 				JR		NZ,nextMoveValid
-90ec 90ec s checkV:
-90ec 90ec d 3e57
-90ec 90ec s 				LD		A,'W'
-90ee 90ee d cd0b92
-90ee 90ee s 				CALL	isMoveValid
-90f1 90f1 d 20da
-90f1 90f1 s 				JR		NZ,nextMoveValid
-90f3 90f3 d 3e53
-90f3 90f3 s 				LD		A,'S'
-90f5 90f5 d cd0b92
-90f5 90f5 s 				CALL	isMoveValid
-90f8 90f8 d 20d3
-90f8 90f8 s 				JR		NZ,nextMoveValid
-90fa 90fa d 18e2
-90fa 90fa s 				JR		checkH
-90fc 90fc s ;Move
-90fc 90fc s movePM:
-90fc 90fc d 3a0281
-90fc 90fc s 				LD		A,(pacCDir)
-90ff 90ff d 110081
-90ff 90ff s 				LD		DE,pacx
-9102 9102 d 010181
-9102 9102 s 				LD		BC,pacy
-9105 9105 d c3e591
-9105 9105 s 				JP		move
-9108 9108 s ;------------Ghost
-9108 9108 s ;Red
-9108 9108 s clearRedGhost:
-9108 9108 d 3a1081
-9108 9108 s 				LD		A, (redGhostX)		;Push X to stack
-910b 910b d 4f
-910b 910b s 				LD		C,A
-910c 910c d 3a1181
-910c 910c s 				LD		A, (redGhostY)		;Push Y to stack
-910f 910f d 47
-910f 910f s 				LD		B,A
-9110 9110 d cd3c92
-9110 9110 s 				CALL 	printMapAt
-9113 9113 d c9
-9113 9113 s 				RET
-9114 9114 s 				
-9114 9114 s printRedGhost:
-9114 9114 d 3a1081
-9114 9114 s 				LD		A, (redGhostX)		;Push X to stack
-9117 9117 d 3c
-9117 9117 s 				INC		A
-9118 9118 d 6f
-9118 9118 s 				LD		L,A
-9119 9119 d 2600
-9119 9119 s 				LD		H, $00			;We dont care about msb
-911b 911b d e5
-911b 911b s 				PUSH	HL
-911c 911c d 3a1181
-911c 911c s 				LD		A, (redGhostY)		;Push Y to stack
-911f 911f d 3c
-911f 911f s 				INC		A
-9120 9120 d 6f
-9120 9120 s 				LD		L,A
-9121 9121 d 2600
-9121 9121 s 				LD		H, $00			;Again we dont care
-9123 9123 d e5
-9123 9123 s 				PUSH	HL
-9124 9124 d cdd192
-9124 9124 s 				CALL	moveCursor
-9127 9127 d 219093
-9127 9127 s 				LD		HL, redGhost
-912a 912a d cd3f93
-912a 912a s 				CALL 	print
-912d 912d d c9
-912d 912d s 				RET
-912e 912e s getRedGhostMapData:	
-912e 912e d 3a1081
-912e 912e s 				LD		A, (redGhostX)
-9131 9131 d 4f
-9131 9131 s 				LD		C,A
-9132 9132 d 3a1181
-9132 9132 s 				LD		A, (redGhostY)
-9135 9135 d 47
-9135 9135 s 				LD		B,A
-9136 9136 d cd2592
-9136 9136 s 				CALL	getDataAtPos
-9139 9139 d c9
-9139 9139 s 				ret
-913a 913a s ;Move
-913a 913a s moveRedGhost:
-913a 913a d 3a1281
-913a 913a s 				LD		A,(redGhostDir)
-913d 913d d 111081
-913d 913d s 				LD		DE,redGhostX
-9140 9140 d 011181
-9140 9140 s 				LD		BC,redGhostY
-9143 9143 d c3e591
-9143 9143 s 				JP		move
-9146 9146 s getRedGhostNextMove:
-9146 9146 d 3e41
-9146 9146 s 				LD		A, 41H
-9148 9148 d 321381
-9148 9148 s 				LD		(redGhostDis),A
-914b 914b d cd2e91
-914b 914b s 				CALL	getRedGhostMapData
-914e 914e d 57
-914e 914e s 				LD		D,A
-914f 914f d 3e57
-914f 914f s 				LD		A,	'W'			;check up
-9151 9151 d cd0b92
-9151 9151 s 				CALL	isMoveValid
-9154 9154 d c47091
-9154 9154 s 				CALL	NZ,redGhostSetMove
-9157 9157 d 3e53
-9157 9157 s 				LD		A,	'S'			;down
-9159 9159 d cd0b92
-9159 9159 s 				CALL	isMoveValid
-915c 915c d c47091
-915c 915c s 				CALL	NZ,redGhostSetMove
-915f 915f d 3e41
-915f 915f s 				LD		A,	'A'			;left
-9161 9161 d cd0b92
-9161 9161 s 				CALL	isMoveValid
-9164 9164 d c47091
-9164 9164 s 				CALL	NZ,redGhostSetMove
-9167 9167 d 3e44
-9167 9167 s 				LD		A,	'D'			;right
-9169 9169 d cd0b92
-9169 9169 s 				CALL	isMoveValid
-916c 916c d c47091
-916c 916c s 				CALL	NZ,redGhostSetMove
-916f 916f d c9
-916f 916f s 				RET
-9170 9170 s 				
-9170 9170 s redGhostSetMove:
-9170 9170 d f5
-9170 9170 s 				PUSH	AF
-9171 9171 d fe57
-9171 9171 s 				CP		'W'
-9173 9173 d 280a
-9173 9173 s 				JR		Z,redGhostCheckU
-9175 9175 d fe41
-9175 9175 s 				CP		'A'
-9177 9177 d 2820
-9177 9177 s 				JR		Z,redGhostCheckL
-9179 9179 d fe53
-9179 9179 s 				CP		'S'
-917b 917b d 280f
-917b 917b s 				JR		Z,redGhostCheckD
-917d 917d d 1827
-917d 917d s 				JR		redGhostCheckR
-917f 917f s 				
-917f 917f s redGhostCheckU:			
-917f 917f d 3a1181
-917f 917f s 				LD		A, (redGhostY)
-9182 9182 d 3d
-9182 9182 s 				DEC		A
-9183 9183 d e61f
-9183 9183 s 				AND		00011111B
-9185 9185 d 4f
-9185 9185 s 				LD		C,A
-9186 9186 d 3a1081
-9186 9186 s 				LD		A,(redGhostX)
-9189 9189 d 47
-9189 9189 s 				LD		B,A
-918a 918a d 1827
-918a 918a s 				JR		redGhostPathFind
-918c 918c s redGhostCheckD:			
-918c 918c d 3a1181
-918c 918c s 				LD		A, (redGhostY)
-918f 918f d 3c
-918f 918f s 				INC		A
-9190 9190 d e61f
-9190 9190 s 				AND		00011111B
-9192 9192 d 4f
-9192 9192 s 				LD		C,A
-9193 9193 d 3a1081
-9193 9193 s 				LD		A,(redGhostX)
-9196 9196 d 47
-9196 9196 s 				LD		B,A
-9197 9197 d 181a
-9197 9197 s 				JR		redGhostPathFind
-9199 9199 s redGhostCheckL:			
-9199 9199 d 3a1081
-9199 9199 s 				LD		A, (redGhostX)
-919c 919c d 3d
-919c 919c s 				DEC		A
-919d 919d d e61f
-919d 919d s 				AND		00011111B
-919f 919f d 47
-919f 919f s 				LD		B,A
-91a0 91a0 d 3a1181
-91a0 91a0 s 				LD		A,(redGhostY)
-91a3 91a3 d 4f
-91a3 91a3 s 				LD		C,A
-91a4 91a4 d 180d
-91a4 91a4 s 				JR		redGhostPathFind
-91a6 91a6 s redGhostCheckR:			
-91a6 91a6 d 3a1081
-91a6 91a6 s 				LD		A, (redGhostX)
-91a9 91a9 d 3c
-91a9 91a9 s 				INC		A
-91aa 91aa d e61f
-91aa 91aa s 				AND		00011111B
-91ac 91ac d 47
-91ac 91ac s 				LD		B,A
-91ad 91ad d 3a1181
-91ad 91ad s 				LD		A,(redGhostY)
-91b0 91b0 d 4f
-91b0 91b0 s 				LD		C,A
-91b1 91b1 d 1800
-91b1 91b1 s 				JR		redGhostPathFind
-91b3 91b3 s 
-91b3 91b3 s redGhostPathFind:
-91b3 91b3 d 3a1381
-91b3 91b3 s 				LD		A,(redGhostDis)
-91b6 91b6 d 5f
-91b6 91b6 s 				LD		E,A
-91b7 91b7 d 3a0081
-91b7 91b7 s 				LD		A,(pacx)
-91ba 91ba d 90
-91ba 91ba s 				SUB		B
-91bb 91bb d cd2a93
-91bb 91bb s 				CALL	absA
-91be 91be d 67
-91be 91be s 				LD		H,A
-91bf 91bf d 3a0181
-91bf 91bf s 				LD		A,(pacy)
-91c2 91c2 d 91
-91c2 91c2 s 				SUB		C
-91c3 91c3 d cd2a93
-91c3 91c3 s 				CALL	absA
-91c6 91c6 d 84
-91c6 91c6 s 				ADD		H
-91c7 91c7 d bb
-91c7 91c7 s 				CP		E
-91c8 91c8 d cad891
-91c8 91c8 s 				JP		Z,redGhostSetEqual		;If 2 options are equidistant, chose a random one to prevent a loop
-91cb 91cb d fad091
-91cb 91cb s 				JP		M,redGhostSetNewDir
-91ce 91ce s 				;CALL	NumToHex
-91ce 91ce d f1
-91ce 91ce s 				POP		AF
-91cf 91cf s 				;RST		08H
-91cf 91cf d c9
-91cf 91cf s 				RET
-91d0 91d0 s redGhostSetNewDir:
-91d0 91d0 d 321381
-91d0 91d0 s 				LD		(redGhostDis),A
-91d3 91d3 s 				;CALL	NumToHex
-91d3 91d3 d f1
-91d3 91d3 s 				POP		AF
-91d4 91d4 s 				;RST		08H
-91d4 91d4 d 321281
-91d4 91d4 s 				LD		(redGhostDir),A
-91d7 91d7 d c9
-91d7 91d7 s 				RET
-91d8 91d8 s redGhostSetEqual:
-91d8 91d8 d 47
-91d8 91d8 s 				LD		B,A
-91d9 91d9 d cd2f93
-91d9 91d9 s 				CALL	randomA
-91dc 91dc d cb4f
-91dc 91dc s 				BIT		1,A
-91de 91de d 2802
-91de 91de s 				JR		Z,redGhostRandomSet
-91e0 91e0 d f1
-91e0 91e0 s 				POP		AF
-91e1 91e1 d c9
-91e1 91e1 s 				RET
-91e2 91e2 s redGhostRandomSet:
-91e2 91e2 d 78
-91e2 91e2 s 				LD		A,B
-91e3 91e3 d 18eb
-91e3 91e3 s 				JR		redGhostSetNewDir
-91e5 91e5 s ;-----------Generic Move Libs -----;
-91e5 91e5 s move:
-91e5 91e5 d fe57
-91e5 91e5 s 				CP		'W'
-91e7 91e7 d 280a
-91e7 91e7 s 				JR		Z,moveU
-91e9 91e9 d fe41
-91e9 91e9 s 				CP		'A'
-91eb 91eb d 2812
-91eb 91eb s 				JR		Z,moveL
-91ed 91ed d fe53
-91ed 91ed s 				CP		'S'
-91ef 91ef d 2808
-91ef 91ef s 				JR		Z,moveD
-91f1 91f1 d 1812
-91f1 91f1 s 				JR		moveR
-91f3 91f3 s 
-91f3 91f3 s moveU:			
-91f3 91f3 d 0a
-91f3 91f3 s 				LD		A, (BC)
-91f4 91f4 d 3d
-91f4 91f4 s 				DEC		A
-91f5 91f5 d e61f
-91f5 91f5 s 				AND		00011111B
-91f7 91f7 d 02
-91f7 91f7 s 				LD		(BC),A
+9000 9000 d ed73f089
+9000 9000 s 			ld		(oldStackPointer), SP
+9004 9004 d 31ffff
+9004 9004 s 			ld		sp,0FFFFH
+9007 9007 s gameTop:
+9007 9007 d cdc797
+9007 9007 s 			CALL	initMap
+900a 900a d 2131a1
+900a 900a s 			LD		HL, cls			;Clear screen
+900d 900d d cda8a0
+900d 900d s 			CALL	print
+9010 9010 d 2139a1
+9010 9010 s 			LD		HL, hideCursor	;Hide Cursor
+9013 9013 d cda8a0
+9013 9013 s 			CALL	print
+9016 9016 d cd6098
+9016 9016 s 			CALL 	printMap
+9019 9019 d c3749e
+9019 9019 s 			JP		displayTitleScreen
+901c 901c s startGame:
+901c 901c d cda190
+901c 901c s 			CALL	initPacman
+901f 901f d cdd391
+901f 901f s 			CALL	initGhost
+9022 9022 d cdc797
+9022 9022 s 			CALL	initMap
+9025 9025 d 2131a1
+9025 9025 s 			LD		HL, cls			;Clear screen
+9028 9028 d cda8a0
+9028 9028 s 			CALL	print
+902b 902b d cd6098
+902b 902b s 			CALL 	printMap
+902e 902e d cd029a
+902e 902e s 			CALL	countdown
+9031 9031 d 212da1
+9031 9031 s 			LD		HL, home		;Go home
+9034 9034 d cda8a0
+9034 9034 s 			CALL	print
+9037 9037 d cd6098
+9037 9037 s 			CALL 	printMap
+903a 903a s gameLoop:		
+903a 903a d cd8790
+903a 903a s 			call	input
+903d 903d d cd1791
+903d 903d s 			call 	getMove
+9040 9040 d cdca90
+9040 9040 s 			call 	clearPM
+9043 9043 d cd5b91
+9043 9043 s 			call	movePM
+9046 9046 d cdd690
+9046 9046 s 			call 	printPM
+9049 9049 d cdf790
+9049 9049 s 			call	eatPellet
+904c 904c s 			
+904c 904c d cdb898
+904c 904c s 			call	initPathFind
+904f 904f d cdd098
+904f 904f s 			call	calculatePathMap
+9052 9052 s 
+9052 9052 d cd9f91
+9052 9052 s 			call	ghostNextMove
+9055 9055 d cdac91
+9055 9055 s 			call	clearGhost
+9058 9058 d cdc691
+9058 9058 s 			call	colideGhost
+905b 905b d cde091
+905b 905b s 			call	moveGhost
+905e 905e d cdb991
+905e 905e s 			call	printGhost
+9061 9061 s 
+9061 9061 d cdc691
+9061 9061 s 			call	colideGhost
+9064 9064 s 
+9064 9064 s 
+9064 9064 s 			;call 	printPFMap
+9064 9064 s 			
+9064 9064 d cd8f99
+9064 9064 s 			call 	printHUD
+9067 9067 d cd29a0
+9067 9067 s 			call	newline
+906a 906a d cdeb97
+906a 906a s 			call	checkNextLevel
+906d 906d d 060f
+906d 906d s 			LD 		B,0FH   ;delay
+906f 906f d 0eff
+906f 906f s 			LD		C,0FFH
+9071 9071 d cdf6a0
+9071 9071 s 			CALL 	DELAY
+9074 9074 d c33a90
+9074 9074 s 			JP		gameLoop
+9077 9077 d ed7bf089
+9077 9077 s 			LD		SP,(oldStackPointer)
+907b 907b d c9
+907b 907b s 			ret
+907c 907c s 
+907c 907c d 2140a1
+907c 907c s quit:       LD		HL, showCursor	;Hide Cursor
+907f 907f d cda8a0
+907f 907f s 			CALL	print
+9082 9082 d ed7bf089
+9082 9082 s             LD		SP,(oldStackPointer)
+9086 9086 d c9
+9086 9086 s 			RET	
+9087 9087 s 		
+9087 9087 s ;-------------- Input --------------------------					
+9087 9087 s include input.asm	
+9087 9087 f input.asm
+9087 9087 s input:
+9087 9087 d df
+9087 9087 s 				RST		18H
+9088 9088 d c8
+9088 9088 s 				RET		Z
+9089 9089 d d7
+9089 9089 s 				RST		10H
+908a 908a d e6df
+908a 908a s 				AND     11011111b       ; lower to uppercase
+908c 908c d fe57
+908c 908c s 				CP		'W'
+908e 908e d 280d
+908e 908e s 				JR		Z,validInput
+9090 9090 d fe41
+9090 9090 s 				CP		'A'
+9092 9092 d 2809
+9092 9092 s 				JR		Z,validInput
+9094 9094 d fe53
+9094 9094 s 				CP		'S'
+9096 9096 d 2805
+9096 9096 s 				JR		Z,validInput
+9098 9098 d fe44
+9098 9098 s 				CP		'D'
+909a 909a d 2801
+909a 909a s 				JR		Z,validInput
+909c 909c d c9
+909c 909c s 				RET
+909d 909d s validInput:		
+909d 909d d 320381
+909d 909d s 				LD		(pacNDir), A
+90a0 90a0 f main.asm
+90a0 90a0 d c9
+90a0 90a0 s 				RET
+90a1 90a1 s ;----------Pacman------;
+90a1 90a1 s include	pacman.asm
+90a1 90a1 f pacman.asm
+90a1 90a1 s ;Packman
+90a1 90a1 s pacx			.EQU	8100H
+90a1 90a1 s pacy			.EQU	8101H
+90a1 90a1 s pacCDir			.EQU	8102H		;Pacmans current direction
+90a1 90a1 s pacNDir			.EQU	8103H		;Pacman next direction (from key press)
+90a1 90a1 s pacLives		.EQU	8105H		;Pacman next direction (from key press)
+90a1 90a1 s 
+90a1 90a1 s initPacx		.EQU	14
+90a1 90a1 s initPacy		.EQU	14
+90a1 90a1 s initLives		.EQU	4
+90a1 90a1 s 
+90a1 90a1 s pPelletTics     .EQU    20H         ;Power Pellet last time
+90a1 90a1 s 
+90a1 90a1 s pPActive        .EQU    8104H       ;Power Pellet Timer
+90a1 90a1 s 
+90a1 90a1 s initPacman:
+90a1 90a1 d 210000
+90a1 90a1 s 				LD		HL, 0H
+90a4 90a4 d 220089
+90a4 90a4 s 				LD		(score), HL
+90a7 90a7 d 210100
+90a7 90a7 s 				LD		HL, 1H
+90aa 90aa d 220289
+90aa 90aa s 				LD		(level), HL
+90ad 90ad d 3e04
+90ad 90ad s 				LD		a,initLives
+90af 90af d 320581
+90af 90af s 				LD		(pacLives),a
+90b2 90b2 d 3e0e
+90b2 90b2 s resetPacMan:	LD		a, initPacx		;set Pacman Pos
+90b4 90b4 d 320081
+90b4 90b4 s 				LD		(pacx),a
+90b7 90b7 d 3e0e
+90b7 90b7 s 				LD		a, initPacy
+90b9 90b9 d 320181
+90b9 90b9 s 				LD		(pacy),a
+90bc 90bc d 3e44
+90bc 90bc s 				LD		a, 'D'			;Set start direction
+90be 90be d 320281
+90be 90be s 				LD		(pacCDir),A
+90c1 90c1 d 320381
+90c1 90c1 s 				LD		(pacNDir),A
+90c4 90c4 d 3e00
+90c4 90c4 s 				LD		a,0
+90c6 90c6 d 320481
+90c6 90c6 s 				LD		(pPActive),A
+90c9 90c9 d c9
+90c9 90c9 s 				RET
+90ca 90ca s 
+90ca 90ca s clearPM:
+90ca 90ca d 3a0081
+90ca 90ca s 				LD		A, (pacx)		;Push X to stack
+90cd 90cd d 4f
+90cd 90cd s 				LD		C,A
+90ce 90ce d 3a0181
+90ce 90ce s 				LD		A, (pacy)		;Push Y to stack
+90d1 90d1 d 47
+90d1 90d1 s 				LD		B,A
+90d2 90d2 d cd5198
+90d2 90d2 s 				CALL 	printMapAt
+90d5 90d5 d c9
+90d5 90d5 s 				RET
+90d6 90d6 s 				
+90d6 90d6 s printPM:
+90d6 90d6 d 3a0081
+90d6 90d6 s 				LD		A, (pacx)		;Push X to stack
+90d9 90d9 d 3c
+90d9 90d9 s 				INC		A
+90da 90da d 4f
+90da 90da s 				LD		C,A
+90db 90db d 3a0181
+90db 90db s 				LD		A, (pacy)		;Push Y to stack
+90de 90de d 3c
+90de 90de s 				INC		A
+90df 90df d 47
+90df 90df s 				LD		B,A
+90e0 90e0 d cd32a0
+90e0 90e0 s 				CALL	moveCursor
+90e3 90e3 d 219491
+90e3 90e3 s 				LD		HL, pacman
+90e6 90e6 d cda8a0
+90e6 90e6 s 				CALL 	print
+90e9 90e9 d c9
+90e9 90e9 s 				RET
+90ea 90ea s getPMMapData:	
+90ea 90ea d 3a0081
+90ea 90ea s 				LD		A, (pacx)
+90ed 90ed d 4f
+90ed 90ed s 				LD		C,A
+90ee 90ee d 3a0181
+90ee 90ee s 				LD		A, (pacy)
+90f1 90f1 d 47
+90f1 90f1 s 				LD		B,A
+90f2 90f2 d cdd397
+90f2 90f2 s 				CALL	getMapAddress
+90f5 90f5 d 7e
+90f5 90f5 s                 LD      A,(HL)
+90f6 90f6 d c9
+90f6 90f6 s 				ret
+90f7 90f7 s eatPellet:		;Eat pellet at packman location
+90f7 90f7 d cdea90
+90f7 90f7 s 				CALL 	getPMMapData
+90fa 90fa d cb6f
+90fa 90fa s 				BIT		pelletBit,A
+90fc 90fc d 2005
+90fc 90fc s 				JR		NZ,eatSPellet
+90fe 90fe d cb67
+90fe 90fe s                 BIT		powerPBit,A
+9100 9100 d 200d
+9100 9100 s 				JR		NZ,eatPPellet
+9102 9102 d c9
+9102 9102 s 				RET
+9103 9103 s 				
+9103 9103 s eatSPellet:		
+9103 9103 d e5
+9103 9103 s 				PUSH	HL		
+9104 9104 d 2a0089
+9104 9104 s 				LD		HL,(score)
+9107 9107 d 23
+9107 9107 s 				INC		HL
+9108 9108 d 220089
+9108 9108 s 				LD		(score),HL
+910b 910b d e1
+910b 910b s 				POP		HL
+910c 910c d cbae
+910c 910c s 				RES		pelletBit,(HL)
+910e 910e d c9
+910e 910e s 				RET
+910f 910f s 
+910f 910f s eatPPellet:		
+910f 910f d 3e20
+910f 910f s 				LD      A,pPelletTics
+9111 9111 d 320481
+9111 9111 s                 LD      (pPActive),A
+9114 9114 d cba6
+9114 9114 s                 RES		powerPBit,(HL)
+9116 9116 d c9
+9116 9116 s 				RET
+9117 9117 s 				
+9117 9117 s getMove:		;Sets the current move var
+9117 9117 d cdea90
+9117 9117 s 				CALL	getPMMapData
+911a 911a d 57
+911a 911a s 				LD		D,A
+911b 911b d 3a0381
+911b 911b s 				LD		A,(pacNDir)			;Is the next move valid
+911e 911e d cdad97
+911e 911e s 				CALL	isMoveValid
+9121 9121 d 2009
+9121 9121 s 				JR		NZ,nextMoveValid
+9123 9123 d 3a0281
+9123 9123 s 				LD		A,(pacCDir)			;Is the current move valid
+9126 9126 d cdad97
+9126 9126 s 				CALL	isMoveValid
+9129 9129 d c0
+9129 9129 s 				RET		NZ
+912a 912a d 1807
+912a 912a s 				JR		calcNextMove
+912c 912c s 				
+912c 912c s nextMoveValid:
+912c 912c d 320281
+912c 912c s 				LD		(pacCDir),A
+912f 912f d 320381
+912f 912f s 				LD		(pacNDir),A
+9132 9132 d c9
+9132 9132 s 				RET
+9133 9133 s 				
+9133 9133 s calcNextMove:	
+9133 9133 d fe41
+9133 9133 s 				CP		'A'
+9135 9135 d 2814
+9135 9135 s 				JR		Z,checkV
+9137 9137 d fe44
+9137 9137 s 				CP		'D'
+9139 9139 d 2810
+9139 9139 s 				JR		Z,checkV
+913b 913b d 1800
+913b 913b s 				JR		checkH
+913d 913d s checkH:
+913d 913d d 3e41
+913d 913d s 				LD		A,'A'
+913f 913f d cdad97
+913f 913f s 				CALL	isMoveValid
+9142 9142 d 20e8
+9142 9142 s 				JR		NZ,nextMoveValid
+9144 9144 d 3e44
+9144 9144 s 				LD		A,'D'
+9146 9146 d cdad97
+9146 9146 s 				CALL	isMoveValid
+9149 9149 d 20e1
+9149 9149 s 				JR		NZ,nextMoveValid
+914b 914b s checkV:
+914b 914b d 3e57
+914b 914b s 				LD		A,'W'
+914d 914d d cdad97
+914d 914d s 				CALL	isMoveValid
+9150 9150 d 20da
+9150 9150 s 				JR		NZ,nextMoveValid
+9152 9152 d 3e53
+9152 9152 s 				LD		A,'S'
+9154 9154 d cdad97
+9154 9154 s 				CALL	isMoveValid
+9157 9157 d 20d3
+9157 9157 s 				JR		NZ,nextMoveValid
+9159 9159 d 18e2
+9159 9159 s 				JR		checkH
+915b 915b s ;Move
+915b 915b s movePM:
+915b 915b d 3a0481
+915b 915b s 				LD      A,(pPActive)
+915e 915e d b7
+915e 915e s                 OR      A
+915f 915f d ca6691
+915f 915f s                 JP      Z,movePMA
+9162 9162 d 3d
+9162 9162 s                 DEC     A
+9163 9163 d 320481
+9163 9163 s                 LD      (pPActive),A
+9166 9166 d 3a0281
+9166 9166 s movePMA:        LD		A,(pacCDir)
+9169 9169 d 110081
+9169 9169 s 				LD		DE,pacx
+916c 916c d 010181
+916c 916c s 				LD		BC,pacy
+916f 916f d c38797
+916f 916f s 				JP		move
+9172 9172 s 
+9172 9172 s killPacman:
+9172 9172 d e1
+9172 9172 s 				POP		HL
+9173 9173 d e1
+9173 9173 s 				POP		HL
+9174 9174 d 3a0581
+9174 9174 s 				LD		A,(pacLives)
+9177 9177 d 3d
+9177 9177 s 				DEC		A
+9178 9178 d b7
+9178 9178 s 				OR		A
+9179 9179 d ca949f
+9179 9179 s 				JP		Z,displayGameOver
+917c 917c d 320581
+917c 917c s 				LD		(pacLives),A
+917f 917f d cdb290
+917f 917f s 				CALL	resetPacMan
+9182 9182 d cdd391
+9182 9182 s 				CALL	initGhost
+9185 9185 d cd029a
+9185 9185 s 				CALL	countdown
+9188 9188 d 212da1
+9188 9188 s 				LD		HL, home		;Go home
+918b 918b d cda8a0
+918b 918b s 				CALL	print
+918e 918e d cd6098
+918e 918e s 				CALL 	printMap
+9191 9191 d c33a90
+9191 9191 s 				JP		gameLoop
+9194 9194 s 
+9194 9194 f main.asm
+9194 9194 d 1b5b39336d431b5b306d00
+9194 9194 s pacman:			.BYTE	1BH,"[93mC",1BH,"[0m",0
+919f 919f s ;------------Ghost
+919f 919f s include ghosts.asm
+919f 919f f ghosts.asm
+919f 919f s ghostDis		.EQU	8113H		;ghost move distance from pacman
+919f 919f s caughtJaleTime  .EQU    20H
+919f 919f s 
+919f 919f s ghostNextMove:
+919f 919f d cddb92
+919f 919f s                 CALL    rGhostNextMove
+91a2 91a2 d cd1c94
+91a2 91a2 s                 CALL    oGhostNextMove
+91a5 91a5 d cd5d95
+91a5 91a5 s                 CALL    pGhostNextMove
+91a8 91a8 d cd9e96
+91a8 91a8 s                 CALL    tGhostNextMove
+91ab 91ab d c9
+91ab 91ab s                 RET
+91ac 91ac s clearGhost:
+91ac 91ac d cd6d92
+91ac 91ac s                 CALL    rGhostClear
+91af 91af d cdae93
+91af 91af s                 CALL    oGhostClear
+91b2 91b2 d cdef94
+91b2 91b2 s                 CALL    pGhostClear
+91b5 91b5 d cd3096
+91b5 91b5 s                 CALL    tGhostClear
+91b8 91b8 d c9
+91b8 91b8 s                 RET
+91b9 91b9 s printGhost:
+91b9 91b9 d cd7992
+91b9 91b9 s                 CALL    rGhostPrint
+91bc 91bc d cdba93
+91bc 91bc s                 CALL    oGhostPrint
+91bf 91bf d cdfb94
+91bf 91bf s                 CALL    pGhostPrint
+91c2 91c2 d cd3c96
+91c2 91c2 s                 CALL    tGhostPrint
+91c5 91c5 d c9
+91c5 91c5 s                 RET
+91c6 91c6 s colideGhost:
+91c6 91c6 d cd6993
+91c6 91c6 s                 CALL    rGhostColide
+91c9 91c9 d cdaa94
+91c9 91c9 s                 CALL    oGhostColide
+91cc 91cc d cdeb95
+91cc 91cc s                 CALL    pGhostColide
+91cf 91cf d cd2c97
+91cf 91cf s                 CALL    tGhostColide
+91d2 91d2 d c9
+91d2 91d2 s                 RET
+91d3 91d3 s initGhost:
+91d3 91d3 d cda192
+91d3 91d3 s                 CALL    rGhostInit
+91d6 91d6 d cde293
+91d6 91d6 s                 CALL    oGhostInit
+91d9 91d9 d cd2395
+91d9 91d9 s                 CALL    pGhostInit
+91dc 91dc d cd6496
+91dc 91dc s                 CALL    tGhostInit
+91df 91df d c9
+91df 91df s                 RET
+91e0 91e0 s moveGhost:
+91e0 91e0 d cdb192
+91e0 91e0 s                 CALL    rGhostMove
+91e3 91e3 d cdf293
+91e3 91e3 s                 CALL    oGhostMove
+91e6 91e6 d cd3395
+91e6 91e6 s                 CALL    pGhostMove
+91e9 91e9 d cd7496
+91e9 91e9 s                 CALL    tGhostMove
+91ec 91ec d c9
+91ec 91ec s                 RET
+91ed 91ed s 
+91ed 91ed s printSGhost:
+91ed 91ed d cb47
+91ed 91ed s                 BIT     0,A
+91ef 91ef d caf991
+91ef 91ef s                 JP      Z,sGhost1Print
+91f2 91f2 d 217197
+91f2 91f2 s                 LD		HL, sGhost0
+91f5 91f5 d cda8a0
+91f5 91f5 s 				CALL 	print
 91f8 91f8 d c9
 91f8 91f8 s 				RET
-91f9 91f9 s moveD:			
-91f9 91f9 d 0a
-91f9 91f9 s 				LD		A, (BC)
-91fa 91fa d 3c
-91fa 91fa s 				INC		A
-91fb 91fb d e61f
-91fb 91fb s 				AND		00011111B
-91fd 91fd d 02
-91fd 91fd s 				LD		(BC),A
-91fe 91fe d c9
-91fe 91fe s 				RET
-91ff 91ff s moveL:			
-91ff 91ff d 1a
-91ff 91ff s 				LD		A, (DE)
-9200 9200 d 3d
-9200 9200 s 				DEC		A
-9201 9201 d e61f
-9201 9201 s 				AND		00011111B
-9203 9203 d 12
-9203 9203 s 				LD		(DE),A
-9204 9204 d c9
-9204 9204 s 				RET
-9205 9205 s moveR:			
-9205 9205 d 1a
-9205 9205 s 				LD		A, (DE)
-9206 9206 d 3c
-9206 9206 s 				INC		A
-9207 9207 d e61f
-9207 9207 s 				AND		00011111B
-9209 9209 d 12
-9209 9209 s 				LD		(DE),A
-920a 920a d c9
-920a 920a s 				RET
-920b 920b s isMoveValid:
-920b 920b d fe57
-920b 920b s 				CP		'W'
-920d 920d d 280a
-920d 920d s 				JR		Z,moveUValid
-920f 920f d fe41
-920f 920f s 				CP		'A'
-9211 9211 d 280c
-9211 9211 s 				JR		Z,moveLValid
-9213 9213 d fe53
-9213 9213 s 				CP		'S'
-9215 9215 d 2805
-9215 9215 s 				JR		Z,moveDValid
-9217 9217 d 1809
-9217 9217 s 				JR		moveRValid
-9219 9219 s moveUValid:			
-9219 9219 d cb42
-9219 9219 s 				BIT		upBit,D
-921b 921b d c9
-921b 921b s 				RET
-921c 921c s moveDValid:			
-921c 921c d cb4a
-921c 921c s 				BIT		downBit,D
-921e 921e d c9
-921e 921e s 				RET
-921f 921f s moveLValid:			
-921f 921f d cb52
-921f 921f s 				BIT		leftBit,D
-9221 9221 d c9
-9221 9221 s 				RET
-9222 9222 s moveRValid:			
-9222 9222 d cb5a
-9222 9222 s 				BIT		rightBit,D
-9224 9224 d c9
-9224 9224 s 				RET
-9225 9225 s 				
-9225 9225 s ;------- Get Map Data ----;
-9225 9225 s ; C - X
-9225 9225 s ; B	- Y
-9225 9225 s getDataAtPos:
-9225 9225 d cb00
-9225 9225 s 				rlc		b			;Shift b left 5
-9227 9227 d cb00
-9227 9227 s 				rlc		b			;Shift b left 5
-9229 9229 d cb00
-9229 9229 s 				rlc		b			;Shift b left 5
-922b 922b d cb00
-922b 922b s 				rlc		b			;Shift b left 5
-922d 922d d cb00
-922d 922d s 				rlc		b			;Shift b left 5
-922f 922f d 78
-922f 922f s 				ld		a,b
-9230 9230 d e6e0
-9230 9230 s 				and		11100000b	;Mask lower adress
-9232 9232 d b1
-9232 9232 s 				or		c			;Combine with C
-9233 9233 d 6f
-9233 9233 s 				ld		l,a			;A is now low byte of adress
-9234 9234 d 78
-9234 9234 s 				ld		a,b
-9235 9235 d e61f
-9235 9235 s 				and		00011111b	;Mask upper adress
-9237 9237 d f6e0
-9237 9237 s 				or		0E0H		;Start of map
-9239 9239 d 67
-9239 9239 s 				ld		h,a
-923a 923a d 7e
-923a 923a s 				ld		a,(HL)
-923b 923b d c9
-923b 923b s 				ret
-923c 923c s 
-923c 923c s ;--------- Map print -------- ;
-923c 923c s ; C - X
-923c 923c s ; B	- Y
-923c 923c s printMapAt:	
-923c 923c d c5
-923c 923c s 			PUSH	BC
-923d 923d d 0c
-923d 923d s 			INC		C
-923e 923e d 69
-923e 923e s 			LD		L,C
-923f 923f d 2600
-923f 923f s 			LD		H, $00			;We dont care about msb
-9241 9241 d e5
-9241 9241 s 			PUSH	HL
-9242 9242 d 04
-9242 9242 s 			INC		B
-9243 9243 d 68
-9243 9243 s 			LD		L,B
-9244 9244 d 2600
-9244 9244 s 			LD		H, $00			;Again we dont care
-9246 9246 d e5
-9246 9246 s 			PUSH	HL
-9247 9247 d cdd192
-9247 9247 s 			CALL	moveCursor
-924a 924a d c1
-924a 924a s 			POP 	BC
-924b 924b d cd2592
-924b 924b s 			CALL	getDataAtPos
-924e 924e d cd6d92
-924e 924e s 			CALL	pmChar
-9251 9251 d c9
-9251 9251 s 			RET
-9252 9252 s 
-9252 9252 s printMap:
-9252 9252 d 3e20
-9252 9252 s 				ld		a,32
-9254 9254 d 47
-9254 9254 s 				ld		b,a			; 32 chars per line
-9255 9255 d 4f
-9255 9255 s 				ld		c,a			; 32 lines per map
-9256 9256 d 2100e0
-9256 9256 s 				ld		hl,map
-9259 9259 d 7e
-9259 9259 s pmLoop:			ld		a,(hl)		; get char
-925a 925a d cd6d92
-925a 925a s 				call	pmChar		; decode what to print
-925d 925d d 23
-925d 925d s 				inc		hl			; next char
-925e 925e d 10f9
-925e 925e s 				djnz	pmLoop		; if were not at the end of a line, print next char
-9260 9260 d cdc892
-9260 9260 s 				call	newline		; if we are, print a new line
-9263 9263 d 41
-9263 9263 s 				ld		b,c			;are we at the end of a block
-9264 9264 d 1001
-9264 9264 s 				djnz	pmNextLine
-9266 9266 d c9
-9266 9266 s 				ret
-9267 9267 s pmNextLine:	
-9267 9267 d 48
-9267 9267 s 				ld		c,b			;copy decremented b back to c
-9268 9268 d 3e20
-9268 9268 s 				ld 		a,32		;refill b withj 32
-926a 926a d 47
-926a 926a s 				ld		b,a
-926b 926b d 18ec
-926b 926b s 				jr		pmLoop		;draw next char
+91f9 91f9 s sGhost1Print:
+91f9 91f9 d 217c97
+91f9 91f9 s                 LD		HL, sGhost1
+91fc 91fc d cda8a0
+91fc 91fc s 				CALL 	print
+91ff 91ff d c9
+91ff 91ff s 				RET
+9200 9200 s 
+9200 9200 s ghostMove:
+9200 9200 d fe57
+9200 9200 s 				CP		'W'
+9202 9202 d 280a
+9202 9202 s 				JR		Z,ghostMoveU
+9204 9204 d fe41
+9204 9204 s 				CP		'A'
+9206 9206 d 281e
+9206 9206 s 				JR		Z,ghostMoveL
+9208 9208 d fe53
+9208 9208 s 				CP		'S'
+920a 920a d 280e
+920a 920a s 				JR		Z,ghostMoveD
+920c 920c d 1824
+920c 920c s 				JR		ghostMoveR
+920e 920e s 
+920e 920e s ghostMoveU:			
+920e 920e d 1a
+920e 920e s 				LD      A, (DE)
+920f 920f d 6f
+920f 920f s                 LD      L,A         ;ld x
+9210 9210 d 0a
+9210 9210 s                 LD		A, (BC)
+9211 9211 d 3d
+9211 9211 s 				DEC		A
+9212 9212 d e61f
+9212 9212 s 				AND		00011111B
+9214 9214 d 67
+9214 9214 s                 LD      H,A         ;ld y
+9215 9215 d cd3e92
+9215 9215 s                 CALL    ghostCheckStack
+9218 9218 d 02
+9218 9218 s 				LD		(BC),A
+9219 9219 d c9
+9219 9219 s 				RET
+921a 921a s ghostMoveD:		
+921a 921a d 1a
+921a 921a s 	            LD      A, (DE)
+921b 921b d 6f
+921b 921b s                 LD      L,A         ;ld x
+921c 921c d 0a
+921c 921c s 				LD		A, (BC)
+921d 921d d 3c
+921d 921d s 				INC		A
+921e 921e d e61f
+921e 921e s 				AND		00011111B
+9220 9220 d 67
+9220 9220 s                 LD      H,A         ;ld y
+9221 9221 d cd3e92
+9221 9221 s                 CALL    ghostCheckStack
+9224 9224 d 02
+9224 9224 s 				LD		(BC),A
+9225 9225 d c9
+9225 9225 s 				RET
+9226 9226 s ghostMoveL:		
+9226 9226 d 0a
+9226 9226 s                 LD      A, (BC)
+9227 9227 d 67
+9227 9227 s                 LD      H,A         ;ld y
+9228 9228 d 1a
+9228 9228 s 				LD		A, (DE)
+9229 9229 d 3d
+9229 9229 s 				DEC		A
+922a 922a d e61f
+922a 922a s 				AND		00011111B
+922c 922c d 6f
+922c 922c s                 LD      L,A         ;ld x
+922d 922d d cd3e92
+922d 922d s                 CALL    ghostCheckStack
+9230 9230 d 12
+9230 9230 s 				LD		(DE),A
+9231 9231 d c9
+9231 9231 s 				RET
+9232 9232 s ghostMoveR:		
+9232 9232 d 0a
+9232 9232 s                 LD      A, (BC)
+9233 9233 d 67
+9233 9233 s                 LD      H,A         ;ld y
+9234 9234 d 1a
+9234 9234 s 				LD		A, (DE)
+9235 9235 d 3c
+9235 9235 s 				INC		A
+9236 9236 d e61f
+9236 9236 s 				AND		00011111B
+9238 9238 d 6f
+9238 9238 s                 LD      L,A         ;ld x
+9239 9239 d cd3e92
+9239 9239 s                 CALL    ghostCheckStack
+923c 923c d 12
+923c 923c s 				LD		(DE),A
+923d 923d d c9
+923d 923d s 				RET
+923e 923e s ghostCheckStack:
+923e 923e d f5
+923e 923e s                 PUSH   AF
+923f 923f d c5
+923f 923f s                 PUSH   BC
+9240 9240 d d5
+9240 9240 s                 PUSH   DE
+9241 9241 d cd9593
+9241 9241 s                 CALL   rGhostStack
+9244 9244 d ca5d92
+9244 9244 s                 JP     Z,ghostDoStack
+9247 9247 d cdd694
+9247 9247 s                 CALL   oGhostStack
+924a 924a d ca5d92
+924a 924a s                 JP     Z,ghostDoStack
+924d 924d d cd1796
+924d 924d s                 CALL   pGhostStack
+9250 9250 d ca5d92
+9250 9250 s                 JP     Z,ghostDoStack
+9253 9253 d cd5897
+9253 9253 s                 CALL   tGhostStack
+9256 9256 d ca5d92
+9256 9256 s                 JP     Z,ghostDoStack
+9259 9259 d d1
+9259 9259 s                 POP    DE
+925a 925a d c1
+925a 925a s                 POP    BC
+925b 925b d f1
+925b 925b s                 POP    AF
+925c 925c d c9
+925c 925c s                 RET
+925d 925d s ghostDoStack:   
+925d 925d d d1
+925d 925d s                 POP    DE
+925e 925e d c1
+925e 925e s                 POP    BC
+925f 925f d f1
+925f 925f s                 POP    AF
+9260 9260 d f1
+9260 9260 s                 POP    AF
+9261 9261 d c9
+9261 9261 s                 RET
+9262 9262 s 
+9262 9262 s eatGhost:       
+9262 9262 d 2a0089
+9262 9262 s                 LD      HL,(score)
+9265 9265 d 010a00
+9265 9265 s                 LD      BC,10
+9268 9268 d 09
+9268 9268 s                 ADD     HL,BC
+9269 9269 d 220089
+9269 9269 s                 LD      (score),HL
+926c 926c d c9
+926c 926c s                 RET
+926d 926d s                 
+926d 926d s include ghosts/red.asm
+926d 926d f ghosts/red.asm
+926d 926d s rGhostInitX	    .EQU	15
+926d 926d s rGhostInitY	    .EQU	8
+926d 926d s rGhostInitTimer .EQU    10H
+926d 926d s rGhostStoreX	.EQU	14
+926d 926d s rGhostStoreY	.EQU	11
 926d 926d s 
+926d 926d s rGhostX		    .EQU	8110H		
+926d 926d s rGhostY		    .EQU	8111H
+926d 926d s rGhostDir		.EQU	8112H
+926d 926d s rGhostTimer     .EQU    8115H
 926d 926d s 
-926d 926d s pmChar:		;-- Print map char a
-926d 926d d e5
-926d 926d s 				push	hl
-926e 926e d cb67
-926e 926e s 				bit		powerpBit,a
-9270 9270 d 200e
-9270 9270 s 				jr		nz,printPP
-9272 9272 d cb6f
-9272 9272 s 				bit		pelletBit,a
-9274 9274 d 2012
-9274 9274 s 				jr		nz,printP
-9276 9276 d cb77
-9276 9276 s 				bit		wallBit,a
-9278 9278 d 2016
-9278 9278 s 				jr		nz,printWall
-927a 927a d cb7f
-927a 927a s 				bit		sfBit,a
-927c 927c d 201a
-927c 927c s 				jr		nz,printSF
-927e 927e d 1820
-927e 927e s 				jr	 	printVoid
-9280 9280 s 			
-9280 9280 s printPP:
-9280 9280 d 215c93
-9280 9280 s 				ld		hl,powerPellet
-9283 9283 d cd3f93
-9283 9283 s 				call	print
-9286 9286 d 1820
-9286 9286 s 				jr		pmCharRet
-9288 9288 s printP:
-9288 9288 d 216793
-9288 9288 s 				ld		hl,pellet
-928b 928b d cd3f93
-928b 928b s 				call	print
-928e 928e d 1818
-928e 928e s 				jr		pmCharRet
-9290 9290 s printWall:
-9290 9290 d 215193
-9290 9290 s 				ld		hl,wall
-9293 9293 d cd3f93
-9293 9293 s 				call	print
-9296 9296 d 1810
-9296 9296 s 				jr		pmCharRet
-9298 9298 s printSF:
-9298 9298 d 217293
-9298 9298 s 				ld		hl,superFruit
-929b 929b d cd3f93
-929b 929b s 				call	print
-929e 929e d 1808
-929e 929e s 				jr		pmCharRet
-92a0 92a0 s printVoid:
-92a0 92a0 d 21bc93
-92a0 92a0 s 				ld		hl,void
-92a3 92a3 d cd3f93
-92a3 92a3 s 				call	print
-92a6 92a6 d 1800
-92a6 92a6 s 				jr		pmCharRet
-92a8 92a8 s pmCharRet:	
-92a8 92a8 d e1
-92a8 92a8 s 				pop 	hl
-92a9 92a9 d c9
-92a9 92a9 s 				ret
-92aa 92aa s 				
-92aa 92aa s printScore:					
-92aa 92aa d 210200
-92aa 92aa s 				LD		HL, $02
-92ad 92ad d e5
-92ad 92ad s 				PUSH	HL
-92ae 92ae d 212300
-92ae 92ae s 				LD		HL, $23
-92b1 92b1 d e5
-92b1 92b1 s 				PUSH	HL
-92b2 92b2 d cdd192
-92b2 92b2 s 				CALL	moveCursor
-92b5 92b5 d 217d93
-92b5 92b5 s 				LD		HL, scoreHUD
-92b8 92b8 d cd3f93
-92b8 92b8 s 				CALL 	print
-92bb 92bb d 2a0089
-92bb 92bb s 				LD		HL, (score)
-92be 92be d cde892
-92be 92be s 				CALL	HLToDec
-92c1 92c1 d 3e0a
-92c1 92c1 s 				LD		A,LF
-92c3 92c3 d cf
-92c3 92c3 s 				RST     08H
-92c4 92c4 d 3e0d
-92c4 92c4 s 				LD		A,CR
-92c6 92c6 d cf
-92c6 92c6 s 				RST     08H
-92c7 92c7 d c9
-92c7 92c7 s 				RET
-92c8 92c8 s 			
-92c8 92c8 s ;------- Libs ------------;
-92c8 92c8 s newline:			
-92c8 92c8 d f5
-92c8 92c8 s 				push 	af
-92c9 92c9 d 3e0d
-92c9 92c9 s 				ld		a, CR
-92cb 92cb d cf
-92cb 92cb s 				rst 	08H
-92cc 92cc d 3e0a
-92cc 92cc s 				ld		a, LF
-92ce 92ce d cf
-92ce 92ce s 				rst 	08H
-92cf 92cf d f1
-92cf 92cf s 				pop 	af
-92d0 92d0 d c9
-92d0 92d0 s 				ret
-92d1 92d1 s 			
-92d1 92d1 s ;move cursor to (sp,sp-2)				
-92d1 92d1 s moveCursor:		
-92d1 92d1 d d1
-92d1 92d1 s 				POP		DE
-92d2 92d2 d 3e1b
-92d2 92d2 s 				LD		A,$1B
-92d4 92d4 d cf
-92d4 92d4 s 				RST     08H
-92d5 92d5 d 3e5b
-92d5 92d5 s 				LD		A,'['
-92d7 92d7 d cf
-92d7 92d7 s 				RST     08H
-92d8 92d8 d e1
-92d8 92d8 s 				POP		HL
-92d9 92d9 d cde892
-92d9 92d9 s 				CALL	HLToDec
-92dc 92dc d 3e3b
-92dc 92dc s 				LD		A,$3B
-92de 92de d cf
-92de 92de s 				RST     08H
-92df 92df d e1
-92df 92df s 				POP		HL
-92e0 92e0 d cde892
-92e0 92e0 s 				CALL	HLToDec
-92e3 92e3 d 3e66
-92e3 92e3 s 				LD		A,'f'
-92e5 92e5 d cf
-92e5 92e5 s 				RST     08H
-92e6 92e6 d d5
-92e6 92e6 s 				PUSH	DE
-92e7 92e7 d c9
-92e7 92e7 s 				RET
-92e8 92e8 s 
-92e8 92e8 s ;Prints	hl as decimal			
-92e8 92e8 s HLToDec:
-92e8 92e8 d f5
-92e8 92e8 s 				PUSH	AF
-92e9 92e9 d c5
-92e9 92e9 s 				PUSH	BC
-92ea 92ea d cdf092
-92ea 92ea s 				CALL	DispHL
-92ed 92ed d c1
-92ed 92ed s 				POP		BC
-92ee 92ee d f1
-92ee 92ee s 				POP		AF
-92ef 92ef d c9
-92ef 92ef s 				RET
-92f0 92f0 s DispHL:
-92f0 92f0 d 01f0d8
-92f0 92f0 s 				ld		bc,-10000
-92f3 92f3 d cd0993
-92f3 92f3 s 				call	Num1
-92f6 92f6 d 0118fc
-92f6 92f6 s 				ld		bc,-1000
-92f9 92f9 d cd0993
-92f9 92f9 s 				call	Num1
-92fc 92fc d 019cff
-92fc 92fc s 				ld		bc,-100
-92ff 92ff d cd0993
-92ff 92ff s 				call	Num1
-9302 9302 d 0ef6
-9302 9302 s 				ld		c,-10
-9304 9304 d cd0993
-9304 9304 s 				call	Num1
-9307 9307 d 0eff
-9307 9307 s 				ld		c,-1
-9309 9309 d 3e2f
-9309 9309 s Num1:			ld		a,'0'-1
-930b 930b d 3c
-930b 930b s Num2:			inc		a
-930c 930c d 09
-930c 930c s 				add		hl,bc
-930d 930d d 38fc
-930d 930d s 				jr		c,Num2
-930f 930f d ed42
-930f 930f s 				sbc		hl,bc
-9311 9311 d cf
-9311 9311 s 				RST     08H
-9312 9312 d c9
-9312 9312 s 				ret
-9313 9313 s ;Print A as HEX				
-9313 9313 d 4f
-9313 9313 s NumToHex:    	ld 		c, a   		; a = number to convert
-9314 9314 d cd1e93
-9314 9314 s             	call 	Num1H
-9317 9317 d cf
-9317 9317 s             	RST     08H
-9318 9318 d 79
-9318 9318 s             	ld 		a, c
-9319 9319 d cd2293
-9319 9319 s             	call 	Num2H
-931c 931c d cf
-931c 931c s             	RST     08H
-931d 931d d c9
-931d 931d s             	ret
-931e 931e s 
-931e 931e d 1f
-931e 931e s Num1H:        	rra
-931f 931f d 1f
-931f 931f s             	rra
-9320 9320 d 1f
-9320 9320 s             	rra
-9321 9321 d 1f
-9321 9321 s            		rra
-9322 9322 d f6f0
-9322 9322 s Num2H:        	or 		$F0
-9324 9324 d 27
-9324 9324 s             	daa
-9325 9325 d c6a0
-9325 9325 s             	add 	a, $A0
-9327 9327 d ce40
-9327 9327 s             	adc 	a, $40 		; Ascii hex at this point (0 to F)   
-9329 9329 d c9
-9329 9329 s             	ret
-932a 932a s 
-932a 932a s ;Get ABS of A
-932a 932a s absA:
-932a 932a d b7
-932a 932a s      or a
-932b 932b d f0
-932b 932b s      ret p
-932c 932c d ed44
-932c 932c s      neg
-932e 932e d c9
-932e 932e s      ret
-932f 932f s 
-932f 932f s ;getArAndomA	 
-932f 932f s randomA:				
-932f 932f d 3a8888
-932f 932f s 				ld a, 	(seed)
-9332 9332 d 47
-9332 9332 s 				ld b, 	a 
-9333 9333 s 
-9333 9333 d 0f
-9333 9333 s 				rrca ; multiply by 32
-9334 9334 d 0f
-9334 9334 s 				rrca
-9335 9335 d 0f
-9335 9335 s 				rrca
-9336 9336 d ee1f
-9336 9336 s 				xor $1f
-9338 9338 s 
-9338 9338 d 80
-9338 9338 s 				add 	a, b
-9339 9339 d deff
-9339 9339 s 				sbc a, 255 ; carry
-933b 933b s 
-933b 933b d 328888
-933b 933b s 				ld (seed), a
-933e 933e d c9
-933e 933e s 				ret
-933f 933f s 
-933f 933f s ;------- Print string
-933f 933f d f5
-933f 933f s print:			PUSH 	AF				; Preserve AF				
-9340 9340 d 7e
-9340 9340 s printLoop:      LD      A,(HL)          ; Get character
-9341 9341 d b7
-9341 9341 s                 OR      A               ; Is it $00 ?
-9342 9342 d 2804
-9342 9342 s                 JR     	Z,printRet      ; Then RETurn on terminator
-9344 9344 d cf
-9344 9344 s                 RST     08H             ; Print it
-9345 9345 d 23
-9345 9345 s                 INC     HL              ; Next Character
-9346 9346 d 18f8
-9346 9346 s                 JR      printLoop       ; Continue until $00
-9348 9348 s 				
-9348 9348 s ;delay loop
-9348 9348 s printRet:		
-9348 9348 d f1
-9348 9348 s 				POP		AF
-9349 9349 d c9
-9349 9349 s 				RET
-934a 934a s delay:
-934a 934a d 00
-934a 934a s 				NOP
-934b 934b d 0b
-934b 934b s 				DEC 	BC
-934c 934c d 78
-934c 934c s 				LD 		A,B
-934d 934d d b1
-934d 934d s 				OR 		C
-934e 934e d c8
-934e 934e s 				RET 	Z
-934f 934f d 18f9
-934f 934f s 				JR 		delay
-9351 9351 s 
-9351 9351 s ;Strings
-9351 9351 d 1b5b33346d231b5b306d00
-9351 9351 s wall:			.BYTE	1BH,"[34m#",1BH,"[0m",0
-935c 935c d 1b5b39376d6f1b5b306d00
-935c 935c s powerPellet:	.BYTE	1BH,"[97mo",1BH,"[0m",0
-9367 9367 d 1b5b33376d2a1b5b306d00
-9367 9367 s pellet:			.BYTE	1BH,"[37m*",1BH,"[0m",0
-9372 9372 d 1b5b33316d401b5b306d00
-9372 9372 s superFruit:		.BYTE	1BH,"[31m@",1BH,"[0m",0
-937d 937d s 
-937d 937d d 53636f72653a2000
-937d 937d s scoreHUD:     	.BYTE "Score: ",0
-9385 9385 s 
-9385 9385 d 1b5b39336d431b5b306d00
-9385 9385 s pacman:			.BYTE	1BH,"[93mC",1BH,"[0m",0
-9390 9390 s 
-9390 9390 d 1b5b39316d4d1b5b306d00
-9390 9390 s redGhost:		.BYTE	1BH,"[91mM",1BH,"[0m",0
-939b 939b d 1b5b39326d4d1b5b306d00
-939b 939b s greenGhost:		.BYTE	1BH,"[92mM",1BH,"[0m",0
-93a6 93a6 d 1b5b33366d4d1b5b306d00
-93a6 93a6 s blueGhost:		.BYTE	1BH,"[36mM",1BH,"[0m",0
-93b1 93b1 d 1b5b39356d4d1b5b306d00
-93b1 93b1 s pinkGhost:		.BYTE	1BH,"[95mM",1BH,"[0m",0
-93bc 93bc s 
-93bc 93bc s 
-93bc 93bc d 2000
-93bc 93bc s void:			.BYTE	" ",0
-93be 93be s 
-93be 93be d 1b5b481b5b324a00
-93be 93be s cls:      	  	.BYTE 1BH,"[H",1BH,"[2J",0
-93c6 93c6 s ;----- Map ------		
-e000 e000 s 	.ORG 0E000H
-e000 e000 s ;----Pellet
-e000 e000 s ww 		.EQU	40H
-e000 e000 s 
-e000 e000 s hp 		.EQU	2CH		;left 	right	pellet
-e000 e000 s gp		.EQU	23H		;up		down	pellet
-e000 e000 s 
-e000 e000 s lp		.EQU	26H		;down 	left 	pellet
-e000 e000 s rp		.EQU	2AH		;down 	right	pellet
-e000 e000 s up		.EQU	25H		;up 	left	pellet
-e000 e000 s dp		.EQU	29H		;up 	right	pellet
-e000 e000 s 
-e000 e000 s bp		.EQU	2BH		;up		down	right	pellet
-e000 e000 s cp		.EQU	27H		;up		down	left	pellet
-e000 e000 s vp		.EQU	2EH		;down	left	right	pellet
-e000 e000 s kp		.EQU	2DH		;up		left	right	pellet
-e000 e000 s 
-e000 e000 s xp		.EQU	2FH		;all	pellet
-e000 e000 s ;------- No pellet
-e000 e000 s hn 		.EQU	0CH		;left 	right	pellet
-e000 e000 s gn		.EQU	03H		;up		down	pellet
-e000 e000 s 
-e000 e000 s ln		.EQU	06H		;down 	left 	pellet
-e000 e000 s rn		.EQU	0AH		;down 	right	pellet
-e000 e000 s un		.EQU	05H		;up 	left	pellet
-e000 e000 s dn		.EQU	09H		;up 	right	pellet
-e000 e000 s 
-e000 e000 s bn		.EQU	0BH		;up		down	right	pellet
-e000 e000 s cn		.EQU	07H		;up		down	left	pellet
-e000 e000 s vn		.EQU	0EH		;down	left	right	pellet
-e000 e000 s kn		.EQU	0DH		;up		left	right	pellet
-e000 e000 s 
-e000 e000 s xn		.EQU	0FH		;all	pellet
-e000 e000 s ;--------Power Pellet
-e000 e000 s hs 		.EQU	1CH		;left 	right	pellet
-e000 e000 s gs		.EQU	13H		;up		down	pellet
-e000 e000 s 
-e000 e000 s ls		.EQU	16H		;down 	left 	pellet
-e000 e000 s rs		.EQU	1AH		;down 	right	pellet
-e000 e000 s us		.EQU	15H		;up 	left	pellet
-e000 e000 s ds		.EQU	19H		;up 	right	pellet
-e000 e000 s 
-e000 e000 s bs		.EQU	1BH		;up		down	right	pellet
-e000 e000 s cs		.EQU	17H		;up		down	left	pellet
-e000 e000 s vs		.EQU	1EH		;down	left	right	pellet
-e000 e000 s ks		.EQU	1DH		;up		left	right	pellet
-e000 e000 s 
-e000 e000 s xs		.EQU	1FH		;all	pellet
-e000 e000 s 
-e000 e000 s 
-e000 e000 d 0000404040404040404040404040404040404040404040404040404040400000
-e000 e000 s map:	.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
-e020 e020 d 0000402a2c2c2c2c2e2c2c2c2c2c2640402a2c2c2c2c2c2e2c2c2c2c26400000
-e020 e020 s 		.BYTE	00,00,ww,rp,hp,hp,hp,hp,vp,hp,hp,hp,hp,hp,lp,ww,ww,rp,hp,hp,hp,hp,hp,vp,hp,hp,hp,hp,lp,ww,00,00
-e040 e040 d 0000401340404040234040404040234040234040404040234040404013400000
-e040 e040 s 		.BYTE	00,00,ww,gs,ww,ww,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,ww,ww,gs,ww,00,00
-e060 e060 d 0000402340404040234040404040234040234040404040234040404023400000
-e060 e060 s 		.BYTE	00,00,ww,gp,ww,ww,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,ww,ww,gp,ww,00,00
-e080 e080 d 0000402b2c2c2c2c2f2c2c2e2c2c2d2c2c2d2c2c2e2c2c2f2c2c2c2c27400000
-e080 e080 s 		.BYTE	00,00,ww,bp,hp,hp,hp,hp,xp,hp,hp,vp,hp,hp,kp,hp,hp,kp,hp,hp,vp,hp,hp,xp,hp,hp,hp,hp,cp,ww,00,00
-e0a0 e0a0 d 0000402340404040234040234040404040404040234040234040404023400000
-e0a0 e0a0 s 		.BYTE	00,00,ww,gp,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,gp,ww,00,00
-e0c0 e0c0 d 000040292c2c2c2c274040292c2c2640402a2c2c2540402b2c2c2c2c25400000
-e0c0 e0c0 s 		.BYTE	00,00,ww,dp,hp,hp,hp,hp,cp,ww,ww,dp,hp,hp,lp,ww,ww,rp,hp,hp,up,ww,ww,bp,hp,hp,hp,hp,up,ww,00,00
-e0e0 e0e0 d 0000404040404040234040404040034040034040404040234040404040400000
-e0e0 e0e0 s 		.BYTE	00,00,ww,ww,ww,ww,ww,ww,gp,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gp,ww,ww,ww,ww,ww,ww,00,00
-e100 e100 d 00000000000000402340400a0c0c0d0c0c0d0c0c064040234000000000000000
-e100 e100 s 		.BYTE	00,00,00,00,00,00,00,ww,gp,ww,ww,rn,hn,hn,kn,hn,hn,kn,hn,hn,ln,ww,ww,gp,ww,00,00,00,00,00,00,00
-e120 e120 d 0000000000000040234040034040400000404040034040234000000000000000
-e120 e120 s 		.BYTE	00,00,00,00,00,00,00,ww,gp,ww,ww,gn,ww,ww,ww,00,00,ww,ww,ww,gn,ww,ww,gp,ww,00,00,00,00,00,00,00
-e140 e140 d 4040404040404040234040034000000000000040034040234040404040404040
-e140 e140 s 		.BYTE	ww,ww,ww,ww,ww,ww,ww,ww,gp,ww,ww,gn,ww,00,00,00,00,00,00,ww,gn,ww,ww,gp,ww,ww,ww,ww,ww,ww,ww,ww
-e160 e160 d 0c0c0c0c0c0c0c0c2f0c0c0740000000000000400b0c0c2f0c0c0c0c0c0c0c0c
-e160 e160 s 		.BYTE	hn,hn,hn,hn,hn,hn,hn,hn,xp,hn,hn,cn,ww,00,00,00,00,00,00,ww,bn,hn,hn,xp,hn,hn,hn,hn,hn,hn,hn,hn
-e180 e180 d 4040404040404040234040034000000000000040034040234040404040404040
-e180 e180 s 		.BYTE	ww,ww,ww,ww,ww,ww,ww,ww,gp,ww,ww,gn,ww,00,00,00,00,00,00,ww,gn,ww,ww,gp,ww,ww,ww,ww,ww,ww,ww,ww
-e1a0 e1a0 d 0000000000000040234040034040404040404040034040234000000000000000
-e1a0 e1a0 s 		.BYTE	00,00,00,00,00,00,00,ww,gp,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gp,ww,00,00,00,00,00,00,00
-e1c0 e1c0 d 00000000000000402340400b0c0c0c0c0c0c0c0c074040234000000000000000
-e1c0 e1c0 s 		.BYTE	00,00,00,00,00,00,00,ww,gp,ww,ww,bn,hn,hn,hn,hn,hn,hn,hn,hn,cn,ww,ww,gp,ww,00,00,00,00,00,00,00
-e1e0 e1e0 d 0000404040404040234040034040404040404040034040234040404040400000
-e1e0 e1e0 s 		.BYTE	00,00,ww,ww,ww,ww,ww,ww,gp,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gp,ww,ww,ww,ww,ww,ww,00,00
-e200 e200 d 0000402a2c2c2c2c2f2c2c2d2c2c2640402a2c2c2d2c2c2f2c2c2c2c26400000
-e200 e200 s 		.BYTE	00,00,ww,rp,hp,hp,hp,hp,xp,hp,hp,kp,hp,hp,lp,ww,ww,rp,hp,hp,kp,hp,hp,xp,hp,hp,hp,hp,lp,ww,00,00
-e220 e220 d 0000402340404040234040404040234040234040404040234040404023400000
-e220 e220 s 		.BYTE	00,00,ww,gp,ww,ww,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,ww,ww,gp,ww,00,00
-e240 e240 d 000040192c2640402b2c2c2e2c2c2d2c2c2d2c2c2e2c2c2740402a2c15400000
-e240 e240 s 		.BYTE	00,00,ww,ds,hp,lp,ww,ww,bp,hp,hp,vp,hp,hp,kp,hp,hp,kp,hp,hp,vp,hp,hp,cp,ww,ww,rp,hp,us,ww,00,00
-e260 e260 d 0000404040234040234040234040404040404040234040234040234040400000
-e260 e260 s 		.BYTE	00,00,ww,ww,ww,gp,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,gp,ww,ww,ww,00,00
-e280 e280 d 0000402a2c2d2c2c254040292c2c2640402a2c2c254040292c2c2d2c26400000
-e280 e280 s 		.BYTE	00,00,ww,rp,hp,kp,hp,hp,up,ww,ww,dp,hp,hp,lp,ww,ww,rp,hp,hp,up,ww,ww,dp,hp,hp,kp,hp,lp,ww,00,00
-e2a0 e2a0 d 0000402340404040404040404040234040234040404040404040404023400000
-e2a0 e2a0 s 		.BYTE	00,00,ww,gp,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,gp,ww,00,00
-e2c0 e2c0 d 000040292c2c2c2c2c2c2c2c2c2c2d2c2c2d2c2c2c2c2c2c2c2c2c2c25400000
-e2c0 e2c0 s 		.BYTE	00,00,ww,dp,hp,hp,hp,hp,hp,hp,hp,hp,hp,hp,kp,hp,hp,kp,hp,hp,hp,hp,hp,hp,hp,hp,hp,hp,up,ww,00,00
-e2e0 e2e0 d 0000404040404040404040404040404040404040404040404040404040400000
-e2e0 e2e0 s 		.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
-e300 e300 d 0000000000000000000000000000000000000000000000000000000000000000
-e300 e300 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-e320 e320 d 0000000000000000000000000000000000000000000000000000000000000000
-e320 e320 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-e340 e340 d 0000000000000000000000000000000000000000000000000000000000000000
-e340 e340 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-e360 e360 d 0000000000000000000000000000000000000000000000000000000000000000
-e360 e360 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-e380 e380 d 0000000000000000000000000000000000000000000000000000000000000000
-e380 e380 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-e3a0 e3a0 d 0000000000000000000000000000000000000000000000000000000000000000
-e3a0 e3a0 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-e3c0 e3c0 d 0000000000000000000000000000000000000000000000000000000000000000
-e3c0 e3c0 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-e3e0 e3e0 f main.asm
-e3e0 e3e0 d 0000000000000000000000000000000000000000000000000000000000000000
-e3e0 e3e0 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+926d 926d s rGhostClear:
+926d 926d d 3a1081
+926d 926d s 				LD		A, (rGhostX)		;Push X to stack
+9270 9270 d 4f
+9270 9270 s 				LD		C,A
+9271 9271 d 3a1181
+9271 9271 s 				LD		A, (rGhostY)		;Push Y to stack
+9274 9274 d 47
+9274 9274 s 				LD		B,A
+9275 9275 d cd5198
+9275 9275 s 				CALL 	printMapAt
+9278 9278 d c9
+9278 9278 s 				RET
+9279 9279 s 				
+9279 9279 s rGhostPrint:
+9279 9279 d 3a1081
+9279 9279 s 				LD		A, (rGhostX)		;Push X to stack
+927c 927c d 3c
+927c 927c s 				INC		A
+927d 927d d 4f
+927d 927d s 				LD		C,A
+927e 927e d 3a1181
+927e 927e s 				LD		A, (rGhostY)		;Push Y to stack
+9281 9281 d 3c
+9281 9281 s 				INC		A
+9282 9282 d 47
+9282 9282 s 				LD		B,A
+9283 9283 d cd32a0
+9283 9283 s 				CALL	moveCursor
+9286 9286 d 3a0481
+9286 9286 s                 LD      A,(pPActive)
+9289 9289 d b7
+9289 9289 s                 OR      A
+928a 928a d c2ed91
+928a 928a s                 JP      NZ, printSGhost
+928d 928d d 21a393
+928d 928d s 				LD		HL, rGhost
+9290 9290 d cda8a0
+9290 9290 s 				CALL 	print
+9293 9293 d c9
+9293 9293 s 				RET
+9294 9294 s rGhostMapData:	
+9294 9294 d 3a1081
+9294 9294 s 				LD		A, (rGhostX)
+9297 9297 d 4f
+9297 9297 s 				LD		C,A
+9298 9298 d 3a1181
+9298 9298 s 				LD		A, (rGhostY)
+929b 929b d 47
+929b 929b s 				LD		B,A
+929c 929c d cdd397
+929c 929c s 				CALL	getMapAddress
+929f 929f d 7e
+929f 929f s                 LD      A,(HL)
+92a0 92a0 d c9
+92a0 92a0 s 				ret
+92a1 92a1 s 
+92a1 92a1 s 
+92a1 92a1 s rGhostInit:   
+92a1 92a1 d 3e0e
+92a1 92a1 s                 LD		a, rGhostStoreX	;set rGhost Pos
+92a3 92a3 d 321081
+92a3 92a3 s 			    LD		(rGhostX),a
+92a6 92a6 d 3e0b
+92a6 92a6 s 			    LD		a, rGhostStoreY
+92a8 92a8 d 321181
+92a8 92a8 s 			    LD		(rGhostY),a
+92ab 92ab d 3e10
+92ab 92ab s                 LD		a, rGhostInitTimer
+92ad 92ad d 321581
+92ad 92ad s 			    LD		(rGhostTimer),a
+92b0 92b0 d c9
+92b0 92b0 s                 RET
+92b1 92b1 s 
+92b1 92b1 s rGhostMove:
+92b1 92b1 d 3a1581
+92b1 92b1 s                 LD      A,(rGhostTimer)     ;Dont move if the ghost is in jale
+92b4 92b4 d b7
+92b4 92b4 s                 OR      A                
+92b5 92b5 d c2ca92
+92b5 92b5 s                 JP      NZ,rGhostDecTimer   ;Decrement the timer if its x
+92b8 92b8 d 3a0481
+92b8 92b8 s                 LD      A,(pPActive)
+92bb 92bb d cb47
+92bb 92bb s                 BIT     0,A                 ;Move every other tick, bit 0 will always 0 when the power pellet isnt active
+92bd 92bd d c0
+92bd 92bd s                 RET     NZ
+92be 92be d 3a1281
+92be 92be s 				LD		A,(rGhostDir)
+92c1 92c1 d 111081
+92c1 92c1 s 				LD		DE,rGhostX
+92c4 92c4 d 011181
+92c4 92c4 s 				LD		BC,rGhostY
+92c7 92c7 d c30092
+92c7 92c7 s 				JP		ghostMove
+92ca 92ca s 
+92ca 92ca s 
+92ca 92ca s rGhostDecTimer:
+92ca 92ca d 3d
+92ca 92ca s                 DEC     A
+92cb 92cb d 321581
+92cb 92cb s                 LD      (rGhostTimer),A
+92ce 92ce d b7
+92ce 92ce s                 OR      A
+92cf 92cf d c0
+92cf 92cf s                 RET     NZ              ;IF Zero move ghost out of jale
+92d0 92d0 d 3e0f
+92d0 92d0 s                 LD		a, rGhostInitX	;set rGhost Pos
+92d2 92d2 d 321081
+92d2 92d2 s 			    LD		(rGhostX),a
+92d5 92d5 d 3e08
+92d5 92d5 s 			    LD		a, rGhostInitY
+92d7 92d7 d 321181
+92d7 92d7 s 			    LD		(rGhostY),a
+92da 92da d c9
+92da 92da s                 RET
+92db 92db s 
+92db 92db s rGhostNextMove:
+92db 92db d 3eff
+92db 92db s 				LD		A, 0FFH
+92dd 92dd d 321381
+92dd 92dd s 				LD		(ghostDis),A
+92e0 92e0 d cd9492
+92e0 92e0 s 				CALL	rGhostMapData
+92e3 92e3 d 57
+92e3 92e3 s 				LD		D,A
+92e4 92e4 d 3e57
+92e4 92e4 s 				LD		A,	'W'			;check up
+92e6 92e6 d cdad97
+92e6 92e6 s 				CALL	isMoveValid
+92e9 92e9 d c40593
+92e9 92e9 s 				CALL	NZ,rGhostCheckU
+92ec 92ec d 3e53
+92ec 92ec s 				LD		A,	'S'			;down
+92ee 92ee d cdad97
+92ee 92ee s 				CALL	isMoveValid
+92f1 92f1 d c41393
+92f1 92f1 s 				CALL	NZ,rGhostCheckD
+92f4 92f4 d 3e41
+92f4 92f4 s 				LD		A,	'A'			;left
+92f6 92f6 d cdad97
+92f6 92f6 s 				CALL	isMoveValid
+92f9 92f9 d c42193
+92f9 92f9 s 				CALL	NZ,rGhostCheckL
+92fc 92fc d 3e44
+92fc 92fc s 				LD		A,	'D'			;right
+92fe 92fe d cdad97
+92fe 92fe s 				CALL	isMoveValid
+9301 9301 d c42f93
+9301 9301 s 				CALL	NZ,rGhostCheckR
+9304 9304 d c9
+9304 9304 s 				RET
+9305 9305 s 				
+9305 9305 s rGhostCheckU:	
+9305 9305 d f5
+9305 9305 s 				PUSH	AF
+9306 9306 d 3a1181
+9306 9306 s 				LD		A, (rGhostY)
+9309 9309 d 3d
+9309 9309 s 				DEC		A
+930a 930a d e61f
+930a 930a s 				AND		00011111B
+930c 930c d 47
+930c 930c s 				LD		B,A
+930d 930d d 3a1081
+930d 930d s 				LD		A,(rGhostX)
+9310 9310 d 4f
+9310 9310 s 				LD		C,A
+9311 9311 d 182a
+9311 9311 s 				JR		rGhostPathFind
+9313 9313 s rGhostCheckD:			
+9313 9313 d f5
+9313 9313 s 				PUSH	AF
+9314 9314 d 3a1181
+9314 9314 s 				LD		A, (rGhostY)
+9317 9317 d 3c
+9317 9317 s 				INC		A
+9318 9318 d e61f
+9318 9318 s 				AND		00011111B
+931a 931a d 47
+931a 931a s 				LD		B,A
+931b 931b d 3a1081
+931b 931b s 				LD		A,(rGhostX)
+931e 931e d 4f
+931e 931e s 				LD		C,A
+931f 931f d 181c
+931f 931f s 				JR		rGhostPathFind
+9321 9321 s rGhostCheckL:		
+9321 9321 d f5
+9321 9321 s 				PUSH	AF	
+9322 9322 d 3a1081
+9322 9322 s 				LD		A, (rGhostX)
+9325 9325 d 3d
+9325 9325 s 				DEC		A
+9326 9326 d e61f
+9326 9326 s 				AND		00011111B
+9328 9328 d 4f
+9328 9328 s 				LD		C,A
+9329 9329 d 3a1181
+9329 9329 s 				LD		A,(rGhostY)
+932c 932c d 47
+932c 932c s 				LD		B,A
+932d 932d d 180e
+932d 932d s 				JR		rGhostPathFind
+932f 932f s rGhostCheckR:
+932f 932f d f5
+932f 932f s 				PUSH	AF	
+9330 9330 d 3a1081
+9330 9330 s 				LD		A, (rGhostX)
+9333 9333 d 3c
+9333 9333 s 				INC		A
+9334 9334 d e61f
+9334 9334 s 				AND		00011111B
+9336 9336 d 4f
+9336 9336 s 				LD		C,A
+9337 9337 d 3a1181
+9337 9337 s 				LD		A,(rGhostY)
+933a 933a d 47
+933a 933a s 				LD		B,A
+933b 933b d 1800
+933b 933b s 				JR		rGhostPathFind
+933d 933d s 
+933d 933d s rGhostPathFind:
+933d 933d d cd3998
+933d 933d s 				CALL	getAddressPF
+9340 9340 d 3a1381
+9340 9340 s 				LD		A,(ghostDis)
+9343 9343 d 5e
+9343 9343 s 				LD		E,(HL)
+9344 9344 d bb
+9344 9344 s 				CP		E
+9345 9345 d f5
+9345 9345 s                 PUSH    AF
+9346 9346 d 3a0481
+9346 9346 s                 LD      A,(pPActive)            ;Check power pellet is not activ, if it is, run away
+9349 9349 d b7
+9349 9349 s                 OR      A
+934a 934a d c25493
+934a 934a s                 JP      NZ,rGhostPFPP
+934d 934d d f1
+934d 934d s                 POP     AF
+934e 934e d d26093
+934e 934e s 				JP		NC,rGhostSetNewDir
+9351 9351 d f1
+9351 9351 s                 POP     AF
+9352 9352 d f1
+9352 9352 s 				POP		AF
+9353 9353 d c9
+9353 9353 s 				RET
+9354 9354 s rGhostPFPP:
+9354 9354 d f1
+9354 9354 s                 POP     AF
+9355 9355 d da6093
+9355 9355 s                 JP		C,rGhostSetNewDir
+9358 9358 d feff
+9358 9358 s                 CP      0FFH
+935a 935a d ca6093
+935a 935a s                 JP      Z,rGhostSetNewDir
+935d 935d d f1
+935d 935d s                 POP     AF
+935e 935e d f1
+935e 935e s 				POP		AF
+935f 935f d c9
+935f 935f s                 RET
+9360 9360 s 
+9360 9360 s rGhostSetNewDir:
+9360 9360 d 7b
+9360 9360 s 				LD		A,E
+9361 9361 d 321381
+9361 9361 s 				LD		(ghostDis),A
+9364 9364 d f1
+9364 9364 s 				POP		AF
+9365 9365 d 321281
+9365 9365 s 				LD		(rGhostDir),A
+9368 9368 d c9
+9368 9368 s 				RET
+9369 9369 s 
+9369 9369 s rGhostColide:   
+9369 9369 d 3a0081
+9369 9369 s                 LD      A,(pacx)                ;Compair X
+936c 936c d 47
+936c 936c s                 LD      B,A
+936d 936d d 3a1081
+936d 936d s                 LD      A,(rGhostX)
+9370 9370 d b8
+9370 9370 s                 CP      B
+9371 9371 d c0
+9371 9371 s                 RET     NZ
+9372 9372 d 3a0181
+9372 9372 s                 LD      A,(pacy)                ;Compair Y
+9375 9375 d 47
+9375 9375 s                 LD      B,A
+9376 9376 d 3a1181
+9376 9376 s                 LD      A,(rGhostY)
+9379 9379 d b8
+9379 9379 s                 CP      B
+937a 937a d c0
+937a 937a s                 RET     NZ
+937b 937b d 3a0481
+937b 937b s                 LD      A,(pPActive)              ;Colishion Happened
+937e 937e d b7
+937e 937e s                 OR      A
+937f 937f d ca7291
+937f 937f s                 JP      Z,killPacman               ;If power pellet not active, run genric deth lib
+9382 9382 d cd6292
+9382 9382 s 				CALL	eatGhost
+9385 9385 d 3e0e
+9385 9385 s                 LD		a, rGhostStoreX	           ;set rGhost Pos
+9387 9387 d 321081
+9387 9387 s 			    LD		(rGhostX),a
+938a 938a d 3e0b
+938a 938a s 			    LD		a, rGhostStoreY
+938c 938c d 321181
+938c 938c s 			    LD		(rGhostY),a
+938f 938f d 3e10
+938f 938f s                 LD		a, rGhostInitTimer
+9391 9391 d 321581
+9391 9391 s 			    LD		(rGhostTimer),a
+9394 9394 d c9
+9394 9394 s                 RET
+9395 9395 s ;x = l
+9395 9395 s ;y = h
+9395 9395 s rGhostStack:
+9395 9395 d 7d
+9395 9395 s 				LD      A,L               		;Compair X
+9396 9396 d 47
+9396 9396 s                 LD      B,A
+9397 9397 d 3a1081
+9397 9397 s                 LD      A,(rGhostX)
+939a 939a d b8
+939a 939a s                 CP      B
+939b 939b d c0
+939b 939b s                 RET     NZ
+939c 939c d 7c
+939c 939c s                 LD      A,h                		;Compair Y
+939d 939d d 47
+939d 939d s                 LD      B,A
+939e 939e d 3a1181
+939e 939e s                 LD      A,(rGhostY)
+93a1 93a1 d b8
+93a1 93a1 s                 CP      B
+93a2 93a2 d c9
+93a2 93a2 s                 RET
+93a3 93a3 s 
+93a3 93a3 f ghosts.asm
+93a3 93a3 d 1b5b39316d4d1b5b306d00
+93a3 93a3 s rGhost:		.BYTE	1BH,"[91mM",1BH,"[0m",0
+93ae 93ae s include ghosts/orange.asm
+93ae 93ae f ghosts/orange.asm
+93ae 93ae s oGhostInitX	    .EQU	15
+93ae 93ae s oGhostInitY	    .EQU	8
+93ae 93ae s oGhostInitTimer .EQU    20H
+93ae 93ae s oGhostStoreX	.EQU	15
+93ae 93ae s oGhostStoreY	.EQU	11
+93ae 93ae s 
+93ae 93ae s oGhostX		    .EQU	8120H		
+93ae 93ae s oGhostY		    .EQU	8121H
+93ae 93ae s oGhostDir		.EQU	8122H
+93ae 93ae s oGhostTimer     .EQU    8125H
+93ae 93ae s 
+93ae 93ae s oGhostClear:
+93ae 93ae d 3a2081
+93ae 93ae s 				LD		A, (oGhostX)		;Push X to stack
+93b1 93b1 d 4f
+93b1 93b1 s 				LD		C,A
+93b2 93b2 d 3a2181
+93b2 93b2 s 				LD		A, (oGhostY)		;Push Y to stack
+93b5 93b5 d 47
+93b5 93b5 s 				LD		B,A
+93b6 93b6 d cd5198
+93b6 93b6 s 				CALL 	printMapAt
+93b9 93b9 d c9
+93b9 93b9 s 				RET
+93ba 93ba s 				
+93ba 93ba s oGhostPrint:
+93ba 93ba d 3a2081
+93ba 93ba s 				LD		A, (oGhostX)		;Push X to stack
+93bd 93bd d 3c
+93bd 93bd s 				INC		A
+93be 93be d 4f
+93be 93be s 				LD		C,A
+93bf 93bf d 3a2181
+93bf 93bf s 				LD		A, (oGhostY)		;Push Y to stack
+93c2 93c2 d 3c
+93c2 93c2 s 				INC		A
+93c3 93c3 d 47
+93c3 93c3 s 				LD		B,A
+93c4 93c4 d cd32a0
+93c4 93c4 s 				CALL	moveCursor
+93c7 93c7 d 3a0481
+93c7 93c7 s                 LD      A,(pPActive)
+93ca 93ca d b7
+93ca 93ca s                 OR      A
+93cb 93cb d c2ed91
+93cb 93cb s                 JP      NZ, printSGhost
+93ce 93ce d 21e494
+93ce 93ce s 				LD		HL, oGhost
+93d1 93d1 d cda8a0
+93d1 93d1 s 				CALL 	print
+93d4 93d4 d c9
+93d4 93d4 s 				RET
+93d5 93d5 s oGhostMapData:	
+93d5 93d5 d 3a2081
+93d5 93d5 s 				LD		A, (oGhostX)
+93d8 93d8 d 4f
+93d8 93d8 s 				LD		C,A
+93d9 93d9 d 3a2181
+93d9 93d9 s 				LD		A, (oGhostY)
+93dc 93dc d 47
+93dc 93dc s 				LD		B,A
+93dd 93dd d cdd397
+93dd 93dd s 				CALL	getMapAddress
+93e0 93e0 d 7e
+93e0 93e0 s                 LD      A,(HL)
+93e1 93e1 d c9
+93e1 93e1 s 				ret
+93e2 93e2 s 
+93e2 93e2 s 
+93e2 93e2 s oGhostInit:   
+93e2 93e2 d 3e0f
+93e2 93e2 s                 LD		a, oGhostStoreX	;set oGhost Pos
+93e4 93e4 d 322081
+93e4 93e4 s 			    LD		(oGhostX),a
+93e7 93e7 d 3e0b
+93e7 93e7 s 			    LD		a, oGhostStoreY
+93e9 93e9 d 322181
+93e9 93e9 s 			    LD		(oGhostY),a
+93ec 93ec d 3e20
+93ec 93ec s                 LD		a, oGhostInitTimer
+93ee 93ee d 322581
+93ee 93ee s 			    LD		(oGhostTimer),a
+93f1 93f1 d c9
+93f1 93f1 s                 RET
+93f2 93f2 s 
+93f2 93f2 s oGhostMove:
+93f2 93f2 d 3a2581
+93f2 93f2 s                 LD      A,(oGhostTimer)     ;Dont move if the ghost is in jale
+93f5 93f5 d b7
+93f5 93f5 s                 OR      A                
+93f6 93f6 d c20b94
+93f6 93f6 s                 JP      NZ,oGhostDecTimer   ;Decrement the timer if its x
+93f9 93f9 d 3a0481
+93f9 93f9 s                 LD      A,(pPActive)
+93fc 93fc d cb47
+93fc 93fc s                 BIT     0,A                 ;Move every other tick, bit 0 will always 0 when the power pellet isnt active
+93fe 93fe d c0
+93fe 93fe s                 RET     NZ
+93ff 93ff d 3a2281
+93ff 93ff s 				LD		A,(oGhostDir)
+9402 9402 d 112081
+9402 9402 s 				LD		DE,oGhostX
+9405 9405 d 012181
+9405 9405 s 				LD		BC,oGhostY
+9408 9408 d c30092
+9408 9408 s 				JP		ghostMove
+940b 940b s 
+940b 940b s oGhostDecTimer:
+940b 940b d 3d
+940b 940b s                 DEC     A
+940c 940c d 322581
+940c 940c s                 LD      (oGhostTimer),A
+940f 940f d b7
+940f 940f s                 OR      A
+9410 9410 d c0
+9410 9410 s                 RET     NZ              ;IF Zero move ghost out of jale
+9411 9411 d 3e0f
+9411 9411 s                 LD		a, oGhostInitX	;set oGhost Pos
+9413 9413 d 322081
+9413 9413 s 			    LD		(oGhostX),a
+9416 9416 d 3e08
+9416 9416 s 			    LD		a, oGhostInitY
+9418 9418 d 322181
+9418 9418 s 			    LD		(oGhostY),a
+941b 941b d c9
+941b 941b s                 RET
+941c 941c s 
+941c 941c s oGhostNextMove:
+941c 941c d 3eff
+941c 941c s 				LD		A, 0FFH
+941e 941e d 321381
+941e 941e s 				LD		(ghostDis),A
+9421 9421 d cdd593
+9421 9421 s 				CALL	oGhostMapData
+9424 9424 d 57
+9424 9424 s 				LD		D,A
+9425 9425 d 3e57
+9425 9425 s 				LD		A,	'W'			;check up
+9427 9427 d cdad97
+9427 9427 s 				CALL	isMoveValid
+942a 942a d c44694
+942a 942a s 				CALL	NZ,oGhostCheckU
+942d 942d d 3e53
+942d 942d s 				LD		A,	'S'			;down
+942f 942f d cdad97
+942f 942f s 				CALL	isMoveValid
+9432 9432 d c45494
+9432 9432 s 				CALL	NZ,oGhostCheckD
+9435 9435 d 3e41
+9435 9435 s 				LD		A,	'A'			;left
+9437 9437 d cdad97
+9437 9437 s 				CALL	isMoveValid
+943a 943a d c46294
+943a 943a s 				CALL	NZ,oGhostCheckL
+943d 943d d 3e44
+943d 943d s 				LD		A,	'D'			;right
+943f 943f d cdad97
+943f 943f s 				CALL	isMoveValid
+9442 9442 d c47094
+9442 9442 s 				CALL	NZ,oGhostCheckR
+9445 9445 d c9
+9445 9445 s 				RET
+9446 9446 s 				
+9446 9446 s oGhostCheckU:	
+9446 9446 d f5
+9446 9446 s 				PUSH	AF
+9447 9447 d 3a2181
+9447 9447 s 				LD		A, (oGhostY)
+944a 944a d 3d
+944a 944a s 				DEC		A
+944b 944b d e61f
+944b 944b s 				AND		00011111B
+944d 944d d 47
+944d 944d s 				LD		B,A
+944e 944e d 3a2081
+944e 944e s 				LD		A,(oGhostX)
+9451 9451 d 4f
+9451 9451 s 				LD		C,A
+9452 9452 d 182a
+9452 9452 s 				JR		oGhostPathFind
+9454 9454 s oGhostCheckD:			
+9454 9454 d f5
+9454 9454 s 				PUSH	AF
+9455 9455 d 3a2181
+9455 9455 s 				LD		A, (oGhostY)
+9458 9458 d 3c
+9458 9458 s 				INC		A
+9459 9459 d e61f
+9459 9459 s 				AND		00011111B
+945b 945b d 47
+945b 945b s 				LD		B,A
+945c 945c d 3a2081
+945c 945c s 				LD		A,(oGhostX)
+945f 945f d 4f
+945f 945f s 				LD		C,A
+9460 9460 d 181c
+9460 9460 s 				JR		oGhostPathFind
+9462 9462 s oGhostCheckL:		
+9462 9462 d f5
+9462 9462 s 				PUSH	AF	
+9463 9463 d 3a2081
+9463 9463 s 				LD		A, (oGhostX)
+9466 9466 d 3d
+9466 9466 s 				DEC		A
+9467 9467 d e61f
+9467 9467 s 				AND		00011111B
+9469 9469 d 4f
+9469 9469 s 				LD		C,A
+946a 946a d 3a2181
+946a 946a s 				LD		A,(oGhostY)
+946d 946d d 47
+946d 946d s 				LD		B,A
+946e 946e d 180e
+946e 946e s 				JR		oGhostPathFind
+9470 9470 s oGhostCheckR:
+9470 9470 d f5
+9470 9470 s 				PUSH	AF	
+9471 9471 d 3a2081
+9471 9471 s 				LD		A, (oGhostX)
+9474 9474 d 3c
+9474 9474 s 				INC		A
+9475 9475 d e61f
+9475 9475 s 				AND		00011111B
+9477 9477 d 4f
+9477 9477 s 				LD		C,A
+9478 9478 d 3a2181
+9478 9478 s 				LD		A,(oGhostY)
+947b 947b d 47
+947b 947b s 				LD		B,A
+947c 947c d 1800
+947c 947c s 				JR		oGhostPathFind
+947e 947e s 
+947e 947e s oGhostPathFind:
+947e 947e d cd3998
+947e 947e s 				CALL	getAddressPF
+9481 9481 d 3a1381
+9481 9481 s 				LD		A,(ghostDis)
+9484 9484 d 5e
+9484 9484 s 				LD		E,(HL)
+9485 9485 d bb
+9485 9485 s 				CP		E
+9486 9486 d f5
+9486 9486 s                 PUSH    AF
+9487 9487 d 3a0481
+9487 9487 s                 LD      A,(pPActive)            ;Check power pellet is not activ, if it is, run away
+948a 948a d b7
+948a 948a s                 OR      A
+948b 948b d c29594
+948b 948b s                 JP      NZ,oGhostPFPP
+948e 948e d f1
+948e 948e s                 POP     AF
+948f 948f d d2a194
+948f 948f s 				JP		NC,oGhostSetNewDir
+9492 9492 d f1
+9492 9492 s                 POP     AF
+9493 9493 d f1
+9493 9493 s 				POP		AF
+9494 9494 d c9
+9494 9494 s 				RET
+9495 9495 s oGhostPFPP:
+9495 9495 d f1
+9495 9495 s                 POP     AF
+9496 9496 d daa194
+9496 9496 s                 JP		C,oGhostSetNewDir
+9499 9499 d feff
+9499 9499 s                 CP      0FFH
+949b 949b d caa194
+949b 949b s                 JP      Z,oGhostSetNewDir
+949e 949e d f1
+949e 949e s                 POP     AF
+949f 949f d f1
+949f 949f s 				POP		AF
+94a0 94a0 d c9
+94a0 94a0 s                 RET
+94a1 94a1 s 
+94a1 94a1 s oGhostSetNewDir:
+94a1 94a1 d 7b
+94a1 94a1 s 				LD		A,E
+94a2 94a2 d 321381
+94a2 94a2 s 				LD		(ghostDis),A
+94a5 94a5 d f1
+94a5 94a5 s 				POP		AF
+94a6 94a6 d 322281
+94a6 94a6 s 				LD		(oGhostDir),A
+94a9 94a9 d c9
+94a9 94a9 s 				RET
+94aa 94aa s 
+94aa 94aa s oGhostColide:   
+94aa 94aa d 3a0081
+94aa 94aa s                 LD      A,(pacx)                ;Compair X
+94ad 94ad d 47
+94ad 94ad s                 LD      B,A
+94ae 94ae d 3a2081
+94ae 94ae s                 LD      A,(oGhostX)
+94b1 94b1 d b8
+94b1 94b1 s                 CP      B
+94b2 94b2 d c0
+94b2 94b2 s                 RET     NZ
+94b3 94b3 d 3a0181
+94b3 94b3 s                 LD      A,(pacy)                ;Compair Y
+94b6 94b6 d 47
+94b6 94b6 s                 LD      B,A
+94b7 94b7 d 3a2181
+94b7 94b7 s                 LD      A,(oGhostY)
+94ba 94ba d b8
+94ba 94ba s                 CP      B
+94bb 94bb d c0
+94bb 94bb s                 RET     NZ
+94bc 94bc d 3a0481
+94bc 94bc s                 LD      A,(pPActive)              ;Colishion Happened
+94bf 94bf d b7
+94bf 94bf s                 OR      A
+94c0 94c0 d ca7291
+94c0 94c0 s                 JP      Z,killPacman               ;If power pellet not active, run genric deth lib
+94c3 94c3 d cd6292
+94c3 94c3 s 				CALL	eatGhost
+94c6 94c6 d 3e0f
+94c6 94c6 s                 LD		a, oGhostStoreX	           ;set oGhost Pos
+94c8 94c8 d 322081
+94c8 94c8 s 			    LD		(oGhostX),a
+94cb 94cb d 3e0b
+94cb 94cb s 			    LD		a, oGhostStoreY
+94cd 94cd d 322181
+94cd 94cd s 			    LD		(oGhostY),a
+94d0 94d0 d 3e20
+94d0 94d0 s                 LD		a, oGhostInitTimer
+94d2 94d2 d 322581
+94d2 94d2 s 			    LD		(oGhostTimer),a
+94d5 94d5 d c9
+94d5 94d5 s                 RET
+94d6 94d6 s ;x = l
+94d6 94d6 s ;y = h
+94d6 94d6 s oGhostStack:
+94d6 94d6 d 7d
+94d6 94d6 s 				LD      A,L               		;Compair X
+94d7 94d7 d 47
+94d7 94d7 s                 LD      B,A
+94d8 94d8 d 3a2081
+94d8 94d8 s                 LD      A,(oGhostX)
+94db 94db d b8
+94db 94db s                 CP      B
+94dc 94dc d c0
+94dc 94dc s                 RET     NZ
+94dd 94dd d 7c
+94dd 94dd s                 LD      A,h                		;Compair Y
+94de 94de d 47
+94de 94de s                 LD      B,A
+94df 94df d 3a2181
+94df 94df s                 LD      A,(oGhostY)
+94e2 94e2 d b8
+94e2 94e2 s                 CP      B
+94e3 94e3 d c9
+94e3 94e3 s                 RET
+94e4 94e4 s 
+94e4 94e4 f ghosts.asm
+94e4 94e4 d 1b5b33336d4d1b5b306d00
+94e4 94e4 s oGhost:		.BYTE	1BH,"[33mM",1BH,"[0m",0
+94ef 94ef s include ghosts/pink.asm
+94ef 94ef f ghosts/pink.asm
+94ef 94ef s pGhostInitX	    .EQU	15
+94ef 94ef s pGhostInitY	    .EQU	8
+94ef 94ef s pGhostInitTimer .EQU    30H
+94ef 94ef s pGhostStoreX	.EQU	16
+94ef 94ef s pGhostStoreY	.EQU	11
+94ef 94ef s 
+94ef 94ef s pGhostX		    .EQU	8130H		
+94ef 94ef s pGhostY		    .EQU	8131H
+94ef 94ef s pGhostDir		.EQU	8132H
+94ef 94ef s pGhostTimer     .EQU    8135H
+94ef 94ef s 
+94ef 94ef s pGhostClear:
+94ef 94ef d 3a3081
+94ef 94ef s 				LD		A, (pGhostX)		;Push X to stack
+94f2 94f2 d 4f
+94f2 94f2 s 				LD		C,A
+94f3 94f3 d 3a3181
+94f3 94f3 s 				LD		A, (pGhostY)		;Push Y to stack
+94f6 94f6 d 47
+94f6 94f6 s 				LD		B,A
+94f7 94f7 d cd5198
+94f7 94f7 s 				CALL 	printMapAt
+94fa 94fa d c9
+94fa 94fa s 				RET
+94fb 94fb s 				
+94fb 94fb s pGhostPrint:
+94fb 94fb d 3a3081
+94fb 94fb s 				LD		A, (pGhostX)		;Push X to stack
+94fe 94fe d 3c
+94fe 94fe s 				INC		A
+94ff 94ff d 4f
+94ff 94ff s 				LD		C,A
+9500 9500 d 3a3181
+9500 9500 s 				LD		A, (pGhostY)		;Push Y to stack
+9503 9503 d 3c
+9503 9503 s 				INC		A
+9504 9504 d 47
+9504 9504 s 				LD		B,A
+9505 9505 d cd32a0
+9505 9505 s 				CALL	moveCursor
+9508 9508 d 3a0481
+9508 9508 s                 LD      A,(pPActive)
+950b 950b d b7
+950b 950b s                 OR      A
+950c 950c d c2ed91
+950c 950c s                 JP      NZ, printSGhost
+950f 950f d 212596
+950f 950f s 				LD		HL, pGhost
+9512 9512 d cda8a0
+9512 9512 s 				CALL 	print
+9515 9515 d c9
+9515 9515 s 				RET
+9516 9516 s pGhostMapData:	
+9516 9516 d 3a3081
+9516 9516 s 				LD		A, (pGhostX)
+9519 9519 d 4f
+9519 9519 s 				LD		C,A
+951a 951a d 3a3181
+951a 951a s 				LD		A, (pGhostY)
+951d 951d d 47
+951d 951d s 				LD		B,A
+951e 951e d cdd397
+951e 951e s 				CALL	getMapAddress
+9521 9521 d 7e
+9521 9521 s                 LD      A,(HL)
+9522 9522 d c9
+9522 9522 s 				ret
+9523 9523 s 
+9523 9523 s 
+9523 9523 s pGhostInit:   
+9523 9523 d 3e10
+9523 9523 s                 LD		a, pGhostStoreX	;set pGhost Pos
+9525 9525 d 323081
+9525 9525 s 			    LD		(pGhostX),a
+9528 9528 d 3e0b
+9528 9528 s 			    LD		a, pGhostStoreY
+952a 952a d 323181
+952a 952a s 			    LD		(pGhostY),a
+952d 952d d 3e30
+952d 952d s                 LD		a, pGhostInitTimer
+952f 952f d 323581
+952f 952f s 			    LD		(pGhostTimer),a
+9532 9532 d c9
+9532 9532 s                 RET
+9533 9533 s 
+9533 9533 s pGhostMove:
+9533 9533 d 3a3581
+9533 9533 s                 LD      A,(pGhostTimer)     ;Dont move if the ghost is in jale
+9536 9536 d b7
+9536 9536 s                 OR      A                
+9537 9537 d c24c95
+9537 9537 s                 JP      NZ,pGhostDecTimer   ;Decrement the timer if its x
+953a 953a d 3a0481
+953a 953a s                 LD      A,(pPActive)
+953d 953d d cb47
+953d 953d s                 BIT     0,A                 ;Move every other tick, bit 0 will always 0 when the power pellet isnt active
+953f 953f d c0
+953f 953f s                 RET     NZ
+9540 9540 d 3a3281
+9540 9540 s 				LD		A,(pGhostDir)
+9543 9543 d 113081
+9543 9543 s 				LD		DE,pGhostX
+9546 9546 d 013181
+9546 9546 s 				LD		BC,pGhostY
+9549 9549 d c30092
+9549 9549 s 				JP		ghostMove
+954c 954c s 
+954c 954c s 
+954c 954c s pGhostDecTimer:
+954c 954c d 3d
+954c 954c s                 DEC     A
+954d 954d d 323581
+954d 954d s                 LD      (pGhostTimer),A
+9550 9550 d b7
+9550 9550 s                 OR      A
+9551 9551 d c0
+9551 9551 s                 RET     NZ              ;IF Zero move ghost out of jale
+9552 9552 d 3e0f
+9552 9552 s                 LD		a, pGhostInitX	;set pGhost Pos
+9554 9554 d 323081
+9554 9554 s 			    LD		(pGhostX),a
+9557 9557 d 3e08
+9557 9557 s 			    LD		a, pGhostInitY
+9559 9559 d 323181
+9559 9559 s 			    LD		(pGhostY),a
+955c 955c d c9
+955c 955c s                 RET
+955d 955d s 
+955d 955d s pGhostNextMove:
+955d 955d d 3eff
+955d 955d s 				LD		A, 0FFH
+955f 955f d 321381
+955f 955f s 				LD		(ghostDis),A
+9562 9562 d cd1695
+9562 9562 s 				CALL	pGhostMapData
+9565 9565 d 57
+9565 9565 s 				LD		D,A
+9566 9566 d 3e57
+9566 9566 s 				LD		A,	'W'			;check up
+9568 9568 d cdad97
+9568 9568 s 				CALL	isMoveValid
+956b 956b d c48795
+956b 956b s 				CALL	NZ,pGhostCheckU
+956e 956e d 3e53
+956e 956e s 				LD		A,	'S'			;down
+9570 9570 d cdad97
+9570 9570 s 				CALL	isMoveValid
+9573 9573 d c49595
+9573 9573 s 				CALL	NZ,pGhostCheckD
+9576 9576 d 3e41
+9576 9576 s 				LD		A,	'A'			;left
+9578 9578 d cdad97
+9578 9578 s 				CALL	isMoveValid
+957b 957b d c4a395
+957b 957b s 				CALL	NZ,pGhostCheckL
+957e 957e d 3e44
+957e 957e s 				LD		A,	'D'			;right
+9580 9580 d cdad97
+9580 9580 s 				CALL	isMoveValid
+9583 9583 d c4b195
+9583 9583 s 				CALL	NZ,pGhostCheckR
+9586 9586 d c9
+9586 9586 s 				RET
+9587 9587 s 				
+9587 9587 s pGhostCheckU:	
+9587 9587 d f5
+9587 9587 s 				PUSH	AF
+9588 9588 d 3a3181
+9588 9588 s 				LD		A, (pGhostY)
+958b 958b d 3d
+958b 958b s 				DEC		A
+958c 958c d e61f
+958c 958c s 				AND		00011111B
+958e 958e d 47
+958e 958e s 				LD		B,A
+958f 958f d 3a3081
+958f 958f s 				LD		A,(pGhostX)
+9592 9592 d 4f
+9592 9592 s 				LD		C,A
+9593 9593 d 182a
+9593 9593 s 				JR		pGhostPathFind
+9595 9595 s pGhostCheckD:			
+9595 9595 d f5
+9595 9595 s 				PUSH	AF
+9596 9596 d 3a3181
+9596 9596 s 				LD		A, (pGhostY)
+9599 9599 d 3c
+9599 9599 s 				INC		A
+959a 959a d e61f
+959a 959a s 				AND		00011111B
+959c 959c d 47
+959c 959c s 				LD		B,A
+959d 959d d 3a3081
+959d 959d s 				LD		A,(pGhostX)
+95a0 95a0 d 4f
+95a0 95a0 s 				LD		C,A
+95a1 95a1 d 181c
+95a1 95a1 s 				JR		pGhostPathFind
+95a3 95a3 s pGhostCheckL:		
+95a3 95a3 d f5
+95a3 95a3 s 				PUSH	AF	
+95a4 95a4 d 3a3081
+95a4 95a4 s 				LD		A, (pGhostX)
+95a7 95a7 d 3d
+95a7 95a7 s 				DEC		A
+95a8 95a8 d e61f
+95a8 95a8 s 				AND		00011111B
+95aa 95aa d 4f
+95aa 95aa s 				LD		C,A
+95ab 95ab d 3a3181
+95ab 95ab s 				LD		A,(pGhostY)
+95ae 95ae d 47
+95ae 95ae s 				LD		B,A
+95af 95af d 180e
+95af 95af s 				JR		pGhostPathFind
+95b1 95b1 s pGhostCheckR:
+95b1 95b1 d f5
+95b1 95b1 s 				PUSH	AF	
+95b2 95b2 d 3a3081
+95b2 95b2 s 				LD		A, (pGhostX)
+95b5 95b5 d 3c
+95b5 95b5 s 				INC		A
+95b6 95b6 d e61f
+95b6 95b6 s 				AND		00011111B
+95b8 95b8 d 4f
+95b8 95b8 s 				LD		C,A
+95b9 95b9 d 3a3181
+95b9 95b9 s 				LD		A,(pGhostY)
+95bc 95bc d 47
+95bc 95bc s 				LD		B,A
+95bd 95bd d 1800
+95bd 95bd s 				JR		pGhostPathFind
+95bf 95bf s 
+95bf 95bf s pGhostPathFind:
+95bf 95bf d cd3998
+95bf 95bf s 				CALL	getAddressPF
+95c2 95c2 d 3a1381
+95c2 95c2 s 				LD		A,(ghostDis)
+95c5 95c5 d 5e
+95c5 95c5 s 				LD		E,(HL)
+95c6 95c6 d bb
+95c6 95c6 s 				CP		E
+95c7 95c7 d f5
+95c7 95c7 s                 PUSH    AF
+95c8 95c8 d 3a0481
+95c8 95c8 s                 LD      A,(pPActive)            ;Check power pellet is not activ, if it is, run away
+95cb 95cb d b7
+95cb 95cb s                 OR      A
+95cc 95cc d c2d695
+95cc 95cc s                 JP      NZ,pGhostPFPP
+95cf 95cf d f1
+95cf 95cf s                 POP     AF
+95d0 95d0 d d2e295
+95d0 95d0 s 				JP		NC,pGhostSetNewDir
+95d3 95d3 d f1
+95d3 95d3 s                 POP     AF
+95d4 95d4 d f1
+95d4 95d4 s 				POP		AF
+95d5 95d5 d c9
+95d5 95d5 s 				RET
+95d6 95d6 s pGhostPFPP:
+95d6 95d6 d f1
+95d6 95d6 s                 POP     AF
+95d7 95d7 d dae295
+95d7 95d7 s                 JP		C,pGhostSetNewDir
+95da 95da d feff
+95da 95da s                 CP      0FFH
+95dc 95dc d cae295
+95dc 95dc s                 JP      Z,pGhostSetNewDir
+95df 95df d f1
+95df 95df s                 POP     AF
+95e0 95e0 d f1
+95e0 95e0 s 				POP		AF
+95e1 95e1 d c9
+95e1 95e1 s                 RET
+95e2 95e2 s 
+95e2 95e2 s pGhostSetNewDir:
+95e2 95e2 d 7b
+95e2 95e2 s 				LD		A,E
+95e3 95e3 d 321381
+95e3 95e3 s 				LD		(ghostDis),A
+95e6 95e6 d f1
+95e6 95e6 s 				POP		AF
+95e7 95e7 d 323281
+95e7 95e7 s 				LD		(pGhostDir),A
+95ea 95ea d c9
+95ea 95ea s 				RET
+95eb 95eb s 
+95eb 95eb s pGhostColide:   
+95eb 95eb d 3a0081
+95eb 95eb s                 LD      A,(pacx)                ;Compair X
+95ee 95ee d 47
+95ee 95ee s                 LD      B,A
+95ef 95ef d 3a3081
+95ef 95ef s                 LD      A,(pGhostX)
+95f2 95f2 d b8
+95f2 95f2 s                 CP      B
+95f3 95f3 d c0
+95f3 95f3 s                 RET     NZ
+95f4 95f4 d 3a0181
+95f4 95f4 s                 LD      A,(pacy)                ;Compair Y
+95f7 95f7 d 47
+95f7 95f7 s                 LD      B,A
+95f8 95f8 d 3a3181
+95f8 95f8 s                 LD      A,(pGhostY)
+95fb 95fb d b8
+95fb 95fb s                 CP      B
+95fc 95fc d c0
+95fc 95fc s                 RET     NZ
+95fd 95fd d 3a0481
+95fd 95fd s                 LD      A,(pPActive)              ;Colishion Happened
+9600 9600 d b7
+9600 9600 s                 OR      A
+9601 9601 d ca7291
+9601 9601 s                 JP      Z,killPacman               ;If power pellet not active, run genric deth lib
+9604 9604 d cd6292
+9604 9604 s 				CALL	eatGhost
+9607 9607 d 3e10
+9607 9607 s                 LD		a, pGhostStoreX	           ;set pGhost Pos
+9609 9609 d 323081
+9609 9609 s 			    LD		(pGhostX),a
+960c 960c d 3e0b
+960c 960c s 			    LD		a, pGhostStoreY
+960e 960e d 323181
+960e 960e s 			    LD		(pGhostY),a
+9611 9611 d 3e30
+9611 9611 s                 LD		a, pGhostInitTimer
+9613 9613 d 323581
+9613 9613 s 			    LD		(pGhostTimer),a
+9616 9616 d c9
+9616 9616 s                 RET
+9617 9617 s 
+9617 9617 s ;x = l
+9617 9617 s ;y = h
+9617 9617 s pGhostStack:
+9617 9617 d 7d
+9617 9617 s 				LD      A,L               		;Compair X
+9618 9618 d 47
+9618 9618 s                 LD      B,A
+9619 9619 d 3a3081
+9619 9619 s                 LD      A,(pGhostX)
+961c 961c d b8
+961c 961c s                 CP      B
+961d 961d d c0
+961d 961d s                 RET     NZ
+961e 961e d 7c
+961e 961e s                 LD      A,h                		;Compair Y
+961f 961f d 47
+961f 961f s                 LD      B,A
+9620 9620 d 3a3181
+9620 9620 s                 LD      A,(pGhostY)
+9623 9623 d b8
+9623 9623 s                 CP      B
+9624 9624 d c9
+9624 9624 s                 RET
+9625 9625 s 
+9625 9625 f ghosts.asm
+9625 9625 d 1b5b39356d4d1b5b306d00
+9625 9625 s pGhost:		.BYTE	1BH,"[95mM",1BH,"[0m",0
+9630 9630 s include ghosts/teal.asm
+9630 9630 f ghosts/teal.asm
+9630 9630 s tGhostInitX	    .EQU	15
+9630 9630 s tGhostInitY	    .EQU	8
+9630 9630 s tGhostInitTimer .EQU    40H
+9630 9630 s tGhostStoreX	.EQU	17 
+9630 9630 s tGhostStoreY	.EQU	11
+9630 9630 s 
+9630 9630 s tGhostX		    .EQU	8140H		
+9630 9630 s tGhostY		    .EQU	8141H
+9630 9630 s tGhostDir		.EQU	8142H
+9630 9630 s tGhostTimer     .EQU    8145H
+9630 9630 s 
+9630 9630 s tGhostClear:
+9630 9630 d 3a4081
+9630 9630 s 				LD		A, (tGhostX)		;Push X to stack
+9633 9633 d 4f
+9633 9633 s 				LD		C,A
+9634 9634 d 3a4181
+9634 9634 s 				LD		A, (tGhostY)		;Push Y to stack
+9637 9637 d 47
+9637 9637 s 				LD		B,A
+9638 9638 d cd5198
+9638 9638 s 				CALL 	printMapAt
+963b 963b d c9
+963b 963b s 				RET
+963c 963c s 				
+963c 963c s tGhostPrint:
+963c 963c d 3a4081
+963c 963c s 				LD		A, (tGhostX)		;Push X to stack
+963f 963f d 3c
+963f 963f s 				INC		A
+9640 9640 d 4f
+9640 9640 s 				LD		C,A
+9641 9641 d 3a4181
+9641 9641 s 				LD		A, (tGhostY)		;Push Y to stack
+9644 9644 d 3c
+9644 9644 s 				INC		A
+9645 9645 d 47
+9645 9645 s 				LD		B,A
+9646 9646 d cd32a0
+9646 9646 s 				CALL	moveCursor
+9649 9649 d 3a0481
+9649 9649 s                 LD      A,(pPActive)
+964c 964c d b7
+964c 964c s                 OR      A
+964d 964d d c2ed91
+964d 964d s                 JP      NZ, printSGhost
+9650 9650 d 216697
+9650 9650 s 				LD		HL, tGhost
+9653 9653 d cda8a0
+9653 9653 s 				CALL 	print
+9656 9656 d c9
+9656 9656 s 				RET
+9657 9657 s tGhostMapData:	
+9657 9657 d 3a4081
+9657 9657 s 				LD		A, (tGhostX)
+965a 965a d 4f
+965a 965a s 				LD		C,A
+965b 965b d 3a4181
+965b 965b s 				LD		A, (tGhostY)
+965e 965e d 47
+965e 965e s 				LD		B,A
+965f 965f d cdd397
+965f 965f s 				CALL	getMapAddress
+9662 9662 d 7e
+9662 9662 s                 LD      A,(HL)
+9663 9663 d c9
+9663 9663 s 				ret
+9664 9664 s 
+9664 9664 s tGhostInit:   
+9664 9664 d 3e11
+9664 9664 s                 LD		a, tGhostStoreX	;set tGhost Pos
+9666 9666 d 324081
+9666 9666 s 			    LD		(tGhostX),a
+9669 9669 d 3e0b
+9669 9669 s 			    LD		a, tGhostStoreY
+966b 966b d 324181
+966b 966b s 			    LD		(tGhostY),a
+966e 966e d 3e40
+966e 966e s                 LD		a, tGhostInitTimer
+9670 9670 d 324581
+9670 9670 s 			    LD		(tGhostTimer),a
+9673 9673 d c9
+9673 9673 s                 RET
+9674 9674 s 
+9674 9674 s tGhostMove:
+9674 9674 d 3a4581
+9674 9674 s                 LD      A,(tGhostTimer)     ;Dont move if the ghost is in jale
+9677 9677 d b7
+9677 9677 s                 OR      A                
+9678 9678 d c28d96
+9678 9678 s                 JP      NZ,tGhostDecTimer   ;Decrement the timer if its x
+967b 967b d 3a0481
+967b 967b s                 LD      A,(pPActive)
+967e 967e d cb47
+967e 967e s                 BIT     0,A                 ;Move every other tick, bit 0 will always 0 when the power pellet isnt active
+9680 9680 d c0
+9680 9680 s                 RET     NZ
+9681 9681 d 3a4281
+9681 9681 s 				LD		A,(tGhostDir)
+9684 9684 d 114081
+9684 9684 s 				LD		DE,tGhostX
+9687 9687 d 014181
+9687 9687 s 				LD		BC,tGhostY
+968a 968a d c30092
+968a 968a s 				JP		ghostMove
+968d 968d s 
+968d 968d s tGhostDecTimer:
+968d 968d d 3d
+968d 968d s                 DEC     A
+968e 968e d 324581
+968e 968e s                 LD      (tGhostTimer),A
+9691 9691 d b7
+9691 9691 s                 OR      A
+9692 9692 d c0
+9692 9692 s                 RET     NZ              ;IF Zero move ghost out of jale
+9693 9693 d 3e0f
+9693 9693 s                 LD		a, tGhostInitX	;set tGhost Pos
+9695 9695 d 324081
+9695 9695 s 			    LD		(tGhostX),a
+9698 9698 d 3e08
+9698 9698 s 			    LD		a, tGhostInitY
+969a 969a d 324181
+969a 969a s 			    LD		(tGhostY),a
+969d 969d d c9
+969d 969d s                 RET
+969e 969e s 
+969e 969e s tGhostNextMove:
+969e 969e d 3eff
+969e 969e s 				LD		A, 0FFH
+96a0 96a0 d 321381
+96a0 96a0 s 				LD		(ghostDis),A
+96a3 96a3 d cd5796
+96a3 96a3 s 				CALL	tGhostMapData
+96a6 96a6 d 57
+96a6 96a6 s 				LD		D,A
+96a7 96a7 d 3e57
+96a7 96a7 s 				LD		A,	'W'			;check up
+96a9 96a9 d cdad97
+96a9 96a9 s 				CALL	isMoveValid
+96ac 96ac d c4c896
+96ac 96ac s 				CALL	NZ,tGhostCheckU
+96af 96af d 3e53
+96af 96af s 				LD		A,	'S'			;down
+96b1 96b1 d cdad97
+96b1 96b1 s 				CALL	isMoveValid
+96b4 96b4 d c4d696
+96b4 96b4 s 				CALL	NZ,tGhostCheckD
+96b7 96b7 d 3e41
+96b7 96b7 s 				LD		A,	'A'			;left
+96b9 96b9 d cdad97
+96b9 96b9 s 				CALL	isMoveValid
+96bc 96bc d c4e496
+96bc 96bc s 				CALL	NZ,tGhostCheckL
+96bf 96bf d 3e44
+96bf 96bf s 				LD		A,	'D'			;right
+96c1 96c1 d cdad97
+96c1 96c1 s 				CALL	isMoveValid
+96c4 96c4 d c4f296
+96c4 96c4 s 				CALL	NZ,tGhostCheckR
+96c7 96c7 d c9
+96c7 96c7 s 				RET
+96c8 96c8 s 				
+96c8 96c8 s tGhostCheckU:	
+96c8 96c8 d f5
+96c8 96c8 s 				PUSH	AF
+96c9 96c9 d 3a4181
+96c9 96c9 s 				LD		A, (tGhostY)
+96cc 96cc d 3d
+96cc 96cc s 				DEC		A
+96cd 96cd d e61f
+96cd 96cd s 				AND		00011111B
+96cf 96cf d 47
+96cf 96cf s 				LD		B,A
+96d0 96d0 d 3a4081
+96d0 96d0 s 				LD		A,(tGhostX)
+96d3 96d3 d 4f
+96d3 96d3 s 				LD		C,A
+96d4 96d4 d 182a
+96d4 96d4 s 				JR		tGhostPathFind
+96d6 96d6 s tGhostCheckD:			
+96d6 96d6 d f5
+96d6 96d6 s 				PUSH	AF
+96d7 96d7 d 3a4181
+96d7 96d7 s 				LD		A, (tGhostY)
+96da 96da d 3c
+96da 96da s 				INC		A
+96db 96db d e61f
+96db 96db s 				AND		00011111B
+96dd 96dd d 47
+96dd 96dd s 				LD		B,A
+96de 96de d 3a4081
+96de 96de s 				LD		A,(tGhostX)
+96e1 96e1 d 4f
+96e1 96e1 s 				LD		C,A
+96e2 96e2 d 181c
+96e2 96e2 s 				JR		tGhostPathFind
+96e4 96e4 s tGhostCheckL:		
+96e4 96e4 d f5
+96e4 96e4 s 				PUSH	AF	
+96e5 96e5 d 3a4081
+96e5 96e5 s 				LD		A, (tGhostX)
+96e8 96e8 d 3d
+96e8 96e8 s 				DEC		A
+96e9 96e9 d e61f
+96e9 96e9 s 				AND		00011111B
+96eb 96eb d 4f
+96eb 96eb s 				LD		C,A
+96ec 96ec d 3a4181
+96ec 96ec s 				LD		A,(tGhostY)
+96ef 96ef d 47
+96ef 96ef s 				LD		B,A
+96f0 96f0 d 180e
+96f0 96f0 s 				JR		tGhostPathFind
+96f2 96f2 s tGhostCheckR:
+96f2 96f2 d f5
+96f2 96f2 s 				PUSH	AF	
+96f3 96f3 d 3a4081
+96f3 96f3 s 				LD		A, (tGhostX)
+96f6 96f6 d 3c
+96f6 96f6 s 				INC		A
+96f7 96f7 d e61f
+96f7 96f7 s 				AND		00011111B
+96f9 96f9 d 4f
+96f9 96f9 s 				LD		C,A
+96fa 96fa d 3a4181
+96fa 96fa s 				LD		A,(tGhostY)
+96fd 96fd d 47
+96fd 96fd s 				LD		B,A
+96fe 96fe d 1800
+96fe 96fe s 				JR		tGhostPathFind
+9700 9700 s 
+9700 9700 s tGhostPathFind:
+9700 9700 d cd3998
+9700 9700 s 				CALL	getAddressPF
+9703 9703 d 3a1381
+9703 9703 s 				LD		A,(ghostDis)
+9706 9706 d 5e
+9706 9706 s 				LD		E,(HL)
+9707 9707 d bb
+9707 9707 s 				CP		E
+9708 9708 d f5
+9708 9708 s                 PUSH    AF
+9709 9709 d 3a0481
+9709 9709 s                 LD      A,(pPActive)            ;Check power pellet is not activ, if it is, run away
+970c 970c d b7
+970c 970c s                 OR      A
+970d 970d d c21797
+970d 970d s                 JP      NZ,tGhostPFPP
+9710 9710 d f1
+9710 9710 s                 POP     AF
+9711 9711 d d22397
+9711 9711 s 				JP		NC,tGhostSetNewDir
+9714 9714 d f1
+9714 9714 s                 POP     AF
+9715 9715 d f1
+9715 9715 s 				POP		AF
+9716 9716 d c9
+9716 9716 s 				RET
+9717 9717 s tGhostPFPP:
+9717 9717 d f1
+9717 9717 s                 POP     AF
+9718 9718 d da2397
+9718 9718 s                 JP		C,tGhostSetNewDir
+971b 971b d feff
+971b 971b s                 CP      0FFH
+971d 971d d ca2397
+971d 971d s                 JP      Z,tGhostSetNewDir
+9720 9720 d f1
+9720 9720 s                 POP     AF
+9721 9721 d f1
+9721 9721 s 				POP		AF
+9722 9722 d c9
+9722 9722 s                 RET
+9723 9723 s 
+9723 9723 s tGhostSetNewDir:
+9723 9723 d 7b
+9723 9723 s 				LD		A,E
+9724 9724 d 321381
+9724 9724 s 				LD		(ghostDis),A
+9727 9727 d f1
+9727 9727 s 				POP		AF
+9728 9728 d 324281
+9728 9728 s 				LD		(tGhostDir),A
+972b 972b d c9
+972b 972b s 				RET
+972c 972c s 
+972c 972c s tGhostColide:   
+972c 972c d 3a0081
+972c 972c s                 LD      A,(pacx)                ;Compair X
+972f 972f d 47
+972f 972f s                 LD      B,A
+9730 9730 d 3a4081
+9730 9730 s                 LD      A,(tGhostX)
+9733 9733 d b8
+9733 9733 s                 CP      B
+9734 9734 d c0
+9734 9734 s                 RET     NZ
+9735 9735 d 3a0181
+9735 9735 s                 LD      A,(pacy)                ;Compair Y
+9738 9738 d 47
+9738 9738 s                 LD      B,A
+9739 9739 d 3a4181
+9739 9739 s                 LD      A,(tGhostY)
+973c 973c d b8
+973c 973c s                 CP      B
+973d 973d d c0
+973d 973d s                 RET     NZ
+973e 973e d 3a0481
+973e 973e s                 LD      A,(pPActive)              ;Colishion Happened
+9741 9741 d b7
+9741 9741 s                 OR      A
+9742 9742 d ca7291
+9742 9742 s                 JP      Z,killPacman               ;If power pellet not active, run genric deth lib
+9745 9745 d cd6292
+9745 9745 s 				CALL	eatGhost
+9748 9748 d 3e11
+9748 9748 s                 LD		a, tGhostStoreX	           ;set tGhost Pos
+974a 974a d 324081
+974a 974a s 			    LD		(tGhostX),a
+974d 974d d 3e0b
+974d 974d s 			    LD		a, tGhostStoreY
+974f 974f d 324181
+974f 974f s 			    LD		(tGhostY),a
+9752 9752 d 3e40
+9752 9752 s                 LD		a, tGhostInitTimer
+9754 9754 d 324581
+9754 9754 s 			    LD		(tGhostTimer),a
+9757 9757 d c9
+9757 9757 s                 RET
+9758 9758 s 
+9758 9758 s ;x = l
+9758 9758 s ;y = h
+9758 9758 s tGhostStack:
+9758 9758 d 7d
+9758 9758 s 				LD      A,L               		;Compair X
+9759 9759 d 47
+9759 9759 s                 LD      B,A
+975a 975a d 3a4081
+975a 975a s                 LD      A,(tGhostX)
+975d 975d d b8
+975d 975d s                 CP      B
+975e 975e d c0
+975e 975e s                 RET     NZ
+975f 975f d 7c
+975f 975f s                 LD      A,h                		;Compair Y
+9760 9760 d 47
+9760 9760 s                 LD      B,A
+9761 9761 d 3a4181
+9761 9761 s                 LD      A,(tGhostY)
+9764 9764 d b8
+9764 9764 s                 CP      B
+9765 9765 d c9
+9765 9765 s                 RET
+9766 9766 s 
+9766 9766 f ghosts.asm
+9766 9766 d 1b5b39366d4d1b5b306d00
+9766 9766 s tGhost:		.BYTE	1BH,"[96mM",1BH,"[0m",0
+9771 9771 s 
+9771 9771 s 
+9771 9771 d 1b5b33346d4d1b5b306d00
+9771 9771 s sGhost0:	.BYTE	1BH,"[34mM",1BH,"[0m",0
+977c 977c f main.asm
+977c 977c d 1b5b39376d4d1b5b306d00
+977c 977c s sGhost1:	.BYTE	1BH,"[97mM",1BH,"[0m",0
+9787 9787 s ;-----------Spesific Libs -----;
+9787 9787 s include movelibs.asm	
+9787 9787 f movelibs.asm
+9787 9787 s move:
+9787 9787 d fe57
+9787 9787 s 				CP		'W'
+9789 9789 d 280a
+9789 9789 s 				JR		Z,moveU
+978b 978b d fe41
+978b 978b s 				CP		'A'
+978d 978d d 2812
+978d 978d s 				JR		Z,moveL
+978f 978f d fe53
+978f 978f s 				CP		'S'
+9791 9791 d 2808
+9791 9791 s 				JR		Z,moveD
+9793 9793 d 1812
+9793 9793 s 				JR		moveR
+9795 9795 s 
+9795 9795 s moveU:			
+9795 9795 d 0a
+9795 9795 s 				LD		A, (BC)
+9796 9796 d 3d
+9796 9796 s 				DEC		A
+9797 9797 d e61f
+9797 9797 s 				AND		00011111B
+9799 9799 d 02
+9799 9799 s 				LD		(BC),A
+979a 979a d c9
+979a 979a s 				RET
+979b 979b s moveD:			
+979b 979b d 0a
+979b 979b s 				LD		A, (BC)
+979c 979c d 3c
+979c 979c s 				INC		A
+979d 979d d e61f
+979d 979d s 				AND		00011111B
+979f 979f d 02
+979f 979f s 				LD		(BC),A
+97a0 97a0 d c9
+97a0 97a0 s 				RET
+97a1 97a1 s moveL:			
+97a1 97a1 d 1a
+97a1 97a1 s 				LD		A, (DE)
+97a2 97a2 d 3d
+97a2 97a2 s 				DEC		A
+97a3 97a3 d e61f
+97a3 97a3 s 				AND		00011111B
+97a5 97a5 d 12
+97a5 97a5 s 				LD		(DE),A
+97a6 97a6 d c9
+97a6 97a6 s 				RET
+97a7 97a7 s moveR:			
+97a7 97a7 d 1a
+97a7 97a7 s 				LD		A, (DE)
+97a8 97a8 d 3c
+97a8 97a8 s 				INC		A
+97a9 97a9 d e61f
+97a9 97a9 s 				AND		00011111B
+97ab 97ab d 12
+97ab 97ab s 				LD		(DE),A
+97ac 97ac d c9
+97ac 97ac s 				RET
+97ad 97ad s isMoveValid:
+97ad 97ad d fe57
+97ad 97ad s 				CP		'W'
+97af 97af d 280a
+97af 97af s 				JR		Z,moveUValid
+97b1 97b1 d fe41
+97b1 97b1 s 				CP		'A'
+97b3 97b3 d 280c
+97b3 97b3 s 				JR		Z,moveLValid
+97b5 97b5 d fe53
+97b5 97b5 s 				CP		'S'
+97b7 97b7 d 2805
+97b7 97b7 s 				JR		Z,moveDValid
+97b9 97b9 d 1809
+97b9 97b9 s 				JR		moveRValid
+97bb 97bb s moveUValid:			
+97bb 97bb d cb42
+97bb 97bb s 				BIT		upBit,D
+97bd 97bd d c9
+97bd 97bd s 				RET
+97be 97be s moveDValid:			
+97be 97be d cb4a
+97be 97be s 				BIT		downBit,D
+97c0 97c0 d c9
+97c0 97c0 s 				RET
+97c1 97c1 s moveLValid:			
+97c1 97c1 d cb52
+97c1 97c1 s 				BIT		leftBit,D
+97c3 97c3 d c9
+97c3 97c3 s 				RET
+97c4 97c4 s moveRValid:			
+97c4 97c4 d cb5a
+97c4 97c4 s 				BIT		rightBit,D
+97c6 97c6 f main.asm
+97c6 97c6 d c9
+97c6 97c6 s 				RET
+97c7 97c7 s include	mapLibs.asm	
+97c7 97c7 f mapLibs.asm
+97c7 97c7 s pathFindDepth   .EQU	30H
+97c7 97c7 s 
+97c7 97c7 s ;-------- Map -------;
+97c7 97c7 s ;InitiMap
+97c7 97c7 s initMap:
+97c7 97c7 d 010004
+97c7 97c7 s 				LD		BC,400H
+97ca 97ca d 2147a1
+97ca 97ca s 				LD		HL,map
+97cd 97cd d 1100e0
+97cd 97cd s 				LD		DE,liveMap
+97d0 97d0 d edb0
+97d0 97d0 s 				LDIR
+97d2 97d2 d c9
+97d2 97d2 s 				RET
+97d3 97d3 s 
+97d3 97d3 s ;------- Get Map Data ----;
+97d3 97d3 s ; C - X
+97d3 97d3 s ; B	- Y
+97d3 97d3 s getMapAddress:
+97d3 97d3 d c5
+97d3 97d3 s 				push	bc
+97d4 97d4 d cb00
+97d4 97d4 s 				rlc		b			;Shift b left 5
+97d6 97d6 d cb00
+97d6 97d6 s 				rlc		b			;Shift b left 5
+97d8 97d8 d cb00
+97d8 97d8 s 				rlc		b			;Shift b left 5
+97da 97da d cb00
+97da 97da s 				rlc		b			;Shift b left 5
+97dc 97dc d cb00
+97dc 97dc s 				rlc		b			;Shift b left 5
+97de 97de d 78
+97de 97de s 				ld		a,b
+97df 97df d e6e0
+97df 97df s 				and		11100000b	;Mask lower adress
+97e1 97e1 d b1
+97e1 97e1 s 				or		c			;Combine with C
+97e2 97e2 d 6f
+97e2 97e2 s 				ld		l,a			;A is now low byte of adress
+97e3 97e3 d 78
+97e3 97e3 s 				ld		a,b
+97e4 97e4 d e603
+97e4 97e4 s 				and		00000011b	;Mask upper adress
+97e6 97e6 d f6e0
+97e6 97e6 s 				or		0E0H		;Start of map
+97e8 97e8 d 67
+97e8 97e8 s 				ld		h,a
+97e9 97e9 d c1
+97e9 97e9 s 				pop		bc
+97ea 97ea d c9
+97ea 97ea s 				ret
+97eb 97eb s 
+97eb 97eb s ;--------Check map for pellets ------;
+97eb 97eb s checkNextLevel:
+97eb 97eb d cd1198
+97eb 97eb s 				CALL	checkMap
+97ee 97ee d 7b
+97ee 97ee s 				LD		A,E
+97ef 97ef d b7
+97ef 97ef s 				OR		A
+97f0 97f0 d c0
+97f0 97f0 s 				RET		NZ
+97f1 97f1 d 7a
+97f1 97f1 s 				LD		A,D
+97f2 97f2 d b7
+97f2 97f2 s 				OR		A
+97f3 97f3 d c0
+97f3 97f3 s 				RET		NZ
+97f4 97f4 s 
+97f4 97f4 d 2a0289
+97f4 97f4 s 				LD		HL,(level)
+97f7 97f7 d 23
+97f7 97f7 s 				INC		HL
+97f8 97f8 d 220289
+97f8 97f8 s 				LD		(level),HL
+97fb 97fb d cd029a
+97fb 97fb s 				CALL	countdown
+97fe 97fe d cdc797
+97fe 97fe s 				CALL	initMap
+9801 9801 d cdd391
+9801 9801 s 				CALL	initGhost
+9804 9804 d cdb290
+9804 9804 s 				CALL	resetPacman
+9807 9807 d 212da1
+9807 9807 s 				LD		HL, home		;Go home
+980a 980a d cda8a0
+980a 980a s 				CALL	print
+980d 980d d cd6098
+980d 980d s 				CALL 	printMap
+9810 9810 d c9
+9810 9810 s 				ret
+9811 9811 s 
+9811 9811 s checkMap:
+9811 9811 d 3e20
+9811 9811 s 				ld		a,32
+9813 9813 d 47
+9813 9813 s 				ld		b,a			; 32 chars per line
+9814 9814 d 4f
+9814 9814 s 				ld		c,a			; 32 lines per map
+9815 9815 d 2100e0
+9815 9815 s 				ld		hl,liveMap
+9818 9818 d 110000
+9818 9818 s 				ld		de,0
+981b 981b d 7e
+981b 981b s checkMapLoop:	ld		a,(hl)		; get char
+981c 981c d cd2c98
+981c 981c s 				call	checkMapChar; check the char
+981f 981f d 23
+981f 981f s 				inc		hl			; next char
+9820 9820 d 10f9
+9820 9820 s 				djnz	checkMapLoop; if were not at the end of a line, print next char
+9822 9822 d 41
+9822 9822 s 				ld		b,c			;are we at the end of a block
+9823 9823 d 1001
+9823 9823 s 				djnz	checkMapNextLine
+9825 9825 d c9
+9825 9825 s 				ret
+9826 9826 s checkMapNextLine:	
+9826 9826 d 48
+9826 9826 s 				ld		c,b			;copy decremented b back to c
+9827 9827 d 3e20
+9827 9827 s 				ld 		a,32		;refill b withj 32
+9829 9829 d 47
+9829 9829 s 				ld		b,a
+982a 982a d 18ef
+982a 982a s 				jr		checkMapLoop;draw next char
+982c 982c s 
+982c 982c s checkMapChar:
+982c 982c d cb6f
+982c 982c s 				bit		pelletBit,a
+982e 982e d c43798
+982e 982e s 				CALL	NZ,incrementDE
+9831 9831 d cb67
+9831 9831 s 				bit		powerpBit,a
+9833 9833 d c43798
+9833 9833 s 				CALL	NZ,incrementDE
+9836 9836 d c9
+9836 9836 s 				RET
+9837 9837 s incrementDE:
+9837 9837 d 13
+9837 9837 s 				INC		DE
+9838 9838 d c9
+9838 9838 s 				RET
+9839 9839 s 
+9839 9839 s ;------- Get Path Find Map Address----;
+9839 9839 s ; C - X
+9839 9839 s ; B	- Y
+9839 9839 s getAddressPF:
+9839 9839 d c5
+9839 9839 s 				push	bc
+983a 983a d cb00
+983a 983a s 				rlc		b			;Shift b left 5
+983c 983c d cb00
+983c 983c s 				rlc		b			;Shift b left 5
+983e 983e d cb00
+983e 983e s 				rlc		b			;Shift b left 5
+9840 9840 d cb00
+9840 9840 s 				rlc		b			;Shift b left 5
+9842 9842 d cb00
+9842 9842 s 				rlc		b			;Shift b left 5
+9844 9844 d 78
+9844 9844 s 				ld		a,b
+9845 9845 d e6e0
+9845 9845 s 				and		11100000b	;Mask lower adress
+9847 9847 d b1
+9847 9847 s 				or		c			;Combine with C
+9848 9848 d 6f
+9848 9848 s 				ld		l,a			;A is now low byte of adress
+9849 9849 d 78
+9849 9849 s 				ld		a,b
+984a 984a d e603
+984a 984a s 				and		00000011b	;Mask upper adress
+984c 984c d f6d0
+984c 984c s 				or		0D0H		;Start of map
+984e 984e d 67
+984e 984e s 				ld		h,a
+984f 984f d c1
+984f 984f s 				pop		bc
+9850 9850 d c9
+9850 9850 s 				ret
+9851 9851 s 
+9851 9851 s 
+9851 9851 s ;--------- Map print -------- ;
+9851 9851 s ; C - X
+9851 9851 s ; B	- Y
+9851 9851 s printMapAt:	
+9851 9851 d c5
+9851 9851 s 			PUSH	BC
+9852 9852 d 0c
+9852 9852 s 			INC		C
+9853 9853 d 04
+9853 9853 s 			INC		B
+9854 9854 d cd32a0
+9854 9854 s 			CALL	moveCursor
+9857 9857 d c1
+9857 9857 s 			POP 	BC
+9858 9858 d cdd397
+9858 9858 s 			CALL	getMapAddress
+985b 985b d 7e
+985b 985b s 			LD		A,(HL)
+985c 985c d cd7b98
+985c 985c s 			CALL	pmChar
+985f 985f d c9
+985f 985f s 			RET
+9860 9860 s 
+9860 9860 s printMap:
+9860 9860 d 3e20
+9860 9860 s 				ld		a,32
+9862 9862 d 47
+9862 9862 s 				ld		b,a			; 32 chars per line
+9863 9863 d 4f
+9863 9863 s 				ld		c,a			; 32 lines per map
+9864 9864 d 2100e0
+9864 9864 s 				ld		hl,liveMap
+9867 9867 d 7e
+9867 9867 s pmLoop:			ld		a,(hl)		; get char
+9868 9868 d cd7b98
+9868 9868 s 				call	pmChar		; decode what to print
+986b 986b d 23
+986b 986b s 				inc		hl			; next char
+986c 986c d 10f9
+986c 986c s 				djnz	pmLoop		; if were not at the end of a line, print next char
+986e 986e d cd29a0
+986e 986e s 				call	newline		; if we are, print a new line
+9871 9871 d 41
+9871 9871 s 				ld		b,c			;are we at the end of a block
+9872 9872 d 1001
+9872 9872 s 				djnz	pmNextLine
+9874 9874 d c9
+9874 9874 s 				ret
+9875 9875 s pmNextLine:	
+9875 9875 d 48
+9875 9875 s 				ld		c,b			;copy decremented b back to c
+9876 9876 d 3e20
+9876 9876 s 				ld 		a,32		;refill b withj 32
+9878 9878 d 47
+9878 9878 s 				ld		b,a
+9879 9879 d 18ec
+9879 9879 s 				jr		pmLoop		;draw next char
+987b 987b s 
+987b 987b s 
+987b 987b s pmChar:		;-- Print map char a
+987b 987b d e5
+987b 987b s 				push	hl
+987c 987c d cb67
+987c 987c s 				bit		powerpBit,a
+987e 987e d 200e
+987e 987e s 				jr		nz,printPP
+9880 9880 d cb6f
+9880 9880 s 				bit		pelletBit,a
+9882 9882 d 2012
+9882 9882 s 				jr		nz,printP
+9884 9884 d cb77
+9884 9884 s 				bit		wallBit,a
+9886 9886 d 2016
+9886 9886 s 				jr		nz,printWall
+9888 9888 d cb7f
+9888 9888 s 				bit		sfBit,a
+988a 988a d 201a
+988a 988a s 				jr		nz,printSF
+988c 988c d 1820
+988c 988c s 				jr	 	printVoid
+988e 988e s 			
+988e 988e s printPP:
+988e 988e d 210aa1
+988e 988e s 				ld		hl,powerPellet
+9891 9891 d cda8a0
+9891 9891 s 				call	print
+9894 9894 d 1820
+9894 9894 s 				jr		pmCharRet
+9896 9896 s printP:
+9896 9896 d 2115a1
+9896 9896 s 				ld		hl,pellet
+9899 9899 d cda8a0
+9899 9899 s 				call	print
+989c 989c d 1818
+989c 989c s 				jr		pmCharRet
+989e 989e s printWall:
+989e 989e d 21ffa0
+989e 989e s 				ld		hl,wall
+98a1 98a1 d cda8a0
+98a1 98a1 s 				call	print
+98a4 98a4 d 1810
+98a4 98a4 s 				jr		pmCharRet
+98a6 98a6 s printSF:
+98a6 98a6 d 2120a1
+98a6 98a6 s 				ld		hl,superFruit
+98a9 98a9 d cda8a0
+98a9 98a9 s 				call	print
+98ac 98ac d 1808
+98ac 98ac s 				jr		pmCharRet
+98ae 98ae s printVoid:
+98ae 98ae d 212ba1
+98ae 98ae s 				ld		hl,void
+98b1 98b1 d cda8a0
+98b1 98b1 s 				call	print
+98b4 98b4 d 1800
+98b4 98b4 s 				jr		pmCharRet
+98b6 98b6 s pmCharRet:	
+98b6 98b6 d e1
+98b6 98b6 s 				pop 	hl
+98b7 98b7 d c9
+98b7 98b7 s 				ret
+98b8 98b8 s 				
+98b8 98b8 s ;-------- Path Find Map -------;
+98b8 98b8 s ;Initi Path Find Map
+98b8 98b8 s initPathFind:
+98b8 98b8 d 3e20
+98b8 98b8 s 				ld		a,32
+98ba 98ba d 47
+98ba 98ba s 				ld		b,a			; 32 chars per line
+98bb 98bb d 4f
+98bb 98bb s 				ld		c,a			; 32 lines per map
+98bc 98bc d 2100d0
+98bc 98bc s 				ld		hl,pathFindMap
+98bf 98bf d 16ff
+98bf 98bf s initpPFLoop:	ld		D,0FFH		; set char
+98c1 98c1 d 72
+98c1 98c1 s 				LD		(HL),D
+98c2 98c2 d 23
+98c2 98c2 s 				inc		hl			; next char
+98c3 98c3 d 10fa
+98c3 98c3 s 				djnz	initpPFLoop		; if were not at the end of a line, print next char
+98c5 98c5 d 41
+98c5 98c5 s 				ld		b,c			;are we at the end of a block
+98c6 98c6 d 1001
+98c6 98c6 s 				djnz	pfNextRow
+98c8 98c8 d c9
+98c8 98c8 s 				ret
+98c9 98c9 s pfNextRow:	
+98c9 98c9 d 48
+98c9 98c9 s 				ld		c,b			;copy decremented b back to c
+98ca 98ca d 3e20
+98ca 98ca s 				ld 		a,32		;refill b withj 32
+98cc 98cc d 47
+98cc 98cc s 				ld		b,a
+98cd 98cd d c3bf98
+98cd 98cd s 				jp		initpPFLoop		;draw next char
+98d0 98d0 s 
+98d0 98d0 s ;Calculate Map
+98d0 98d0 s calculatePathMap:
+98d0 98d0 d 01ffff
+98d0 98d0 s 				ld		BC,0FFFFH		;Push Stack terminator		
+98d3 98d3 d c5
+98d3 98d3 s 				PUSH	BC
+98d4 98d4 d 3a0081
+98d4 98d4 s 				LD		A, (pacx)		;Push X to stack
+98d7 98d7 d 4f
+98d7 98d7 s 				LD		C,A
+98d8 98d8 d 3a0181
+98d8 98d8 s 				LD		A, (pacy)		;Push Y to stack
+98db 98db d 47
+98db 98db s 				LD		B,A
+98dc 98dc d cd3998
+98dc 98dc s 				CALL	getAddressPF
+98df 98df d 3600
+98df 98df s 				LD		(HL),00H
+98e1 98e1 d c5
+98e1 98e1 s 				PUSH	BC
+98e2 98e2 s calculatePathMapLoop:
+98e2 98e2 d c1
+98e2 98e2 s 				POP		BC			;Get node to visit
+98e3 98e3 d 78
+98e3 98e3 s 				LD		A,B			;Check Its not FFFF
+98e4 98e4 d b7
+98e4 98e4 s 				OR		A
+98e5 98e5 d feff
+98e5 98e5 s 				CP		0FFH
+98e7 98e7 d c8
+98e7 98e7 s 				RET		Z			;We only have to check half the byte as its imposable to have a cord more than 20h
+98e8 98e8 d ed43f289
+98e8 98e8 s 				LD		(originalBC),BC
+98ec 98ec d cd3998
+98ec 98ec s 				CALL	getAddressPF
+98ef 98ef d 7e
+98ef 98ef s 				LD		A,(HL)
+98f0 98f0 d 3c
+98f0 98f0 s 				INC		A
+98f1 98f1 d fe30
+98f1 98f1 s                 CP      pathFindDepth
+98f3 98f3 d cae298
+98f3 98f3 s 				JP 		Z,calculatePathMapLoop	;Skip if wer getting too long
+98f6 98f6 d 5f
+98f6 98f6 s 				LD		E,A			;Keep the distance were working with safe
+98f7 98f7 d cdd397
+98f7 98f7 s 				CALL	getMapAddress
+98fa 98fa d 56
+98fa 98fa s 				LD		D,(HL)
+98fb 98fb d 3e57
+98fb 98fb s 				LD		A,	'W'			;check up
+98fd 98fd d cdad97
+98fd 98fd s 				CALL	isMoveValid
+9900 9900 d c41e99
+9900 9900 s 				CALL	NZ,calculateMapU
+9903 9903 d 3e53
+9903 9903 s 				LD		A,	'S'			;down
+9905 9905 d cdad97
+9905 9905 s 				CALL	isMoveValid
+9908 9908 d c42a99
+9908 9908 s 				CALL	NZ,calculateMapD
+990b 990b d 3e41
+990b 990b s 				LD		A,	'A'			;left
+990d 990d d cdad97
+990d 990d s 				CALL	isMoveValid
+9910 9910 d c43699
+9910 9910 s 				CALL	NZ,calculateMapL
+9913 9913 d 3e44
+9913 9913 s 				LD		A,	'D'			;right
+9915 9915 d cdad97
+9915 9915 s 				CALL	isMoveValid
+9918 9918 d c44299
+9918 9918 s 				CALL	NZ,calculateMapR
+991b 991b d c3e298
+991b 991b s 				JP		calculatePathMapLoop
+991e 991e s 				
+991e 991e s calculateMapU:	
+991e 991e d ed4bf289
+991e 991e s 				LD		BC,(originalBC)			;We want to preserve the OG BC Through this process so it can be used again in sub directions		
+9922 9922 d 78
+9922 9922 s 				LD		A, B				;Make modifications to corod
+9923 9923 d 3d
+9923 9923 s 				DEC		A
+9924 9924 d e61f
+9924 9924 s 				AND		00011111B			;Mask for looping
+9926 9926 d 47
+9926 9926 s 				LD		B,A
+9927 9927 d c34e99
+9927 9927 s 				JP		calculateMapCell
+992a 992a s calculateMapD:	
+992a 992a d ed4bf289
+992a 992a s 				LD		BC,(originalBC)	
+992e 992e d 78
+992e 992e s 				LD		A, B
+992f 992f d 3c
+992f 992f s 				INC		A
+9930 9930 d e61f
+9930 9930 s 				AND		00011111B
+9932 9932 d 47
+9932 9932 s 				LD		B,A
+9933 9933 d c34e99
+9933 9933 s 				JP		calculateMapCell
+9936 9936 s calculateMapL:	
+9936 9936 d ed4bf289
+9936 9936 s 				LD		BC,(originalBC)
+993a 993a d 79
+993a 993a s 				LD		A, C
+993b 993b d 3d
+993b 993b s 				DEC		A
+993c 993c d e61f
+993c 993c s 				AND		00011111B
+993e 993e d 4f
+993e 993e s 				LD		C,A
+993f 993f d c34e99
+993f 993f s 				JP		calculateMapCell
+9942 9942 s calculateMapR:
+9942 9942 d ed4bf289
+9942 9942 s 				LD		BC,(originalBC)
+9946 9946 d 79
+9946 9946 s 				LD		A, C
+9947 9947 d 3c
+9947 9947 s 				INC		A
+9948 9948 d e61f
+9948 9948 s 				AND		00011111B
+994a 994a d 4f
+994a 994a s 				LD		C,A
+994b 994b d c34e99
+994b 994b s 				JP		calculateMapCell
+994e 994e s 
+994e 994e s calculateMapCell:
+994e 994e d cd3998
+994e 994e s 				CALL	getAddressPF
+9951 9951 d 7e
+9951 9951 s 				LD		A,(HL)
+9952 9952 s 
+9952 9952 d bb
+9952 9952 s 				CP		E			;Compare current data (A) with E (the path were looking at)
+9953 9953 d d8
+9953 9953 s 				RET		C			;If carry is set (A < E)(whats there already < our path) then this route is a dud
+9954 9954 d c8
+9954 9954 s 				RET		Z			;If its equal we dont want to continue as we alreay have an equally fast route
+9955 9955 d 73
+9955 9955 s 				LD		(HL),E
+9956 9956 d e1
+9956 9956 s 				POP		HL			;We need the return adress on the top of the stack
+9957 9957 d c5
+9957 9957 s 				PUSH	BC			;Push Cell so it can be visited
+9958 9958 d e5
+9958 9958 s 				PUSH	HL
+9959 9959 d c9
+9959 9959 s 				RET
+995a 995a s 
+995a 995a s printPFMap:
+995a 995a d 0e01
+995a 995a s                 LD		C, $01
+995c 995c d 061a
+995c 995c s 				LD		B, $1A
+995e 995e d cd32a0
+995e 995e s 				CALL	moveCursor
+9961 9961 d 3e20
+9961 9961 s 				ld		a,32
+9963 9963 d 47
+9963 9963 s 				ld		b,a			; 32 chars per line
+9964 9964 d 3e1a
+9964 9964 s                 ld		a,$1A
+9966 9966 d 4f
+9966 9966 s 				ld		c,a			; 32 lines per map
+9967 9967 d 2100d0
+9967 9967 s 				ld		hl,pathFindMap
+996a 996a d 7e
+996a 996a s pmPFLoop:		ld		a,(hl)		; get char
+996b 996b d feff
+996b 996b s                 cp      0FFH
+996d 996d d ca8699
+996d 996d s                 JP      Z,pmPFSkip
+9970 9970 d cd78a0
+9970 9970 s 				call	NumToHex	; decode what to print
+9973 9973 d 3e20
+9973 9973 s pmPFAfterSkip:  ld      a,' '
+9975 9975 d cf
+9975 9975 s                 rst     08H
+9976 9976 d 23
+9976 9976 s 				inc		hl			; next char
+9977 9977 d 10f1
+9977 9977 s 				djnz	pmPFLoop		; if were not at the end of a line, print next char
+9979 9979 d cd29a0
+9979 9979 s 				call	newline		; if we are, print a new line
+997c 997c d 41
+997c 997c s 				ld		b,c			;are we at the end of a block
+997d 997d d 1001
+997d 997d s 				djnz	pmPFNextLine
+997f 997f d c9
+997f 997f s 				ret
+9980 9980 s pmPFNextLine:	
+9980 9980 d 48
+9980 9980 s 				ld		c,b			;copy decremented b back to c
+9981 9981 d 3e20
+9981 9981 s 				ld 		a,32		;refill b withj 32
+9983 9983 d 47
+9983 9983 s 				ld		b,a
+9984 9984 d 18e4
+9984 9984 s 				jr		pmPFLoop	;draw next char
+9986 9986 s pmPFSkip:       
+9986 9986 d 3e20
+9986 9986 s                 ld      a,' '
+9988 9988 d cf
+9988 9988 s                 rst     08H
+9989 9989 d 3e20
+9989 9989 s                 ld      a,' '
+998b 998b d cf
+998b 998b s                 rst     08H
+998c 998c f main.asm
+998c 998c d c37399
+998c 998c s                 JP      pmPFAfterSkip
+998f 998f s 
+998f 998f s ;------HUD;
+998f 998f s include hud.asm
+998f 998f f hud.asm
+998f 998f s score			.EQU	8900H		;Score
+998f 998f s level			.EQU	8902H		;Score
+998f 998f s 
+998f 998f s printHud:
+998f 998f d cd9999
+998f 998f s 				CALL	printScore
+9992 9992 d cdc199
+9992 9992 s 				CALL	printLives
+9995 9995 d cdad99
+9995 9995 s 				CALL	printLevel
+9998 9998 d c9
+9998 9998 s 				RET
+9999 9999 s ;Hud elements
+9999 9999 s printScore:					
+9999 9999 d 0e03
+9999 9999 s 				LD		C, $03
+999b 999b d 0619
+999b 999b s 				LD		B, $19
+999d 999d d cd32a0
+999d 999d s 				CALL	moveCursor
+99a0 99a0 d 21e699
+99a0 99a0 s 				LD		HL, scoreHUD
+99a3 99a3 d cda8a0
+99a3 99a3 s 				CALL 	print
+99a6 99a6 d 2a0089
+99a6 99a6 s 				LD		HL, (score)
+99a9 99a9 d cd4da0
+99a9 99a9 s 				CALL	HLToDec
+99ac 99ac d c9
+99ac 99ac s 				RET
+99ad 99ad s printLevel:					
+99ad 99ad d 0e03
+99ad 99ad s 				LD		C, $03
+99af 99af d 061a
+99af 99af s 				LD		B, $1A
+99b1 99b1 d cd32a0
+99b1 99b1 s 				CALL	moveCursor
+99b4 99b4 d 21ee99
+99b4 99b4 s 				LD		HL, levelHUD
+99b7 99b7 d cda8a0
+99b7 99b7 s 				CALL 	print
+99ba 99ba d 2a0289
+99ba 99ba s 				LD		HL, (level)
+99bd 99bd d cd4da0
+99bd 99bd s 				CALL	HLToDec
+99c0 99c0 d c9
+99c0 99c0 s 				RET
+99c1 99c1 s 
+99c1 99c1 s printLives:					
+99c1 99c1 d 0e03
+99c1 99c1 s 				LD		C, $03
+99c3 99c3 d 061b
+99c3 99c3 s 				LD		B, $1B
+99c5 99c5 d cd32a0
+99c5 99c5 s 				CALL	moveCursor
+99c8 99c8 d 21f699
+99c8 99c8 s 				LD		HL, livesHUD
+99cb 99cb d cda8a0
+99cb 99cb s 				CALL 	print
+99ce 99ce d 3a0581
+99ce 99ce s 				LD 		A,(pacLives)
+99d1 99d1 d 3d
+99d1 99d1 s 				DEC		A
+99d2 99d2 d b7
+99d2 99d2 s 				OR		A
+99d3 99d3 d cadf99
+99d3 99d3 s 				JP		Z,removeOldLives
+99d6 99d6 d 47
+99d6 99d6 s 				LD		B,A
+99d7 99d7 d 219491
+99d7 99d7 s printLivesLoop:	LD		HL, pacman
+99da 99da d cda8a0
+99da 99da s 				CALL 	print
+99dd 99dd d 10f8
+99dd 99dd s 				DJNZ	printLivesLoop
+99df 99df d 21fe99
+99df 99df s removeOldLives:	LD		HL, liveBlanking
+99e2 99e2 d cda8a0
+99e2 99e2 s 				CALL 	print
+99e5 99e5 d c9
+99e5 99e5 s 				RET
+99e6 99e6 s 
+99e6 99e6 d 53636f72653a2000
+99e6 99e6 s scoreHUD:     	.BYTE "Score: ",0
+99ee 99ee d 4c6576656c3a2000
+99ee 99ee s levelHUD:     	.BYTE "Level: ",0
+99f6 99f6 d 4c697665733a2000
+99f6 99f6 s livesHUD:     	.BYTE "Lives: ",0
+99fe 99fe f main.asm
+99fe 99fe d 20202000
+99fe 99fe s liveBlanking	.BYTE "   ",0
+9a02 9a02 s 
+9a02 9a02 s include countdown.asm
+9a02 9a02 f countdown.asm
+9a02 9a02 s countdown:
+9a02 9a02 d 010503
+9a02 9a02 s             LD      BC ,0305H
+9a05 9a05 d 111218
+9a05 9a05 s 			LD		DE ,1812H 
+9a08 9a08 d cdc3a0
+9a08 9a08 s 			CALL	DrawBox
+9a0b 9a0b d 010704
+9a0b 9a0b s             LD      BC ,0407H
+9a0e 9a0e d 21149d
+9a0e 9a0e s             LD      HL,number3
+9a11 9a11 d cdb3a0
+9a11 9a11 s             CALL    printAtPos
+9a14 9a14 d 01ffff
+9a14 9a14 s             LD      BC, 0FFFFH
+9a17 9a17 d cdf6a0
+9a17 9a17 s             CALL    delay
+9a1a 9a1a d cdf6a0
+9a1a 9a1a s             CALL    delay
+9a1d 9a1d d cdf6a0
+9a1d 9a1d s             CALL    delay
+9a20 9a20 d cdf6a0
+9a20 9a20 s             CALL    delay
+9a23 9a23 d 010704
+9a23 9a23 s             LD      BC ,0407H
+9a26 9a26 d 21b49b
+9a26 9a26 s             LD      HL,number2
+9a29 9a29 d cdb3a0
+9a29 9a29 s             CALL    printAtPos
+9a2c 9a2c d 01ffff
+9a2c 9a2c s             LD      BC, 0FFFFH
+9a2f 9a2f d cdf6a0
+9a2f 9a2f s             CALL    delay
+9a32 9a32 d cdf6a0
+9a32 9a32 s             CALL    delay
+9a35 9a35 d cdf6a0
+9a35 9a35 s             CALL    delay
+9a38 9a38 d cdf6a0
+9a38 9a38 s             CALL    delay
+9a3b 9a3b d 21549a
+9a3b 9a3b s             LD      HL,number1
+9a3e 9a3e d 010704
+9a3e 9a3e s             LD      BC ,0407H
+9a41 9a41 d cdb3a0
+9a41 9a41 s             CALL    printAtPos
+9a44 9a44 d 01ffff
+9a44 9a44 s             LD      BC, 0FFFFH
+9a47 9a47 d cdf6a0
+9a47 9a47 s             CALL    delay
+9a4a 9a4a d cdf6a0
+9a4a 9a4a s             CALL    delay
+9a4d 9a4d d cdf6a0
+9a4d 9a4d s             CALL    delay
+9a50 9a50 d cdf6a0
+9a50 9a50 s             CALL    delay
+9a53 9a53 d c9
+9a53 9a53 s             RET
+9a54 9a54 s 
+9a54 9a54 s ;Font 'doh'
+9a54 9a54 d 20202020202031313131313131202020202020200001
+9a54 9a54 s number1:            .BYTE   "      1111111       ",0,1
+9a6a 9a6a d 2020202020313a3a3a3a3a3a31202020202020200001
+9a6a 9a6a s                     .BYTE   "     1::::::1       ",0,1
+9a80 9a80 d 20202020313a3a3a3a3a3a3a31202020202020200001
+9a80 9a80 s                     .BYTE   "    1:::::::1       ",0,1
+9a96 9a96 d 202020203131313a3a3a3a3a31202020202020200001
+9a96 9a96 s                     .BYTE   "    111:::::1       ",0,1
+9aac 9aac d 20202020202020313a3a3a3a31202020202020200001
+9aac 9aac s                     .BYTE   "       1::::1       ",0,1
+9ac2 9ac2 d 20202020202020313a3a3a3a31202020202020200001
+9ac2 9ac2 s                     .BYTE   "       1::::1       ",0,1
+9ad8 9ad8 d 20202020202020313a3a3a3a31202020202020200001
+9ad8 9ad8 s                     .BYTE   "       1::::1       ",0,1
+9aee 9aee d 20202020202020313a3a3a3a6c202020202020200001
+9aee 9aee s                     .BYTE   "       1::::l       ",0,1
+9b04 9b04 d 20202020202020313a3a3a3a6c202020202020200001
+9b04 9b04 s                     .BYTE   "       1::::l       ",0,1
+9b1a 9b1a d 20202020202020313a3a3a3a6c202020202020200001
+9b1a 9b1a s                     .BYTE   "       1::::l       ",0,1
+9b30 9b30 d 20202020202020313a3a3a3a6c202020202020200001
+9b30 9b30 s                     .BYTE   "       1::::l       ",0,1
+9b46 9b46 d 20202020202020313a3a3a3a6c202020202020200001
+9b46 9b46 s                     .BYTE   "       1::::l       ",0,1
+9b5c 9b5c d 202020203131313a3a3a3a3a3a313131202020200001
+9b5c 9b5c s                     .BYTE   "    111::::::111    ",0,1
+9b72 9b72 d 20202020313a3a3a3a3a3a3a3a3a3a31202020200001
+9b72 9b72 s                     .BYTE   "    1::::::::::1    ",0,1
+9b88 9b88 d 20202020313a3a3a3a3a3a3a3a3a3a31202020200001
+9b88 9b88 s                     .BYTE   "    1::::::::::1    ",0,1
+9b9e 9b9e d 20202020313131313131313131313131202020200000
+9b9e 9b9e s                     .BYTE   "    111111111111    ",0,0
+9bb4 9bb4 s 
+9bb4 9bb4 d 20323232323232323232323232323232202020200001
+9bb4 9bb4 s number2:            .BYTE   " 222222222222222    ",0,1
+9bca 9bca d 323a3a3a3a3a3a3a3a3a3a3a3a3a3a3a323220200001
+9bca 9bca s                     .BYTE   "2:::::::::::::::22  ",0,1
+9be0 9be0 d 323a3a3a3a3a3a3232323232323a3a3a3a3a32200001
+9be0 9be0 s                     .BYTE   "2::::::222222:::::2 ",0,1
+9bf6 9bf6 d 323232323232322020202020323a3a3a3a3a32200001
+9bf6 9bf6 s                     .BYTE   "2222222     2:::::2 ",0,1
+9c0c 9c0c d 202020202020202020202020323a3a3a3a3a32200001
+9c0c 9c0c s                     .BYTE   "            2:::::2 ",0,1
+9c22 9c22 d 202020202020202020202020323a3a3a3a3a32200001
+9c22 9c22 s                     .BYTE   "            2:::::2 ",0,1
+9c38 9c38 d 202020202020202020323232323a3a3a3a3220200001
+9c38 9c38 s                     .BYTE   "         2222::::2  ",0,1
+9c4e 9c4e d 2020202032323232323a3a3a3a3a3a32322020200001
+9c4e 9c4e s                     .BYTE   "    22222::::::22   ",0,1
+9c64 9c64 d 202032323a3a3a3a3a3a3a3a32323220202020200001
+9c64 9c64 s                     .BYTE   "  22::::::::222     ",0,1
+9c7a 9c7a d 20323a3a3a3a3a323232323220202020202020200001
+9c7a 9c7a s                     .BYTE   " 2:::::22222        ",0,1
+9c90 9c90 d 323a3a3a3a3a32202020202020202020202020200001
+9c90 9c90 s                     .BYTE   "2:::::2             ",0,1
+9ca6 9ca6 d 323a3a3a3a3a32202020202020202020202020200001
+9ca6 9ca6 s                     .BYTE   "2:::::2             ",0,1
+9cbc 9cbc d 323a3a3a3a3a32202020202020203232323232320001
+9cbc 9cbc s                     .BYTE   "2:::::2       222222",0,1
+9cd2 9cd2 d 323a3a3a3a3a3a323232323232323a3a3a3a3a320001
+9cd2 9cd2 s                     .BYTE   "2::::::2222222:::::2",0,1
+9ce8 9ce8 d 323a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a320001
+9ce8 9ce8 s                     .BYTE   "2::::::::::::::::::2",0,1
+9cfe 9cfe d 32323232323232323232323232323232323232320000
+9cfe 9cfe s                     .BYTE   "22222222222222222222",0,0
+9d14 9d14 s 
+9d14 9d14 d 20203333333333333333333333333333332020200001
+9d14 9d14 s number3:            .BYTE   "  333333333333333   ",0,1
+9d2a 9d2a d 20333a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3333200001
+9d2a 9d2a s                     .BYTE   " 3:::::::::::::::33 ",0,1
+9d40 9d40 d 20333a3a3a3a3a3a33333333333a3a3a3a3a3a330001
+9d40 9d40 s                     .BYTE   " 3::::::33333::::::3",0,1
+9d56 9d56 d 20333333333333332020202020333a3a3a3a3a330001
+9d56 9d56 s                     .BYTE   " 3333333     3:::::3",0,1
+9d6c 9d6c d 20202020202020202020202020333a3a3a3a3a330001
+9d6c 9d6c s                     .BYTE   "             3:::::3",0,1
+9d82 9d82 d 20202020202020202020202020333a3a3a3a3a330001
+9d82 9d82 s                     .BYTE   "             3:::::3",0,1
+9d98 9d98 d 202020202033333333333333333a3a3a3a3a33200001
+9d98 9d98 s                     .BYTE   "     33333333:::::3 ",0,1
+9dae 9dae d 2020202020333a3a3a3a3a3a3a3a3a3a3a3320200001
+9dae 9dae s                     .BYTE   "     3:::::::::::3  ",0,1
+9dc4 9dc4 d 202020202033333333333333333a3a3a3a3a33200001
+9dc4 9dc4 s                     .BYTE   "     33333333:::::3 ",0,1
+9dda 9dda d 20202020202020202020202020333a3a3a3a3a330001
+9dda 9dda s                     .BYTE   "             3:::::3",0,1
+9df0 9df0 d 20202020202020202020202020333a3a3a3a3a330001
+9df0 9df0 s                     .BYTE   "             3:::::3",0,1
+9e06 9e06 d 20202020202020202020202020333a3a3a3a3a330001
+9e06 9e06 s                     .BYTE   "             3:::::3",0,1
+9e1c 9e1c d 20333333333333332020202020333a3a3a3a3a330001
+9e1c 9e1c s                     .BYTE   " 3333333     3:::::3",0,1
+9e32 9e32 d 20333a3a3a3a3a3a33333333333a3a3a3a3a3a330001
+9e32 9e32 s                     .BYTE   " 3::::::33333::::::3",0,1
+9e48 9e48 d 20333a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3333200001
+9e48 9e48 s                     .BYTE   " 3:::::::::::::::33 ",0,1
+9e5e 9e5e f main.asm
+9e5e 9e5e d 20203333333333333333333333333333332020200000
+9e5e 9e5e s                     .BYTE   "  333333333333333   ",0,0
+9e74 9e74 s include titlescreen.asm
+9e74 9e74 f titlescreen.asm
+9e74 9e74 s displayTitleScreen:
+9e74 9e74 d 010603
+9e74 9e74 s                 LD      BC ,0306H
+9e77 9e77 d 111416
+9e77 9e77 s 			    LD		DE ,1614H 
+9e7a 9e7a d cdc3a0
+9e7a 9e7a s 			    CALL	DrawBox
+9e7d 9e7d d 010804
+9e7d 9e7d s                 LD      BC ,0408H
+9e80 9e80 d 21b89e
+9e80 9e80 s                 LD      HL,logo
+9e83 9e83 d cdb3a0
+9e83 9e83 s                 CALL    printAtPos
+9e86 9e86 d 010809
+9e86 9e86 s                 LD      BC ,0908H
+9e89 9e89 d 21489f
+9e89 9e89 s                 LD      HL,info
+9e8c 9e8c d cdb3a0
+9e8c 9e8c s                 CALL    printAtPos
+9e8f 9e8f d 01080d
+9e8f 9e8f s                 LD      BC ,0D08H
+9e92 9e92 d 215c9f
+9e92 9e92 s                 LD      HL,message
+9e95 9e95 d cdb3a0
+9e95 9e95 s                 CALL    printAtPos
+9e98 9e98 d 010a0f
+9e98 9e98 s                 LD      BC ,0F0AH
+9e9b 9e9b d 21709f
+9e9b 9e9b s                 LD      HL,startGameMessage
+9e9e 9e9e d cdb3a0
+9e9e 9e9e s                 CALL    printAtPos
+9ea1 9ea1 d 010810
+9ea1 9ea1 s                 LD      BC ,1008H
+9ea4 9ea4 d 21809f
+9ea4 9ea4 s                 LD      HL,exitMessage
+9ea7 9ea7 d cdb3a0
+9ea7 9ea7 s                 CALL    printAtPos
+9eaa 9eaa s titleScreenWaitForInput:
+9eaa 9eaa d d7
+9eaa 9eaa s                 RST		10H
+9eab 9eab d fe31
+9eab 9eab s                 CP      '1'
+9ead 9ead d ca1c90
+9ead 9ead s                 JP      Z,startGame
+9eb0 9eb0 d fe32
+9eb0 9eb0 s                 CP      '2'
+9eb2 9eb2 d ca7c90
+9eb2 9eb2 s                 JP      Z,quit                     
+9eb5 9eb5 d c3aa9e
+9eb5 9eb5 s                 JP      titleScreenWaitForInput
+9eb8 9eb8 s 
+9eb8 9eb8 s ;font graceful
+9eb8 9eb8 s logo:
+9eb8 9eb8 d 1b5b39316d205f5f5f5f201b5b39366d205f20205f2020201b5b33336d5f5f5f200001
+9eb8 9eb8 s                     .BYTE   1BH,"[91m ____ ",1BH,"[96m _  _   ",1BH,"[33m___ ",0,1
+9edb 9edb d 1b5b39316d2820205f205c1b5b39366d2f202928205c201b5b33336d2f205f5f290001
+9edb 9edb s                     .BYTE   1BH,"[91m(  _ \",1BH,"[96m/ )( \ ",1BH,"[33m/ __)",0,1
+9efe 9efe d 1b5b39316d2029205f5f2f1b5b39366d29205c2f20281b5b33336d2820285f5f200001
+9efe 9efe s                     .BYTE   1BH,"[91m ) __/",1BH,"[96m) \/ (",1BH,"[33m( (__ ",0,1
+9f21 9f21 d 1b5b39316d285f5f2920201b5b39366d5c5f5f5f5f2f201b5b33336d5c5f5f5f291b5b306d0000
+9f21 9f21 s                     .BYTE   1BH,"[91m(__)  ",1BH,"[96m\____/ ",1BH,"[33m\___)", 1BH,"[0m",0,0
+9f48 9f48 s 
+9f48 9f48 d 6279204a616d6573204272617920323032300000
+9f48 9f48 s info:               .BYTE  "by James Bray 2020",0,0
+9f5c 9f5c s 
+9f5c 9f5c d 5072657373206b657920746f2073746172740000
+9f5c 9f5c s message:           .BYTE   "Press key to start",0,0
+9f70 9f70 d 2831292053746172742047616d650000
+9f70 9f70 s startGameMessage:  .BYTE   "(1) Start Game",0,0
+9f80 9f80 f main.asm
+9f80 9f80 d 283229204578697420746f2050726f6d70740000
+9f80 9f80 s exitMessage:       .BYTE   "(2) Exit to Prompt",0,0
+9f94 9f94 s include gameOver.asm
+9f94 9f94 f gameOver.asm
+9f94 9f94 s displayGameOver:
+9f94 9f94 d 010406
+9f94 9f94 s                 LD      BC ,0604H
+9f97 9f97 d 110a1a
+9f97 9f97 s 			    LD		DE ,1A0AH 
+9f9a 9f9a d cdc3a0
+9f9a 9f9a s 			    CALL	DrawBox
+9f9d 9f9d d 010507
+9f9d 9f9d s                 LD      BC ,0705H
+9fa0 9fa0 d 21b89f
+9fa0 9fa0 s                 LD      HL,deathMessage1
+9fa3 9fa3 d cdb3a0
+9fa3 9fa3 s                 CALL    printAtPos
+9fa6 9fa6 d 01050d
+9fa6 9fa6 s                 LD      BC ,0D05H
+9fa9 9fa9 d 210fa0
+9fa9 9fa9 s                 LD      HL,deathMessage2
+9fac 9fac d cdb3a0
+9fac 9fac s                 CALL    printAtPos
+9faf 9faf s gameOverwaitForInput:
+9faf 9faf d d7
+9faf 9faf s                 RST		10H
+9fb0 9fb0 d fe20
+9fb0 9fb0 s                 CP      ' '
+9fb2 9fb2 d ca0790
+9fb2 9fb2 s                 JP      Z,gameTop                    
+9fb5 9fb5 d c3af9f
+9fb5 9fb5 s                 JP      gameOverwaitForInput
+9fb8 9fb8 s 
+9fb8 9fb8 s deathMessage1:
+9fb8 9fb8 d 1b5b39316d205f5f202020202020202020205f202020202020202020200001
+9fb8 9fb8 s                     .BYTE    1BH,"[91m __          _          ",0,1
+9fd7 9fd7 d 2f5f5f205f205f5f20205f202f205c202020205f20205f5f0001
+9fd7 9fd7 s                     .BYTE            "/__ _ __  _ / \    _  __",0,1
+9ff1 9ff1 d 5c5f7c285f7c7c7c7c282f5f5c5f2f5c5f2f282f5f207c201b5b306d0000
+9ff1 9ff1 s                     .BYTE            "\_|(_||||(/_\_/\_/(/_ | ",1BH,"[0m",0,0
+a00f a00f s 
+a00f a00f f main.asm
+a00f a00f d 507265737320537061636520746f20636f6e74696e7565210000
+a00f a00f s deathMessage2:      .BYTE    "Press Space to continue!",0,0
+a029 a029 s 
+a029 a029 s ;------- Libs ------------;
+a029 a029 s include libs.asm
+a029 a029 f libs.asm
+a029 a029 s seed			.EQU	8888H		;Random seed
+a029 a029 s 
+a029 a029 s newline:			
+a029 a029 d f5
+a029 a029 s 				push 	af
+a02a a02a d 3e0d
+a02a a02a s 				ld		a, CR
+a02c a02c d cf
+a02c a02c s 				rst 	08H
+a02d a02d d 3e0a
+a02d a02d s 				ld		a, LF
+a02f a02f d cf
+a02f a02f s 				rst 	08H
+a030 a030 d f1
+a030 a030 s 				pop 	af
+a031 a031 d c9
+a031 a031 s 				ret
+a032 a032 s 			
+a032 a032 s ;move cursor to (C,B)				
+a032 a032 s moveCursor:		
+a032 a032 d e5
+a032 a032 s 				PUSH	HL
+a033 a033 d 3e1b
+a033 a033 s 				LD		A,$1B
+a035 a035 d cf
+a035 a035 s 				RST     08H
+a036 a036 d 3e5b
+a036 a036 s 				LD		A,'['
+a038 a038 d cf
+a038 a038 s 				RST     08H
+a039 a039 d 68
+a039 a039 s 				LD		L,B
+a03a a03a d 2600
+a03a a03a s 				LD		H,0
+a03c a03c d cd4da0
+a03c a03c s 				CALL	HLToDec
+a03f a03f d 3e3b
+a03f a03f s 				LD		A,$3B
+a041 a041 d cf
+a041 a041 s 				RST     08H
+a042 a042 d 69
+a042 a042 s 				LD		L,C
+a043 a043 d 2600
+a043 a043 s 				LD		H,0
+a045 a045 d cd4da0
+a045 a045 s 				CALL	HLToDec
+a048 a048 d 3e66
+a048 a048 s 				LD		A,'f'
+a04a a04a d cf
+a04a a04a s 				RST     08H
+a04b a04b d e1
+a04b a04b s 				POP		HL
+a04c a04c d c9
+a04c a04c s 				RET
+a04d a04d s 
+a04d a04d s ;Prints	hl as decimal			
+a04d a04d s HLToDec:
+a04d a04d d f5
+a04d a04d s 				PUSH	AF
+a04e a04e d c5
+a04e a04e s 				PUSH	BC
+a04f a04f d cd55a0
+a04f a04f s 				CALL	DispHL
+a052 a052 d c1
+a052 a052 s 				POP		BC
+a053 a053 d f1
+a053 a053 s 				POP		AF
+a054 a054 d c9
+a054 a054 s 				RET
+a055 a055 s DispHL:
+a055 a055 d 01f0d8
+a055 a055 s 				ld		bc,-10000
+a058 a058 d cd6ea0
+a058 a058 s 				call	Num1
+a05b a05b d 0118fc
+a05b a05b s 				ld		bc,-1000
+a05e a05e d cd6ea0
+a05e a05e s 				call	Num1
+a061 a061 d 019cff
+a061 a061 s 				ld		bc,-100
+a064 a064 d cd6ea0
+a064 a064 s 				call	Num1
+a067 a067 d 0ef6
+a067 a067 s 				ld		c,-10
+a069 a069 d cd6ea0
+a069 a069 s 				call	Num1
+a06c a06c d 0eff
+a06c a06c s 				ld		c,-1
+a06e a06e d 3e2f
+a06e a06e s Num1:			ld		a,'0'-1
+a070 a070 d 3c
+a070 a070 s Num2:			inc		a
+a071 a071 d 09
+a071 a071 s 				add		hl,bc
+a072 a072 d 38fc
+a072 a072 s 				jr		c,Num2
+a074 a074 d ed42
+a074 a074 s 				sbc		hl,bc
+a076 a076 d cf
+a076 a076 s 				RST     08H
+a077 a077 d c9
+a077 a077 s 				ret
+a078 a078 s ;Print A as HEX				
+a078 a078 s NumToHex:    	
+a078 a078 d c5
+a078 a078 s 				push	bc
+a079 a079 d f5
+a079 a079 s                 push    af
+a07a a07a d 4f
+a07a a07a s 				ld 		c, a   		; a = number to convert
+a07b a07b d cd87a0
+a07b a07b s             	call 	Num1H
+a07e a07e d cf
+a07e a07e s             	RST     08H
+a07f a07f d 79
+a07f a07f s             	ld 		a, c
+a080 a080 d cd8ba0
+a080 a080 s             	call 	Num2H
+a083 a083 d cf
+a083 a083 s             	RST     08H
+a084 a084 d f1
+a084 a084 s                 pop     af
+a085 a085 d c1
+a085 a085 s 				pop		bc
+a086 a086 d c9
+a086 a086 s             	ret
+a087 a087 s 
+a087 a087 d 1f
+a087 a087 s Num1H:        	rra
+a088 a088 d 1f
+a088 a088 s             	rra
+a089 a089 d 1f
+a089 a089 s             	rra
+a08a a08a d 1f
+a08a a08a s            		rra
+a08b a08b d f6f0
+a08b a08b s Num2H:        	or 		$F0
+a08d a08d d 27
+a08d a08d s             	daa
+a08e a08e d c6a0
+a08e a08e s             	add 	a, $A0
+a090 a090 d ce40
+a090 a090 s             	adc 	a, $40 		; Ascii hex at this point (0 to F)   
+a092 a092 d c9
+a092 a092 s             	ret
+a093 a093 s 
+a093 a093 s ;Get ABS of A
+a093 a093 s absA:
+a093 a093 d b7
+a093 a093 s      or a
+a094 a094 d f0
+a094 a094 s      ret p
+a095 a095 d ed44
+a095 a095 s      neg
+a097 a097 d c9
+a097 a097 s      ret
+a098 a098 s 
+a098 a098 s ;getArAndomA	 
+a098 a098 s randomA:				
+a098 a098 d 3a8888
+a098 a098 s 				ld a, 	(seed)
+a09b a09b d 47
+a09b a09b s 				ld b, 	a 
+a09c a09c s 
+a09c a09c d 0f
+a09c a09c s 				rrca ; multiply by 32
+a09d a09d d 0f
+a09d a09d s 				rrca
+a09e a09e d 0f
+a09e a09e s 				rrca
+a09f a09f d ee1f
+a09f a09f s 				xor $1f
+a0a1 a0a1 s 
+a0a1 a0a1 d 80
+a0a1 a0a1 s 				add 	a, b
+a0a2 a0a2 d deff
+a0a2 a0a2 s 				sbc a, 255 ; carry
+a0a4 a0a4 s 
+a0a4 a0a4 d 328888
+a0a4 a0a4 s 				ld (seed), a
+a0a7 a0a7 d c9
+a0a7 a0a7 s 				ret
+a0a8 a0a8 s 
+a0a8 a0a8 s ;------- Print string
+a0a8 a0a8 d f5
+a0a8 a0a8 s print:			PUSH 	AF				; Preserve AF				
+a0a9 a0a9 d 7e
+a0a9 a0a9 s printLoop:      LD      A,(HL)          ; Get character
+a0aa a0aa d b7
+a0aa a0aa s                 OR      A               ; Is it $00 ?
+a0ab a0ab d 2804
+a0ab a0ab s                 JR     	Z,printRet      ; Then RETurn on terminator
+a0ad a0ad d cf
+a0ad a0ad s                 RST     08H             ; Print it
+a0ae a0ae d 23
+a0ae a0ae s                 INC     HL              ; Next Character
+a0af a0af d 18f8
+a0af a0af s                 JR      printLoop       ; Continue until $00
+a0b1 a0b1 s 
+a0b1 a0b1 d f1
+a0b1 a0b1 s printRet:		POP		AF
+a0b2 a0b2 d c9
+a0b2 a0b2 s 				RET
+a0b3 a0b3 s 
+a0b3 a0b3 s ;--------Print textBlockAtPos
+a0b3 a0b3 s ;HL Start of sprite
+a0b3 a0b3 s ;C  Sprite X
+a0b3 a0b3 s ;B  Sprite Y
+a0b3 a0b3 s 
+a0b3 a0b3 d f5
+a0b3 a0b3 s printAtPos:		PUSH 	AF					; Preserve AF				
+a0b4 a0b4 d cd32a0
+a0b4 a0b4 s printAtPosLoop: CALL	moveCursor			; Move cursor to start of line
+a0b7 a0b7 d cda8a0
+a0b7 a0b7 s 				CALL	print				; Print Line
+a0ba a0ba d 04
+a0ba a0ba s 				INC		B
+a0bb a0bb d 23
+a0bb a0bb s 				INC		HL
+a0bc a0bc d 7e
+a0bc a0bc s 				LD      A,(HL)          	; Get character
+a0bd a0bd d b7
+a0bd a0bd s                 OR      A               	; Is it $00 ?
+a0be a0be d 23
+a0be a0be s 				INC		HL
+a0bf a0bf d 20f3
+a0bf a0bf s                 JR      NZ,printAtPosLoop   ; Continue until $00		
+a0c1 a0c1 d f1
+a0c1 a0c1 s 				POP		AF
+a0c2 a0c2 d c9
+a0c2 a0c2 s 				RET
+a0c3 a0c3 s 
+a0c3 a0c3 s ;------------Draw Box
+a0c3 a0c3 s ;C Start X
+a0c3 a0c3 s ;B Start Y
+a0c3 a0c3 s 
+a0c3 a0c3 s ;D Width
+a0c3 a0c3 s ;E Height
+a0c3 a0c3 s drawBox:
+a0c3 a0c3 d 1d
+a0c3 a0c3 s 				DEC		E
+a0c4 a0c4 d 1d
+a0c4 a0c4 s 				DEC		E
+a0c5 a0c5 d cd32a0
+a0c5 a0c5 s 				CALL	moveCursor			; Move cursor to start of line
+a0c8 a0c8 d c5
+a0c8 a0c8 s 				PUSH	BC
+a0c9 a0c9 d 42
+a0c9 a0c9 s 				LD		B,D
+a0ca a0ca d 3e23
+a0ca a0ca s topLineLoop:	LD		A,'#'
+a0cc a0cc d cf
+a0cc a0cc s 				RST		08H
+a0cd a0cd d 10fb
+a0cd a0cd s 				DJNZ	topLineLoop			;Print Top line
+a0cf a0cf d 15
+a0cf a0cf s 				DEC		D					;Remove padding for left and right bars
+a0d0 a0d0 d 15
+a0d0 a0d0 s 				DEC		D
+a0d1 a0d1 d 43
+a0d1 a0d1 s 				LD		B,E
+a0d2 a0d2 d 58
+a0d2 a0d2 s boxBodyLoop:	LD		E,B
+a0d3 a0d3 d c1
+a0d3 a0d3 s 				POP		BC
+a0d4 a0d4 d 04
+a0d4 a0d4 s 				INC		B
+a0d5 a0d5 d cd32a0
+a0d5 a0d5 s 				CALL	moveCursor
+a0d8 a0d8 d c5
+a0d8 a0d8 s 				PUSH	BC
+a0d9 a0d9 d 3e23
+a0d9 a0d9 s 				LD		A,'#'
+a0db a0db d cf
+a0db a0db s 				RST		08H
+a0dc a0dc d 42
+a0dc a0dc s 				LD		B,D
+a0dd a0dd d 3e20
+a0dd a0dd s boxContentLoop:	LD		A,' '
+a0df a0df d cf
+a0df a0df s 				RST		08H
+a0e0 a0e0 d 10fb
+a0e0 a0e0 s 				DJNZ	boxContentLoop
+a0e2 a0e2 d 3e23
+a0e2 a0e2 s 				LD		A,'#'
+a0e4 a0e4 d cf
+a0e4 a0e4 s 				RST		08H
+a0e5 a0e5 d 43
+a0e5 a0e5 s 				LD		B,E
+a0e6 a0e6 d 10ea
+a0e6 a0e6 s 				DJNZ	boxBodyLoop
+a0e8 a0e8 d c1
+a0e8 a0e8 s 				POP		BC
+a0e9 a0e9 d 04
+a0e9 a0e9 s 				INC		B
+a0ea a0ea d cd32a0
+a0ea a0ea s 				CALL	moveCursor			; Move cursor to start of line
+a0ed a0ed d 14
+a0ed a0ed s 				INC		D
+a0ee a0ee d 14
+a0ee a0ee s 				INC		D
+a0ef a0ef d 42
+a0ef a0ef s 				LD		B,D
+a0f0 a0f0 d 3e23
+a0f0 a0f0 s bottomLineLoop:	LD		A,'#'
+a0f2 a0f2 d cf
+a0f2 a0f2 s 				RST		08H
+a0f3 a0f3 d 10fb
+a0f3 a0f3 s 				DJNZ	bottomLineLoop			;Print Top line
+a0f5 a0f5 d c9
+a0f5 a0f5 s 				RET		
+a0f6 a0f6 s ;--------Delay
+a0f6 a0f6 s delay:
+a0f6 a0f6 d c5
+a0f6 a0f6 s 				PUSH	BC
+a0f7 a0f7 s delayLoop:
+a0f7 a0f7 d 00
+a0f7 a0f7 s 				NOP
+a0f8 a0f8 d 0b
+a0f8 a0f8 s 				DEC 	BC
+a0f9 a0f9 d 78
+a0f9 a0f9 s 				LD 		A,B
+a0fa a0fa d b1
+a0fa a0fa s 				OR 		C
+a0fb a0fb d 20fa
+a0fb a0fb s 				JR 		NZ,delayLoop
+a0fd a0fd d c1
+a0fd a0fd s 				POP		BC
+a0fe a0fe f main.asm
+a0fe a0fe d c9
+a0fe a0fe s 				RET
+a0ff a0ff s 
+a0ff a0ff s ;Strings
+a0ff a0ff d 1b5b33346d231b5b306d00
+a0ff a0ff s wall:			.BYTE	1BH,"[34m#",1BH,"[0m",0
+a10a a10a d 1b5b39376d6f1b5b306d00
+a10a a10a s powerPellet:	.BYTE	1BH,"[97mo",1BH,"[0m",0
+a115 a115 d 1b5b33376d2a1b5b306d00
+a115 a115 s pellet:			.BYTE	1BH,"[37m*",1BH,"[0m",0
+a120 a120 d 1b5b33316d401b5b306d00
+a120 a120 s superFruit:		.BYTE	1BH,"[31m@",1BH,"[0m",0
+a12b a12b d 2000
+a12b a12b s void:			.BYTE	" ",0
+a12d a12d s 
+a12d a12d d 1b5b4800
+a12d a12d s home:			.BYTE 1BH,"[H",0
+a131 a131 d 1b5b481b5b324a00
+a131 a131 s cls:      	  	.BYTE 1BH,"[H",1BH,"[2J",0
+a139 a139 d 1b5b3f32356c00
+a139 a139 s hideCursor:	  	.BYTE	1BH,"[?25l",0
+a140 a140 d 1b5b3f32356800
+a140 a140 s showCursor:	  	.BYTE	1BH,"[?25h",0
+a147 a147 s 
+a147 a147 s ;----- Map ------
+a147 a147 s include map.asm
+a147 a147 f map.asm
+a147 a147 s ;----- Map data bit positions
+a147 a147 s upBit			.EQU	0
+a147 a147 s downBit			.EQU	1
+a147 a147 s leftBit			.EQU	2
+a147 a147 s rightBit		.EQU	3
+a147 a147 s powerpBit		.EQU	4
+a147 a147 s pelletBit		.EQU	5
+a147 a147 s wallBit			.EQU	6
+a147 a147 s sfBit			.EQU	7
+a147 a147 s 
+a147 a147 s ;----Pellet
+a147 a147 s ww 		.EQU	40H
+a147 a147 s 
+a147 a147 s hp 		.EQU	2CH		;left 	right	pellet
+a147 a147 s gp		.EQU	23H		;up		down	pellet
+a147 a147 s 
+a147 a147 s lp		.EQU	26H		;down 	left 	pellet
+a147 a147 s rp		.EQU	2AH		;down 	right	pellet
+a147 a147 s up		.EQU	25H		;up 	left	pellet
+a147 a147 s dp		.EQU	29H		;up 	right	pellet
+a147 a147 s 
+a147 a147 s bp		.EQU	2BH		;up		down	right	pellet
+a147 a147 s cp		.EQU	27H		;up		down	left	pellet
+a147 a147 s vp		.EQU	2EH		;down	left	right	pellet
+a147 a147 s kp		.EQU	2DH		;up		left	right	pellet
+a147 a147 s 
+a147 a147 s xp		.EQU	2FH		;all	pellet
+a147 a147 s ;------- No pellet
+a147 a147 s hn 		.EQU	0CH		;left 	right	pellet
+a147 a147 s gn		.EQU	03H		;up		down	pellet
+a147 a147 s 
+a147 a147 s ln		.EQU	06H		;down 	left 	pellet
+a147 a147 s rn		.EQU	0AH		;down 	right	pellet
+a147 a147 s un		.EQU	05H		;up 	left	pellet
+a147 a147 s dn		.EQU	09H		;up 	right	pellet
+a147 a147 s 
+a147 a147 s bn		.EQU	0BH		;up		down	right	pellet
+a147 a147 s cn		.EQU	07H		;up		down	left	pellet
+a147 a147 s vn		.EQU	0EH		;down	left	right	pellet
+a147 a147 s kn		.EQU	0DH		;up		left	right	pellet
+a147 a147 s 
+a147 a147 s xn		.EQU	0FH		;all	pellet
+a147 a147 s ;--------Power Pellet
+a147 a147 s hs 		.EQU	1CH		;left 	right	pellet
+a147 a147 s gs		.EQU	13H		;up		down	pellet
+a147 a147 s 
+a147 a147 s ls		.EQU	16H		;down 	left 	pellet
+a147 a147 s rs		.EQU	1AH		;down 	right	pellet
+a147 a147 s us		.EQU	15H		;up 	left	pellet
+a147 a147 s ds		.EQU	19H		;up 	right	pellet
+a147 a147 s 
+a147 a147 s bs		.EQU	1BH		;up		down	right	pellet
+a147 a147 s cs		.EQU	17H		;up		down	left	pellet
+a147 a147 s vs		.EQU	1EH		;down	left	right	pellet
+a147 a147 s ks		.EQU	1DH		;up		left	right	pellet
+a147 a147 s 
+a147 a147 s xs		.EQU	1FH		;all	pellet
+a147 a147 s 
+a147 a147 d 0000404040404040404040404040404040404040404040404040404040400000
+a147 a147 s map:	.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
+a167 a167 d 0000402a2c2c2c2c2e2c2c2c2c2c2640402a2c2c2c2c2c2e2c2c2c2c26400000
+a167 a167 s 		.BYTE	00,00,ww,rp,hp,hp,hp,hp,vp,hp,hp,hp,hp,hp,lp,ww,ww,rp,hp,hp,hp,hp,hp,vp,hp,hp,hp,hp,lp,ww,00,00
+a187 a187 d 0000401340404040234040404040234040234040404040234040404013400000
+a187 a187 s 		.BYTE	00,00,ww,gs,ww,ww,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,ww,ww,gs,ww,00,00
+a1a7 a1a7 d 0000402340404040234040404040234040234040404040234040404023400000
+a1a7 a1a7 s 		.BYTE	00,00,ww,gp,ww,ww,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,ww,ww,gp,ww,00,00
+a1c7 a1c7 d 0000402b2c2c2c2c2f2c2c2e2c2c2d2c2c2d2c2c2e2c2c2f2c2c2c2c27400000
+a1c7 a1c7 s 		.BYTE	00,00,ww,bp,hp,hp,hp,hp,xp,hp,hp,vp,hp,hp,kp,hp,hp,kp,hp,hp,vp,hp,hp,xp,hp,hp,hp,hp,cp,ww,00,00
+a1e7 a1e7 d 0000402340404040234040234040404040404040234040234040404023400000
+a1e7 a1e7 s 		.BYTE	00,00,ww,gp,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,gp,ww,00,00
+a207 a207 d 000040292c2c2c2c274040292c2c2640402a2c2c2540402b2c2c2c2c25400000
+a207 a207 s 		.BYTE	00,00,ww,dp,hp,hp,hp,hp,cp,ww,ww,dp,hp,hp,lp,ww,ww,rp,hp,hp,up,ww,ww,bp,hp,hp,hp,hp,up,ww,00,00
+a227 a227 d 0000404040404040234040404040034040034040404040234040404040400000
+a227 a227 s 		.BYTE	00,00,ww,ww,ww,ww,ww,ww,gp,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gp,ww,ww,ww,ww,ww,ww,00,00
+a247 a247 d 00000000000000402340400a0c0c0d0c0c0d0c0c064040234000000000000000
+a247 a247 s 		.BYTE	00,00,00,00,00,00,00,ww,gp,ww,ww,rn,hn,hn,kn,hn,hn,kn,hn,hn,ln,ww,ww,gp,ww,00,00,00,00,00,00,00
+a267 a267 d 0000000000000040234040034040400000404040034040234000000000000000
+a267 a267 s 		.BYTE	00,00,00,00,00,00,00,ww,gp,ww,ww,gn,ww,ww,ww,00,00,ww,ww,ww,gn,ww,ww,gp,ww,00,00,00,00,00,00,00
+a287 a287 d 4040404040404040234040034000000000000040034040234040404040404040
+a287 a287 s 		.BYTE	ww,ww,ww,ww,ww,ww,ww,ww,gp,ww,ww,gn,ww,00,00,00,00,00,00,ww,gn,ww,ww,gp,ww,ww,ww,ww,ww,ww,ww,ww
+a2a7 a2a7 d 0c0c0c0c0c0c0c0c2f0c0c0740000000000000400b0c0c2f0c0c0c0c0c0c0c0c
+a2a7 a2a7 s 		.BYTE	hn,hn,hn,hn,hn,hn,hn,hn,xp,hn,hn,cn,ww,00,00,00,00,00,00,ww,bn,hn,hn,xp,hn,hn,hn,hn,hn,hn,hn,hn
+a2c7 a2c7 d 4040404040404040234040034000000000000040034040234040404040404040
+a2c7 a2c7 s 		.BYTE	ww,ww,ww,ww,ww,ww,ww,ww,gp,ww,ww,gn,ww,00,00,00,00,00,00,ww,gn,ww,ww,gp,ww,ww,ww,ww,ww,ww,ww,ww
+a2e7 a2e7 d 0000000000000040234040034040404040404040034040234000000000000000
+a2e7 a2e7 s 		.BYTE	00,00,00,00,00,00,00,ww,gp,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gp,ww,00,00,00,00,00,00,00
+a307 a307 d 00000000000000402340400b0c0c0c0c0c0c0c0c074040234000000000000000
+a307 a307 s 		.BYTE	00,00,00,00,00,00,00,ww,gp,ww,ww,bn,hn,hn,hn,hn,hn,hn,hn,hn,cn,ww,ww,gp,ww,00,00,00,00,00,00,00
+a327 a327 d 0000404040404040234040034040404040404040034040234040404040400000
+a327 a327 s 		.BYTE	00,00,ww,ww,ww,ww,ww,ww,gp,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gp,ww,ww,ww,ww,ww,ww,00,00
+a347 a347 d 0000402a2c2c2c2c2f2c2c2d2c2c2640402a2c2c2d2c2c2f2c2c2c2c26400000
+a347 a347 s 		.BYTE	00,00,ww,rp,hp,hp,hp,hp,xp,hp,hp,kp,hp,hp,lp,ww,ww,rp,hp,hp,kp,hp,hp,xp,hp,hp,hp,hp,lp,ww,00,00
+a367 a367 d 0000402340404040234040404040234040234040404040234040404023400000
+a367 a367 s 		.BYTE	00,00,ww,gp,ww,ww,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,ww,ww,gp,ww,00,00
+a387 a387 d 000040192c2640402b2c2c2e2c2c2d2c2c2d2c2c2e2c2c2740402a2c15400000
+a387 a387 s 		.BYTE	00,00,ww,ds,hp,lp,ww,ww,bp,hp,hp,vp,hp,hp,kp,hp,hp,kp,hp,hp,vp,hp,hp,cp,ww,ww,rp,hp,us,ww,00,00
+a3a7 a3a7 d 0000404040234040234040234040404040404040234040234040234040400000
+a3a7 a3a7 s 		.BYTE	00,00,ww,ww,ww,gp,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,gp,ww,ww,ww,00,00
+a3c7 a3c7 d 0000402a2c2d2c2c254040292c2c2640402a2c2c254040292c2c2d2c26400000
+a3c7 a3c7 s 		.BYTE	00,00,ww,rp,hp,kp,hp,hp,up,ww,ww,dp,hp,hp,lp,ww,ww,rp,hp,hp,up,ww,ww,dp,hp,hp,kp,hp,lp,ww,00,00
+a3e7 a3e7 d 0000402340404040404040404040234040234040404040404040404023400000
+a3e7 a3e7 s 		.BYTE	00,00,ww,gp,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,gp,ww,00,00
+a407 a407 d 000040292c2c2c2c2c2c2c2c2c2c2d2c2c2d2c2c2c2c2c2c2c2c2c2c25400000
+a407 a407 s 		.BYTE	00,00,ww,dp,hp,hp,hp,hp,hp,hp,hp,hp,hp,hp,kp,hp,hp,kp,hp,hp,hp,hp,hp,hp,hp,hp,hp,hp,up,ww,00,00
+a427 a427 d 0000404040404040404040404040404040404040404040404040404040400000
+a427 a427 s 		.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
+a447 a447 d 0000000000000000000000000000000000000000000000000000000000000000
+a447 a447 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+a467 a467 d 0000000000000000000000000000000000000000000000000000000000000000
+a467 a467 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+a487 a487 d 0000000000000000000000000000000000000000000000000000000000000000
+a487 a487 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+a4a7 a4a7 d 0000000000000000000000000000000000000000000000000000000000000000
+a4a7 a4a7 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+a4c7 a4c7 d 0000000000000000000000000000000000000000000000000000000000000000
+a4c7 a4c7 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+a4e7 a4e7 d 0000000000000000000000000000000000000000000000000000000000000000
+a4e7 a4e7 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+a507 a507 d 0000000000000000000000000000000000000000000000000000000000000000
+a507 a507 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+a527 a527 d 0000000000000000000000000000000000000000000000000000000000000000
+a527 a527 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+a547 a547 s 
+a547 a547 s ; map:	.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,rn,hn,hn,hn,hn,vn,hn,hn,hn,hn,hn,ln,ww,ww,rn,hn,hn,hn,hn,hn,vn,hn,hn,hn,hn,ln,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,bn,hn,hn,hn,hn,xn,hn,hn,vn,hn,hn,kn,hn,hn,kn,hn,hn,vn,hn,hn,xn,hn,hn,hn,hn,cn,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,dn,hn,hn,hn,hn,cn,ww,ww,dn,hn,hn,ln,ww,ww,rn,hn,hn,un,ww,ww,bn,hn,hn,hn,hn,un,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,rn,hn,hn,kn,hn,hn,kn,hn,hn,ln,ww,ww,gn,ww,00,00,00,00,00,00,00
+a547 a547 s ; 		.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,00,00,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,00
+a547 a547 s ; 		.BYTE	ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww
+a547 a547 s ; 		.BYTE	hn,hn,hn,hn,hn,hn,hn,hn,xn,hn,hn,cp,ww,00,00,00,00,00,00,ww,bn,hn,hn,xn,hn,hn,hn,hn,hn,hn,hn,hn
+a547 a547 s ; 		.BYTE	ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww
+a547 a547 s ; 		.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,00
+a547 a547 s ; 		.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,bn,hn,hn,hn,hn,hn,hn,hn,hn,cn,ww,ww,gn,ww,00,00,00,00,00,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,rn,hn,hn,hn,hn,xn,hn,hn,kn,hn,hn,ln,ww,ww,rn,hn,hn,kn,hn,hn,xn,hn,hn,hn,hn,ln,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,dn,hn,ln,ww,ww,bn,hn,hn,vn,hn,hn,kn,hn,hn,kn,hn,hn,vn,hn,hn,cn,ww,ww,rn,hn,un,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,ww,ww,gn,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,gn,ww,ww,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,rn,hn,kn,hn,hn,un,ww,ww,dn,hn,hn,ln,ww,ww,rn,hn,hn,un,ww,ww,dn,hn,hn,kn,hn,ln,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,dn,hn,hn,hn,hn,hn,hn,hn,hn,hn,hn,kn,hn,hn,kn,hn,hn,hn,hn,hn,hn,hn,hn,hn,hn,un,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+a547 a547 s ; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+a547 a547 s ; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+a547 a547 s ; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+a547 a547 s ; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+a547 a547 s ; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+a547 a547 s ; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+a547 a547 f main.asm
+a547 a547 s ; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+a547 a547 s 
+a547 a547 s ;-----Path find map
+a547 a547 s pathFindMap	.EQU	0D000H
+a547 a547 s 
+a547 a547 f main.asm
+a547 a547 s liveMap		.EQU	0E000H
 000b v bn
 0007 v cn
 000a v lf
@@ -1233,104 +3680,279 @@ e3e0 e3e0 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
 001e v vs
 001d v ks
 001f v xs
-e000 a map
-93be a cls
-9309 a num1
-930b a num2
-932a a absa
+a147 a map
+a131 a cls
+a06e a num1
+a070 a num2
+a093 a absa
 8888 v seed
+a12d a home
 8100 v pacx
 8101 v pacy
-9351 a wall
-93bc a void
-91e5 a move
-931e a num1h
-9322 a num2h
-934a a delay
+9f48 a info
+a0ff a wall
+9eb8 a logo
+a12b a void
+9787 a move
+907c a quit
+a087 a num1h
+a08b a num2h
+a0f6 a delay
+8902 v level
 0007 v sfbit
-91f9 a moved
+979b a moved
 8900 v score
-91ff a movel
+97a1 a movel
 0000 v upbit
-9205 a mover
-91f3 a moveu
-933f a print
-9057 a input
-90de a checkh
-9385 a pacman
-90ec a checkv
-926d a pmchar
-92f0 a disphl
-9367 a pellet
-90fc a movepm
-9259 a pmloop
-9288 a printp
+97a7 a mover
+9795 a moveu
+a0a8 a print
+9087 a input
+913d a checkh
+9194 a pacman
+914b a checkv
+987b a pmchar
+a055 a disphl
+a115 a pellet
+915b a movepm
+94e4 a oghost
+9625 a pghost
+93a3 a rghost
+9867 a pmloop
+9766 a tghost
+9896 a printp
+9a54 a number1
+9bb4 a number2
+9d14 a number3
+9771 a sghost0
+977c a sghost1
 8102 v paccdir
 8103 v pacndir
-932f a randoma
-92e8 a hltodec
-9071 a clearpm
+a098 a randoma
+a04d a hltodec
+90ca a clearpm
+9f5c a message
 0002 v leftbit
+9007 a gametop
+e000 v livemap
 0006 v wallbit
-92c8 a newline
+97c7 a initmap
+a029 a newline
+9166 a movepma
+9117 a getmove
 0001 v downbit
-90b8 a getmove
-9298 a printsf
-907d a printpm
-9280 a printpp
-902b a gameloop
+a0c3 a drawbox
+98a6 a printsf
+90d6 a printpm
+8120 v oghostx
+8121 v oghosty
+8130 v pghostx
+8110 v rghostx
+8111 v rghosty
+8131 v pghosty
+8140 v tghostx
+8141 v tghosty
+988e a printpp
+9811 a checkmap
+903a a gameloop
+8105 v paclives
+99ee a levelhud
+8104 v ppactive
 0003 v rightbit
-937d a scorehud
+99e6 a scorehud
+9262 a eatghost
 000e v initpacx
 000e v initpacy
-9390 a redghost
-9252 a printmap
-9313 a numtohex
-9348 a printret
-90a3 a eatpellet
+99f6 a liveshud
+8113 v ghostdis
+9986 a pmpfskip
+9860 a printmap
+996a a pmpfloop
+998f a printhud
+a078 a numtohex
+a0b1 a printret
+90f7 a eatpellet
 0005 v pelletbit
-92a8 a pmcharret
-93a6 a blueghost
-93b1 a pinkghost
-8110 v redghostx
-8111 v redghosty
+98b6 a pmcharret
+901c a startgame
+a0f7 a delayloop
+8122 v oghostdir
+8132 v pghostdir
+8112 v rghostdir
+0004 v initlives
+8142 v tghostdir
+91d3 a initghost
+91e0 a moveghost
 0004 v powerpbit
-9290 a printwall
-92a0 a printvoid
-9340 a printloop
-921c a movedvalid
-90ab a eatspellet
-921f a movelvalid
-939b a greenghost
-9222 a movervalid
-9219 a moveuvalid
-906d a validinput
-923c a printmapat
-9267 a pmnextline
-92aa a printscore
-92d1 a movecursor
-9372 a superfruit
-8112 v redghostdir
-8113 v redghostdis
-920b a ismovevalid
-935c a powerpellet
-9097 a getpmmapdata
-9225 a getdataatpos
-90d4 a calcnextmove
-913a a moveredghost
-9108 a clearredghost
-90cd a nextmovevalid
-0014 v initredghostx
-0001 v initredghosty
-9114 a printredghost
-918c a redghostcheckd
-9199 a redghostcheckl
-91a6 a redghostcheckr
-917f a redghostchecku
-9170 a redghostsetmove
-91b3 a redghostpathfind
-91d8 a redghostsetequal
-91e2 a redghostrandomset
-91d0 a redghostsetnewdir
-912e a getredghostmapdata
-9146 a getredghostnextmove
+9200 a ghostmove
+989e a printwall
+98ae a printvoid
+9a02 a countdown
+a0a9 a printloop
+98c9 a pfnextrow
+89f2 v originalbc
+9172 a killpacman
+90a1 a initpacman
+97be a movedvalid
+91ac a clearghost
+910f a eatppellet
+9103 a eatspellet
+97c1 a movelvalid
+a139 a hidecursor
+97c4 a movervalid
+97bb a moveuvalid
+909d a validinput
+9851 a printmapat
+921a a ghostmoved
+995a a printpfmap
+9875 a pmnextline
+99ad a printlevel
+93e2 a oghostinit
+9523 a pghostinit
+9226 a ghostmovel
+92a1 a rghostinit
+93f2 a oghostmove
+9664 a tghostinit
+92b1 a rghostmove
+9533 a pghostmove
+9674 a tghostmove
+920e a ghostmoveu
+91b9 a printghost
+9232 a ghostmover
+9354 a rghostpfpp
+a032 a movecursor
+9495 a oghostpfpp
+95d6 a pghostpfpp
+9717 a tghostpfpp
+a120 a superfruit
+9999 a printscore
+99c1 a printlives
+a0b3 a printatpos
+a140 a showcursor
+d000 v pathfindmap
+9837 a incrementde
+90b2 a resetpacman
+91c6 a colideghost
+93ae a oghostclear
+94ef a pghostclear
+926d a rghostclear
+9f80 a exitmessage
+9630 a tghostclear
+97ad a ismovevalid
+0020 v ppellettics
+94d6 a oghoststack
+9617 a pghoststack
+9395 a rghoststack
+9758 a tghoststack
+a0d2 a boxbodyloop
+a10a a powerpellet
+98bf a initppfloop
+8125 v oghosttimer
+8135 v pghosttimer
+a0ca a toplineloop
+8115 v rghosttimer
+8145 v tghosttimer
+000f v oghostinitx
+93ba a oghostprint
+94fb a pghostprint
+000f v rghostinitx
+9279 a rghostprint
+91ed a printsghost
+963c a tghostprint
+0008 v rghostinity
+0008 v oghostinity
+000f v pghostinitx
+0008 v pghostinity
+000f v tghostinitx
+0008 v tghostinity
+982c a checkmapchar
+90ea a getpmmapdata
+91f9 a sghost1print
+9454 a oghostcheckd
+9595 a pghostcheckd
+9313 a rghostcheckd
+981b a checkmaploop
+96d6 a tghostcheckd
+9839 a getaddresspf
+99fe a liveblanking
+9462 a oghostcheckl
+95a3 a pghostcheckl
+9321 a rghostcheckl
+98b8 a initpathfind
+96e4 a tghostcheckl
+94aa a oghostcolide
+95eb a pghostcolide
+9470 a oghostcheckr
+9369 a rghostcolide
+932f a rghostcheckr
+9133 a calcnextmove
+972c a tghostcolide
+9305 a rghostchecku
+9446 a oghostchecku
+9587 a pghostchecku
+925d a ghostdostack
+95b1 a pghostcheckr
+96c8 a tghostchecku
+96f2 a tghostcheckr
+9980 a pmpfnextline
+9fb8 a deathmessage1
+a00f a deathmessage2
+000f v oghoststorex
+000b v oghoststorey
+0010 v pghoststorex
+000e v rghoststorex
+000b v rghoststorey
+000b v pghoststorey
+0011 v tghoststorex
+000b v tghoststorey
+992a a calculatemapd
+9936 a calculatemapl
+9942 a calculatemapr
+991e a calculatemapu
+0030 v pathfinddepth
+97d3 a getmapaddress
+93d5 a oghostmapdata
+9516 a pghostmapdata
+9294 a rghostmapdata
+9657 a tghostmapdata
+9973 a pmpfafterskip
+912c a nextmovevalid
+919f a ghostnextmove
+0020 v caughtjaletime
+97eb a checknextlevel
+940b a oghostdectimer
+947e a oghostpathfind
+954c a pghostdectimer
+92ca a rghostdectimer
+933d a rghostpathfind
+95bf a pghostpathfind
+968d a tghostdectimer
+9700 a tghostpathfind
+99df a removeoldlives
+a0f0 a bottomlineloop
+a0dd a boxcontentloop
+941c a oghostnextmove
+955d a pghostnextmove
+99d7 a printlivesloop
+92db a rghostnextmove
+a0b4 a printatposloop
+969e a tghostnextmove
+923e a ghostcheckstack
+9f94 a displaygameover
+89f0 v oldstackpointer
+0020 v oghostinittimer
+94a1 a oghostsetnewdir
+0030 v pghostinittimer
+0010 v rghostinittimer
+9360 a rghostsetnewdir
+95e2 a pghostsetnewdir
+0040 v tghostinittimer
+9723 a tghostsetnewdir
+994e a calculatemapcell
+98d0 a calculatepathmap
+9826 a checkmapnextline
+9f70 a startgamemessage
+9e74 a displaytitlescreen
+98e2 a calculatepathmaploop
+9faf a gameoverwaitforinput
+9eaa a titlescreenwaitforinput
