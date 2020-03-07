@@ -120,6 +120,13 @@ ghostDoStack:
                 POP    AF
                 POP    AF
                 RET
+
+eatGhost:       
+                LD      HL,(score)
+                LD      BC,10
+                ADD     HL,BC
+                LD      (score),HL
+                RET
                 
 include ghosts/red.asm
 include ghosts/orange.asm

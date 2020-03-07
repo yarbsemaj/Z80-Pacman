@@ -1,4 +1,32 @@
 countdown:
+            LD      BC ,0305H
+			LD		DE ,1812H 
+			CALL	DrawBox
+            LD      BC ,0407H
+            LD      HL,number3
+            CALL    printAtPos
+            LD      BC, 0FFFFH
+            CALL    delay
+            CALL    delay
+            CALL    delay
+            CALL    delay
+            LD      BC ,0407H
+            LD      HL,number2
+            CALL    printAtPos
+            LD      BC, 0FFFFH
+            CALL    delay
+            CALL    delay
+            CALL    delay
+            CALL    delay
+            LD      HL,number1
+            LD      BC ,0407H
+            CALL    printAtPos
+            LD      BC, 0FFFFH
+            CALL    delay
+            CALL    delay
+            CALL    delay
+            CALL    delay
+            RET
 
 ;Font 'doh'
 number1:            .BYTE   "      1111111       ",0,1

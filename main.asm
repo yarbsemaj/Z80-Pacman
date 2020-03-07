@@ -7,14 +7,25 @@ originalBC		.EQU	89F2H		;BC before manipulation, used for calculating board posi
 	.ORG 9000H
 			ld		(oldStackPointer), SP
 			ld		sp,0FFFFH
-			CALL	initPacman
-			CALL	initGhost
+gameTop:
 			CALL	initMap
 			LD		HL, cls			;Clear screen
 			CALL	print
 			LD		HL, hideCursor	;Hide Cursor
 			CALL	print
-			call 	printMap
+			CALL 	printMap
+			JP		displayTitleScreen
+startGame:
+			CALL	initPacman
+			CALL	initGhost
+			CALL	initMap
+			LD		HL, cls			;Clear screen
+			CALL	print
+			CALL 	printMap
+			CALL	countdown
+			LD		HL, home		;Go home
+			CALL	print
+			CALL 	printMap
 gameLoop:		
 			call	input
 			call 	getMove
@@ -47,10 +58,10 @@ gameLoop:
 			LD		SP,(oldStackPointer)
 			ret
 
-endGame:        LD		HL, showCursor	;Hide Cursor
-			    CALL	print
-                LD		SP,(oldStackPointer)
-				RET	
+quit:       LD		HL, showCursor	;Hide Cursor
+			CALL	print
+            LD		SP,(oldStackPointer)
+			RET	
 		
 ;-------------- Input --------------------------					
 include input.asm	
@@ -64,7 +75,11 @@ include	mapLibs.asm
 
 ;------HUD;
 include hud.asm
-			
+
+include countdown.asm
+include titlescreen.asm
+include gameOver.asm
+
 ;------- Libs ------------;
 include libs.asm
 
@@ -75,6 +90,7 @@ pellet:			.BYTE	1BH,"[37m*",1BH,"[0m",0
 superFruit:		.BYTE	1BH,"[31m@",1BH,"[0m",0
 void:			.BYTE	" ",0
 
+home:			.BYTE 1BH,"[H",0
 cls:      	  	.BYTE 1BH,"[H",1BH,"[2J",0
 hideCursor:	  	.BYTE	1BH,"[?25l",0
 showCursor:	  	.BYTE	1BH,"[?25h",0

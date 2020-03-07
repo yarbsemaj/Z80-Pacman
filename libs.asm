@@ -11,20 +11,22 @@ newline:
 			
 ;move cursor to (C,B)				
 moveCursor:		
+				PUSH	HL
 				LD		A,$1B
 				RST     08H
 				LD		A,'['
 				RST     08H
-				LD		L,C
+				LD		L,B
 				LD		H,0
 				CALL	HLToDec
 				LD		A,$3B
 				RST     08H
-				LD		L,B
+				LD		L,C
 				LD		H,0
 				CALL	HLToDec
 				LD		A,'f'
 				RST     08H
+				POP		HL
 				RET
 
 ;Prints	hl as decimal			
@@ -108,6 +110,9 @@ printLoop:      LD      A,(HL)          ; Get character
                 INC     HL              ; Next Character
                 JR      printLoop       ; Continue until $00
 
+printRet:		POP		AF
+				RET
+
 ;--------Print textBlockAtPos
 ;HL Start of sprite
 ;C  Sprite X
@@ -120,13 +125,62 @@ printAtPosLoop: CALL	moveCursor			; Move cursor to start of line
 				INC		HL
 				LD      A,(HL)          	; Get character
                 OR      A               	; Is it $00 ?
+				INC		HL
                 JR      NZ,printAtPosLoop   ; Continue until $00		
 				POP		AF
 				RET
+
+;------------Draw Box
+;C Start X
+;B Start Y
+
+;D Width
+;E Height
+drawBox:
+				DEC		E
+				DEC		E
+				CALL	moveCursor			; Move cursor to start of line
+				PUSH	BC
+				LD		B,D
+topLineLoop:	LD		A,'#'
+				RST		08H
+				DJNZ	topLineLoop			;Print Top line
+				DEC		D					;Remove padding for left and right bars
+				DEC		D
+				LD		B,E
+boxBodyLoop:	LD		E,B
+				POP		BC
+				INC		B
+				CALL	moveCursor
+				PUSH	BC
+				LD		A,'#'
+				RST		08H
+				LD		B,D
+boxContentLoop:	LD		A,' '
+				RST		08H
+				DJNZ	boxContentLoop
+				LD		A,'#'
+				RST		08H
+				LD		B,E
+				DJNZ	boxBodyLoop
+				POP		BC
+				INC		B
+				CALL	moveCursor			; Move cursor to start of line
+				INC		D
+				INC		D
+				LD		B,D
+bottomLineLoop:	LD		A,'#'
+				RST		08H
+				DJNZ	bottomLineLoop			;Print Top line
+				RET		
+;--------Delay
 delay:
+				PUSH	BC
+delayLoop:
 				NOP
 				DEC 	BC
 				LD 		A,B
 				OR 		C
-				RET 	Z
-				JR 		delay
+				JR 		NZ,delayLoop
+				POP		BC
+				RET

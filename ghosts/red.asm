@@ -174,6 +174,7 @@ rGhostColide:
                 LD      A,(pPActive)              ;Colishion Happened
                 OR      A
                 JP      Z,killPacman               ;If power pellet not active, run genric deth lib
+				CALL	eatGhost
                 LD		a, rGhostStoreX	           ;set rGhost Pos
 			    LD		(rGhostX),a
 			    LD		a, rGhostStoreY

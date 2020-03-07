@@ -40,9 +40,12 @@ checkNextLevel:
 				OR		A
 				RET		NZ
 
+				CALL	countdown
 				CALL	initMap
 				CALL	initGhost
 				CALL	resetPacman
+				LD		HL, home		;Go home
+				CALL	print
 				CALL 	printMap
 				ret
 

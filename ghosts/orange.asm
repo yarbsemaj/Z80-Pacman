@@ -161,22 +161,19 @@ oGhostSetNewDir:
 
 oGhostColide:   
                 LD      A,(pacx)                ;Compair X
-				;CALL	NumToHex
                 LD      B,A
                 LD      A,(oGhostX)
-				;CALL	NumToHex
                 CP      B
                 RET     NZ
                 LD      A,(pacy)                ;Compair Y
-				;CALL	NumToHex
                 LD      B,A
                 LD      A,(oGhostY)
-				;CALL	NumToHex
                 CP      B
                 RET     NZ
                 LD      A,(pPActive)              ;Colishion Happened
                 OR      A
                 JP      Z,killPacman               ;If power pellet not active, run genric deth lib
+				CALL	eatGhost
                 LD		a, oGhostStoreX	           ;set oGhost Pos
 			    LD		(oGhostX),a
 			    LD		a, oGhostStoreY

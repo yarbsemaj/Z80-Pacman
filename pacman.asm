@@ -134,11 +134,14 @@ killPacman:
 				LD		A,(pacLives)
 				DEC		A
 				OR		A
-				JP		Z,endGame
+				JP		Z,displayGameOver
 				LD		(pacLives),A
-				CALL	clearGhost
 				CALL	resetPacMan
 				CALL	initGhost
+				CALL	countdown
+				LD		HL, home		;Go home
+				CALL	print
+				CALL 	printMap
 				JP		gameLoop
 
 pacman:			.BYTE	1BH,"[93mC",1BH,"[0m",0
