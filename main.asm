@@ -51,6 +51,7 @@ gameLoop:
 			call 	printHUD
 			call	newline
 			call	checkNextLevel
+			call	checkFruit
 			LD 		B,0FH   ;delay
 			LD		C,0FFH
 			CALL 	DELAY
