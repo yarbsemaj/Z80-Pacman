@@ -20,6 +20,8 @@ initPacman:
 				LD		(level), HL
 				LD		a,initLives
 				LD		(pacLives),a
+				LD		a,0
+				LD		(fruits),a
 resetPacMan:	LD		a, initPacx		;set Pacman Pos
 				LD		(pacx),a
 				LD		a, initPacy
@@ -64,8 +66,23 @@ eatPellet:		;Eat pellet at packman location
 				JR		NZ,eatSPellet
                 BIT		powerPBit,A
 				JR		NZ,eatPPellet
+				BIT		sfBit,A
+				JR		NZ,eatFruit
 				RET
-				
+eatFruit:		
+				PUSH	HL
+				LD      HL,(score)
+                LD      BC,50
+                ADD     HL,BC
+                LD      (score),HL
+
+				LD		A,(fruits)
+				INC		A
+				LD		(fruits),A
+				POP		HL
+				RES		sfBit,(HL)
+				RET
+
 eatSPellet:		
 				PUSH	HL		
 				LD		HL,(score)

@@ -1,10 +1,12 @@
 score			.EQU	8900H		;Score
 level			.EQU	8902H		;Score
+fruits			.EQU	8904H		;Score
 
 printHud:
 				CALL	printScore
 				CALL	printLives
 				CALL	printLevel
+				CALL	printFruit
 				RET
 ;Hud elements
 printScore:					
@@ -44,7 +46,24 @@ removeOldLives:	LD		HL, liveBlanking
 				CALL 	print
 				RET
 
+printFruit:					
+				LD		C, $03
+				LD		B, $1C
+				CALL	moveCursor
+				LD		HL, fruitHud
+				CALL 	print
+				LD 		A,(fruits)
+				OR		A
+				RET		Z
+				LD		B,A
+printFruitLoop:	LD		HL, superFruit
+				CALL 	print
+				DJNZ	printFruitLoop
+				RET
+
 scoreHUD:     	.BYTE "Score: ",0
 levelHUD:     	.BYTE "Level: ",0
 livesHUD:     	.BYTE "Lives: ",0
+fruitHud:     	.BYTE "Fruit: ",0
+
 liveBlanking	.BYTE "   ",0

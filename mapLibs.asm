@@ -1,8 +1,16 @@
 pathFindDepth   .EQU	30H
 
+fruitTicks   	.EQU	0B0H
+fruitTimer  	.EQU    8106H       ;Fruit Timer Location
+
+fruitX			.EQU	15
+fruitY			.EQU	14
+
 ;-------- Map -------;
 ;InitiMap
 initMap:
+				LD		A,fruitTicks
+				LD		(fruitTimer),A
 				LD		BC,400H
 				LD		HL,map
 				LD		DE,liveMap
@@ -29,6 +37,21 @@ getMapAddress:
 				ld		h,a
 				pop		bc
 				ret
+
+checkFruit:
+				LD		A,(fruitTimer)
+				OR		A
+				RET		Z
+				DEC		A
+				LD		(fruitTimer), A
+				OR		A
+				RET		NZ
+				LD		C,fruitX
+				LD		B,fruitY
+				CALL	getMapAddress
+				SET		sfBit,(HL)
+				CALL	printMapAt	
+				RET
 
 ;--------Check map for pellets ------;
 checkNextLevel:
