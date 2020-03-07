@@ -2203,7 +2203,7 @@ binary-debuggable-source
 97c7 97c7 s initMap:
 97c7 97c7 d 010004
 97c7 97c7 s 				LD		BC,400H
-97ca 97ca d 2147a5
+97ca 97ca d 2147a1
 97ca 97ca s 				LD		HL,map
 97cd 97cd d 1100e0
 97cd 97cd s 				LD		DE,liveMap
@@ -2768,8 +2768,8 @@ binary-debuggable-source
 9998 9998 s 				RET
 9999 9999 s ;Hud elements
 9999 9999 s printScore:					
-9999 9999 d 0e02
-9999 9999 s 				LD		C, $02
+9999 9999 d 0e03
+9999 9999 s 				LD		C, $03
 999b 999b d 0619
 999b 999b s 				LD		B, $19
 999d 999d d cd32a0
@@ -2785,8 +2785,8 @@ binary-debuggable-source
 99ac 99ac d c9
 99ac 99ac s 				RET
 99ad 99ad s printLevel:					
-99ad 99ad d 0e02
-99ad 99ad s 				LD		C, $02
+99ad 99ad d 0e03
+99ad 99ad s 				LD		C, $03
 99af 99af d 061a
 99af 99af s 				LD		B, $1A
 99b1 99b1 d cd32a0
@@ -2803,8 +2803,8 @@ binary-debuggable-source
 99c0 99c0 s 				RET
 99c1 99c1 s 
 99c1 99c1 s printLives:					
-99c1 99c1 d 0e02
-99c1 99c1 s 				LD		C, $02
+99c1 99c1 d 0e03
+99c1 99c1 s 				LD		C, $03
 99c3 99c3 d 061b
 99c3 99c3 s 				LD		B, $1B
 99c5 99c5 d cd32a0
@@ -3541,7 +3541,7 @@ a147 a147 s
 a147 a147 s xs		.EQU	1FH		;all	pellet
 a147 a147 s 
 a147 a147 d 0000404040404040404040404040404040404040404040404040404040400000
-a147 a147 s map1:	.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
+a147 a147 s map:	.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
 a167 a167 d 0000402a2c2c2c2c2e2c2c2c2c2c2640402a2c2c2c2c2c2e2c2c2c2c26400000
 a167 a167 s 		.BYTE	00,00,ww,rp,hp,hp,hp,hp,vp,hp,hp,hp,hp,hp,lp,ww,ww,rp,hp,hp,hp,hp,hp,vp,hp,hp,hp,hp,lp,ww,00,00
 a187 a187 d 0000401340404040234040404040234040234040404040234040404013400000
@@ -3605,77 +3605,45 @@ a507 a507 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,
 a527 a527 d 0000000000000000000000000000000000000000000000000000000000000000
 a527 a527 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
 a547 a547 s 
-a547 a547 d 0000404040404040404040404040404040404040404040404040404040400000
-a547 a547 s map:	.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
-a567 a567 d 0000400a0c0c0c0c0e0c0c0c0c0c0640400a0c0c0c0c0c0e0c0c0c0c06400000
-a567 a567 s 		.BYTE	00,00,ww,rn,hn,hn,hn,hn,vn,hn,hn,hn,hn,hn,ln,ww,ww,rn,hn,hn,hn,hn,hn,vn,hn,hn,hn,hn,ln,ww,00,00
-a587 a587 d 0000400340404040034040404040034040034040404040034040404003400000
-a587 a587 s 		.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
-a5a7 a5a7 d 0000400340404040034040404040034040034040404040034040404003400000
-a5a7 a5a7 s 		.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
-a5c7 a5c7 d 0000400b0c0c0c0c0f0c0c0e0c0c0d0c0c0d0c0c0e0c0c0f0c0c0c0c07400000
-a5c7 a5c7 s 		.BYTE	00,00,ww,bn,hn,hn,hn,hn,xn,hn,hn,vn,hn,hn,kn,hn,hn,kn,hn,hn,vn,hn,hn,xn,hn,hn,hn,hn,cn,ww,00,00
-a5e7 a5e7 d 0000400340404040034040034040404040404040034040034040404003400000
-a5e7 a5e7 s 		.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
-a607 a607 d 000040090c0c0c0c074040090c0c0640400a0c0c0540400b0c0c0c0c05400000
-a607 a607 s 		.BYTE	00,00,ww,dn,hn,hn,hn,hn,cn,ww,ww,dn,hn,hn,ln,ww,ww,rn,hn,hn,un,ww,ww,bn,hn,hn,hn,hn,un,ww,00,00
-a627 a627 d 0000404040404040034040404040034040034040404040034040404040400000
-a627 a627 s 		.BYTE	00,00,ww,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,ww,00,00
-a647 a647 d 00000000000000400340400a0c0c0d0c0c0d0c0c064040034000000000000000
-a647 a647 s 		.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,rn,hn,hn,kn,hn,hn,kn,hn,hn,ln,ww,ww,gn,ww,00,00,00,00,00,00,00
-a667 a667 d 0000000000000040034040034040400000404040034040034000000000000000
-a667 a667 s 		.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,00,00,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,00
-a687 a687 d 4040404040404040034040034000000000000040034040034040404040404040
-a687 a687 s 		.BYTE	ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww
-a6a7 a6a7 d 0c0c0c0c0c0c0c0c0f0c0c2740000000000000400b0c0c0f0c0c0c0c0c0c0c0c
-a6a7 a6a7 s 		.BYTE	hn,hn,hn,hn,hn,hn,hn,hn,xn,hn,hn,cp,ww,00,00,00,00,00,00,ww,bn,hn,hn,xn,hn,hn,hn,hn,hn,hn,hn,hn
-a6c7 a6c7 d 4040404040404040034040034000000000000040034040034040404040404040
-a6c7 a6c7 s 		.BYTE	ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww
-a6e7 a6e7 d 0000000000000040034040034040404040404040034040034000000000000000
-a6e7 a6e7 s 		.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,00
-a707 a707 d 00000000000000400340400b0c0c0c0c0c0c0c0c074040034000000000000000
-a707 a707 s 		.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,bn,hn,hn,hn,hn,hn,hn,hn,hn,cn,ww,ww,gn,ww,00,00,00,00,00,00,00
-a727 a727 d 0000404040404040034040034040404040404040034040034040404040400000
-a727 a727 s 		.BYTE	00,00,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,00,00
-a747 a747 d 0000400a0c0c0c0c0f0c0c0d0c0c0640400a0c0c0d0c0c0f0c0c0c0c06400000
-a747 a747 s 		.BYTE	00,00,ww,rn,hn,hn,hn,hn,xn,hn,hn,kn,hn,hn,ln,ww,ww,rn,hn,hn,kn,hn,hn,xn,hn,hn,hn,hn,ln,ww,00,00
-a767 a767 d 0000400340404040034040404040034040034040404040034040404003400000
-a767 a767 s 		.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
-a787 a787 d 000040090c0640400b0c0c0e0c0c0d0c0c0d0c0c0e0c0c0740400a0c05400000
-a787 a787 s 		.BYTE	00,00,ww,dn,hn,ln,ww,ww,bn,hn,hn,vn,hn,hn,kn,hn,hn,kn,hn,hn,vn,hn,hn,cn,ww,ww,rn,hn,un,ww,00,00
-a7a7 a7a7 d 0000404040034040034040034040404040404040034040034040034040400000
-a7a7 a7a7 s 		.BYTE	00,00,ww,ww,ww,gn,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,gn,ww,ww,ww,00,00
-a7c7 a7c7 d 0000400a0c0d0c0c054040090c0c0640400a0c0c054040090c0c0d0c06400000
-a7c7 a7c7 s 		.BYTE	00,00,ww,rn,hn,kn,hn,hn,un,ww,ww,dn,hn,hn,ln,ww,ww,rn,hn,hn,un,ww,ww,dn,hn,hn,kn,hn,ln,ww,00,00
-a7e7 a7e7 d 0000400340404040404040404040034040034040404040404040404003400000
-a7e7 a7e7 s 		.BYTE	00,00,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,00,00
-a807 a807 d 000040090c0c0c0c0c0c0c0c0c0c0d0c0c0d0c0c0c0c0c0c0c0c0c0c05400000
-a807 a807 s 		.BYTE	00,00,ww,dn,hn,hn,hn,hn,hn,hn,hn,hn,hn,hn,kn,hn,hn,kn,hn,hn,hn,hn,hn,hn,hn,hn,hn,hn,un,ww,00,00
-a827 a827 d 0000404040404040404040404040404040404040404040404040404040400000
-a827 a827 s 		.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
-a847 a847 d 0000000000000000000000000000000000000000000000000000000000000000
-a847 a847 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-a867 a867 d 0000000000000000000000000000000000000000000000000000000000000000
-a867 a867 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-a887 a887 d 0000000000000000000000000000000000000000000000000000000000000000
-a887 a887 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-a8a7 a8a7 d 0000000000000000000000000000000000000000000000000000000000000000
-a8a7 a8a7 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-a8c7 a8c7 d 0000000000000000000000000000000000000000000000000000000000000000
-a8c7 a8c7 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-a8e7 a8e7 d 0000000000000000000000000000000000000000000000000000000000000000
-a8e7 a8e7 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-a907 a907 d 0000000000000000000000000000000000000000000000000000000000000000
-a907 a907 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-a927 a927 f main.asm
-a927 a927 d 0000000000000000000000000000000000000000000000000000000000000000
-a927 a927 s 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-a947 a947 s 
-a947 a947 s ;-----Path find map
-a947 a947 s pathFindMap	.EQU	0D000H
-a947 a947 s 
-a947 a947 f main.asm
-a947 a947 s liveMap		.EQU	0E000H
+a547 a547 s ; map:	.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,rn,hn,hn,hn,hn,vn,hn,hn,hn,hn,hn,ln,ww,ww,rn,hn,hn,hn,hn,hn,vn,hn,hn,hn,hn,ln,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,bn,hn,hn,hn,hn,xn,hn,hn,vn,hn,hn,kn,hn,hn,kn,hn,hn,vn,hn,hn,xn,hn,hn,hn,hn,cn,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,dn,hn,hn,hn,hn,cn,ww,ww,dn,hn,hn,ln,ww,ww,rn,hn,hn,un,ww,ww,bn,hn,hn,hn,hn,un,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,rn,hn,hn,kn,hn,hn,kn,hn,hn,ln,ww,ww,gn,ww,00,00,00,00,00,00,00
+a547 a547 s ; 		.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,00,00,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,00
+a547 a547 s ; 		.BYTE	ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww
+a547 a547 s ; 		.BYTE	hn,hn,hn,hn,hn,hn,hn,hn,xn,hn,hn,cp,ww,00,00,00,00,00,00,ww,bn,hn,hn,xn,hn,hn,hn,hn,hn,hn,hn,hn
+a547 a547 s ; 		.BYTE	ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww
+a547 a547 s ; 		.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,00
+a547 a547 s ; 		.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,bn,hn,hn,hn,hn,hn,hn,hn,hn,cn,ww,ww,gn,ww,00,00,00,00,00,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,rn,hn,hn,hn,hn,xn,hn,hn,kn,hn,hn,ln,ww,ww,rn,hn,hn,kn,hn,hn,xn,hn,hn,hn,hn,ln,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,dn,hn,ln,ww,ww,bn,hn,hn,vn,hn,hn,kn,hn,hn,kn,hn,hn,vn,hn,hn,cn,ww,ww,rn,hn,un,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,ww,ww,gn,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,gn,ww,ww,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,rn,hn,kn,hn,hn,un,ww,ww,dn,hn,hn,ln,ww,ww,rn,hn,hn,un,ww,ww,dn,hn,hn,kn,hn,ln,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,dn,hn,hn,hn,hn,hn,hn,hn,hn,hn,hn,kn,hn,hn,kn,hn,hn,hn,hn,hn,hn,hn,hn,hn,hn,un,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
+a547 a547 s ; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+a547 a547 s ; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+a547 a547 s ; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+a547 a547 s ; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+a547 a547 s ; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+a547 a547 s ; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+a547 a547 s ; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+a547 a547 f main.asm
+a547 a547 s ; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+a547 a547 s 
+a547 a547 s ;-----Path find map
+a547 a547 s pathFindMap	.EQU	0D000H
+a547 a547 s 
+a547 a547 f main.asm
+a547 a547 s liveMap		.EQU	0E000H
 000b v bn
 0007 v cn
 000a v lf
@@ -3712,9 +3680,8 @@ a947 a947 s liveMap		.EQU	0E000H
 001e v vs
 001d v ks
 001f v xs
-a547 a map
+a147 a map
 a131 a cls
-a147 a map1
 a06e a num1
 a070 a num2
 a093 a absa

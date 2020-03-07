@@ -56,7 +56,7 @@ ks		.EQU	1DH		;up		left	right	pellet
 
 xs		.EQU	1FH		;all	pellet
 
-map1:	.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
+map:	.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
 		.BYTE	00,00,ww,rp,hp,hp,hp,hp,vp,hp,hp,hp,hp,hp,lp,ww,ww,rp,hp,hp,hp,hp,hp,vp,hp,hp,hp,hp,lp,ww,00,00
 		.BYTE	00,00,ww,gs,ww,ww,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,ww,ww,gs,ww,00,00
 		.BYTE	00,00,ww,gp,ww,ww,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,gp,ww,ww,ww,ww,ww,gp,ww,ww,ww,ww,gp,ww,00,00
@@ -89,35 +89,35 @@ map1:	.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww
 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
 
-map:	.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
-		.BYTE	00,00,ww,rn,hn,hn,hn,hn,vn,hn,hn,hn,hn,hn,ln,ww,ww,rn,hn,hn,hn,hn,hn,vn,hn,hn,hn,hn,ln,ww,00,00
-		.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
-		.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
-		.BYTE	00,00,ww,bn,hn,hn,hn,hn,xn,hn,hn,vn,hn,hn,kn,hn,hn,kn,hn,hn,vn,hn,hn,xn,hn,hn,hn,hn,cn,ww,00,00
-		.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
-		.BYTE	00,00,ww,dn,hn,hn,hn,hn,cn,ww,ww,dn,hn,hn,ln,ww,ww,rn,hn,hn,un,ww,ww,bn,hn,hn,hn,hn,un,ww,00,00
-		.BYTE	00,00,ww,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,ww,00,00
-		.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,rn,hn,hn,kn,hn,hn,kn,hn,hn,ln,ww,ww,gn,ww,00,00,00,00,00,00,00
-		.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,00,00,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,00
-		.BYTE	ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww
-		.BYTE	hn,hn,hn,hn,hn,hn,hn,hn,xn,hn,hn,cp,ww,00,00,00,00,00,00,ww,bn,hn,hn,xn,hn,hn,hn,hn,hn,hn,hn,hn
-		.BYTE	ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww
-		.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,00
-		.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,bn,hn,hn,hn,hn,hn,hn,hn,hn,cn,ww,ww,gn,ww,00,00,00,00,00,00,00
-		.BYTE	00,00,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,00,00
-		.BYTE	00,00,ww,rn,hn,hn,hn,hn,xn,hn,hn,kn,hn,hn,ln,ww,ww,rn,hn,hn,kn,hn,hn,xn,hn,hn,hn,hn,ln,ww,00,00
-		.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
-		.BYTE	00,00,ww,dn,hn,ln,ww,ww,bn,hn,hn,vn,hn,hn,kn,hn,hn,kn,hn,hn,vn,hn,hn,cn,ww,ww,rn,hn,un,ww,00,00
-		.BYTE	00,00,ww,ww,ww,gn,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,gn,ww,ww,ww,00,00
-		.BYTE	00,00,ww,rn,hn,kn,hn,hn,un,ww,ww,dn,hn,hn,ln,ww,ww,rn,hn,hn,un,ww,ww,dn,hn,hn,kn,hn,ln,ww,00,00
-		.BYTE	00,00,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,00,00
-		.BYTE	00,00,ww,dn,hn,hn,hn,hn,hn,hn,hn,hn,hn,hn,kn,hn,hn,kn,hn,hn,hn,hn,hn,hn,hn,hn,hn,hn,un,ww,00,00
-		.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
-		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+; map:	.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
+; 		.BYTE	00,00,ww,rn,hn,hn,hn,hn,vn,hn,hn,hn,hn,hn,ln,ww,ww,rn,hn,hn,hn,hn,hn,vn,hn,hn,hn,hn,ln,ww,00,00
+; 		.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
+; 		.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
+; 		.BYTE	00,00,ww,bn,hn,hn,hn,hn,xn,hn,hn,vn,hn,hn,kn,hn,hn,kn,hn,hn,vn,hn,hn,xn,hn,hn,hn,hn,cn,ww,00,00
+; 		.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
+; 		.BYTE	00,00,ww,dn,hn,hn,hn,hn,cn,ww,ww,dn,hn,hn,ln,ww,ww,rn,hn,hn,un,ww,ww,bn,hn,hn,hn,hn,un,ww,00,00
+; 		.BYTE	00,00,ww,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,ww,00,00
+; 		.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,rn,hn,hn,kn,hn,hn,kn,hn,hn,ln,ww,ww,gn,ww,00,00,00,00,00,00,00
+; 		.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,00,00,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,00
+; 		.BYTE	ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww
+; 		.BYTE	hn,hn,hn,hn,hn,hn,hn,hn,xn,hn,hn,cp,ww,00,00,00,00,00,00,ww,bn,hn,hn,xn,hn,hn,hn,hn,hn,hn,hn,hn
+; 		.BYTE	ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww
+; 		.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,00
+; 		.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,bn,hn,hn,hn,hn,hn,hn,hn,hn,cn,ww,ww,gn,ww,00,00,00,00,00,00,00
+; 		.BYTE	00,00,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,00,00
+; 		.BYTE	00,00,ww,rn,hn,hn,hn,hn,xn,hn,hn,kn,hn,hn,ln,ww,ww,rn,hn,hn,kn,hn,hn,xn,hn,hn,hn,hn,ln,ww,00,00
+; 		.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
+; 		.BYTE	00,00,ww,dn,hn,ln,ww,ww,bn,hn,hn,vn,hn,hn,kn,hn,hn,kn,hn,hn,vn,hn,hn,cn,ww,ww,rn,hn,un,ww,00,00
+; 		.BYTE	00,00,ww,ww,ww,gn,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,gn,ww,ww,ww,00,00
+; 		.BYTE	00,00,ww,rn,hn,kn,hn,hn,un,ww,ww,dn,hn,hn,ln,ww,ww,rn,hn,hn,un,ww,ww,dn,hn,hn,kn,hn,ln,ww,00,00
+; 		.BYTE	00,00,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,00,00
+; 		.BYTE	00,00,ww,dn,hn,hn,hn,hn,hn,hn,hn,hn,hn,hn,kn,hn,hn,kn,hn,hn,hn,hn,hn,hn,hn,hn,hn,hn,un,ww,00,00
+; 		.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
+; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00

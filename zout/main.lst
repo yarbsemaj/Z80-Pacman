@@ -1261,7 +1261,7 @@
    4:				;InitiMap
    5:     -	97C7          	initMap:
    6: 9303+10	97C7  010004  					LD		BC,400H
-   7: 9313+10	97CA  2147A5  					LD		HL,map
+   7: 9313+10	97CA  2147A1  					LD		HL,map
    8: 9323+10	97CD  1100E0  					LD		DE,liveMap
    9: 9333+16+5	97D0  EDB0    					LDIR
   10: 9349+10	97D2  C9      					RET
@@ -1579,7 +1579,7 @@
    8:11538+10	9998  C9      					RET
    9:				;Hud elements
   10:     -	9999          	printScore:					
-  11:11548+7	9999  0E02    					LD		C, $02
+  11:11548+7	9999  0E03    					LD		C, $03
   12:11555+7	999B  0619    					LD		B, $19
   13:11562+17	999D  CD32A0  					CALL	moveCursor
   14:11579+10	99A0  21E699  					LD		HL, scoreHUD
@@ -1588,7 +1588,7 @@
   17:11622+17	99A9  CD4DA0  					CALL	HLToDec
   18:11639+10	99AC  C9      					RET
   19:     -	99AD          	printLevel:					
-  20:11649+7	99AD  0E02    					LD		C, $02
+  20:11649+7	99AD  0E03    					LD		C, $03
   21:11656+7	99AF  061A    					LD		B, $1A
   22:11663+17	99B1  CD32A0  					CALL	moveCursor
   23:11680+10	99B4  21EE99  					LD		HL, levelHUD
@@ -1598,7 +1598,7 @@
   27:11740+10	99C0  C9      					RET
   28:				
   29:     -	99C1          	printLives:					
-  30:11750+7	99C1  0E02    					LD		C, $02
+  30:11750+7	99C1  0E03    					LD		C, $03
   31:11757+7	99C3  061B    					LD		B, $1B
   32:11764+17	99C5  CD32A0  					CALL	moveCursor
   33:11781+10	99C8  21F699  					LD		HL, livesHUD
@@ -2365,7 +2365,7 @@
   56:				
   57:     -	001F          	xs		.EQU	1FH		;all	pellet
   58:				
-  59:     -	A147  00004040	map1:	.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
+  59:     -	A147  00004040	map:	.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
 	              40404040
 	              40404040
 	              40404040
@@ -2622,263 +2622,39 @@
 	              00000000
 	              00000000
   91:				
-  92:     -	A547  00004040	map:	.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
-	              40404040
-	              40404040
-	              40404040
-	              40404040
-	              40404040
-	              40404040
-	              40400000
-  93:     -	A567  0000400A			.BYTE	00,00,ww,rn,hn,hn,hn,hn,vn,hn,hn,hn,hn,hn,ln,ww,ww,rn,hn,hn,hn,hn,hn,vn,hn,hn,hn,hn,ln,ww,00,00
-	              0C0C0C0C
-	              0E0C0C0C
-	              0C0C0640
-	              400A0C0C
-	              0C0C0C0E
-	              0C0C0C0C
-	              06400000
-  94:     -	A587  00004003			.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
-	              40404040
-	              03404040
-	              40400340
-	              40034040
-	              40404003
-	              40404040
-	              03400000
-  95:     -	A5A7  00004003			.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
-	              40404040
-	              03404040
-	              40400340
-	              40034040
-	              40404003
-	              40404040
-	              03400000
-  96:     -	A5C7  0000400B			.BYTE	00,00,ww,bn,hn,hn,hn,hn,xn,hn,hn,vn,hn,hn,kn,hn,hn,kn,hn,hn,vn,hn,hn,xn,hn,hn,hn,hn,cn,ww,00,00
-	              0C0C0C0C
-	              0F0C0C0E
-	              0C0C0D0C
-	              0C0D0C0C
-	              0E0C0C0F
-	              0C0C0C0C
-	              07400000
-  97:     -	A5E7  00004003			.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
-	              40404040
-	              03404003
-	              40404040
-	              40404040
-	              03404003
-	              40404040
-	              03400000
-  98:     -	A607  00004009			.BYTE	00,00,ww,dn,hn,hn,hn,hn,cn,ww,ww,dn,hn,hn,ln,ww,ww,rn,hn,hn,un,ww,ww,bn,hn,hn,hn,hn,un,ww,00,00
-	              0C0C0C0C
-	              07404009
-	              0C0C0640
-	              400A0C0C
-	              0540400B
-	              0C0C0C0C
-	              05400000
-  99:     -	A627  00004040			.BYTE	00,00,ww,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,ww,00,00
-	              40404040
-	              03404040
-	              40400340
-	              40034040
-	              40404003
-	              40404040
-	              40400000
- 100:     -	A647  00000000			.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,rn,hn,hn,kn,hn,hn,kn,hn,hn,ln,ww,ww,gn,ww,00,00,00,00,00,00,00
-	              00000040
-	              0340400A
-	              0C0C0D0C
-	              0C0D0C0C
-	              06404003
-	              40000000
-	              00000000
- 101:     -	A667  00000000			.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,00,00,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,00
-	              00000040
-	              03404003
-	              40404000
-	              00404040
-	              03404003
-	              40000000
-	              00000000
- 102:     -	A687  40404040			.BYTE	ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww
-	              40404040
-	              03404003
-	              40000000
-	              00000040
-	              03404003
-	              40404040
-	              40404040
- 103:     -	A6A7  0C0C0C0C			.BYTE	hn,hn,hn,hn,hn,hn,hn,hn,xn,hn,hn,cp,ww,00,00,00,00,00,00,ww,bn,hn,hn,xn,hn,hn,hn,hn,hn,hn,hn,hn
-	              0C0C0C0C
-	              0F0C0C27
-	              40000000
-	              00000040
-	              0B0C0C0F
-	              0C0C0C0C
-	              0C0C0C0C
- 104:     -	A6C7  40404040			.BYTE	ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww
-	              40404040
-	              03404003
-	              40000000
-	              00000040
-	              03404003
-	              40404040
-	              40404040
- 105:     -	A6E7  00000000			.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,00
-	              00000040
-	              03404003
-	              40404040
-	              40404040
-	              03404003
-	              40000000
-	              00000000
- 106:     -	A707  00000000			.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,bn,hn,hn,hn,hn,hn,hn,hn,hn,cn,ww,ww,gn,ww,00,00,00,00,00,00,00
-	              00000040
-	              0340400B
-	              0C0C0C0C
-	              0C0C0C0C
-	              07404003
-	              40000000
-	              00000000
- 107:     -	A727  00004040			.BYTE	00,00,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,00,00
-	              40404040
-	              03404003
-	              40404040
-	              40404040
-	              03404003
-	              40404040
-	              40400000
- 108:     -	A747  0000400A			.BYTE	00,00,ww,rn,hn,hn,hn,hn,xn,hn,hn,kn,hn,hn,ln,ww,ww,rn,hn,hn,kn,hn,hn,xn,hn,hn,hn,hn,ln,ww,00,00
-	              0C0C0C0C
-	              0F0C0C0D
-	              0C0C0640
-	              400A0C0C
-	              0D0C0C0F
-	              0C0C0C0C
-	              06400000
- 109:     -	A767  00004003			.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
-	              40404040
-	              03404040
-	              40400340
-	              40034040
-	              40404003
-	              40404040
-	              03400000
- 110:     -	A787  00004009			.BYTE	00,00,ww,dn,hn,ln,ww,ww,bn,hn,hn,vn,hn,hn,kn,hn,hn,kn,hn,hn,vn,hn,hn,cn,ww,ww,rn,hn,un,ww,00,00
-	              0C064040
-	              0B0C0C0E
-	              0C0C0D0C
-	              0C0D0C0C
-	              0E0C0C07
-	              40400A0C
-	              05400000
- 111:     -	A7A7  00004040			.BYTE	00,00,ww,ww,ww,gn,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,gn,ww,ww,ww,00,00
-	              40034040
-	              03404003
-	              40404040
-	              40404040
-	              03404003
-	              40400340
-	              40400000
- 112:     -	A7C7  0000400A			.BYTE	00,00,ww,rn,hn,kn,hn,hn,un,ww,ww,dn,hn,hn,ln,ww,ww,rn,hn,hn,un,ww,ww,dn,hn,hn,kn,hn,ln,ww,00,00
-	              0C0D0C0C
-	              05404009
-	              0C0C0640
-	              400A0C0C
-	              05404009
-	              0C0C0D0C
-	              06400000
- 113:     -	A7E7  00004003			.BYTE	00,00,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,00,00
-	              40404040
-	              40404040
-	              40400340
-	              40034040
-	              40404040
-	              40404040
-	              03400000
- 114:     -	A807  00004009			.BYTE	00,00,ww,dn,hn,hn,hn,hn,hn,hn,hn,hn,hn,hn,kn,hn,hn,kn,hn,hn,hn,hn,hn,hn,hn,hn,hn,hn,un,ww,00,00
-	              0C0C0C0C
-	              0C0C0C0C
-	              0C0C0D0C
-	              0C0D0C0C
-	              0C0C0C0C
-	              0C0C0C0C
-	              05400000
- 115:     -	A827  00004040			.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
-	              40404040
-	              40404040
-	              40404040
-	              40404040
-	              40404040
-	              40404040
-	              40400000
- 116:     -	A847  00000000			.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
- 117:     -	A867  00000000			.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
- 118:     -	A887  00000000			.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
- 119:     -	A8A7  00000000			.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
- 120:     -	A8C7  00000000			.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
- 121:     -	A8E7  00000000			.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
- 122:     -	A907  00000000			.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
+  92:				; map:	.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
+  93:				; 		.BYTE	00,00,ww,rn,hn,hn,hn,hn,vn,hn,hn,hn,hn,hn,ln,ww,ww,rn,hn,hn,hn,hn,hn,vn,hn,hn,hn,hn,ln,ww,00,00
+  94:				; 		.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
+  95:				; 		.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
+  96:				; 		.BYTE	00,00,ww,bn,hn,hn,hn,hn,xn,hn,hn,vn,hn,hn,kn,hn,hn,kn,hn,hn,vn,hn,hn,xn,hn,hn,hn,hn,cn,ww,00,00
+  97:				; 		.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
+  98:				; 		.BYTE	00,00,ww,dn,hn,hn,hn,hn,cn,ww,ww,dn,hn,hn,ln,ww,ww,rn,hn,hn,un,ww,ww,bn,hn,hn,hn,hn,un,ww,00,00
+  99:				; 		.BYTE	00,00,ww,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,ww,00,00
+ 100:				; 		.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,rn,hn,hn,kn,hn,hn,kn,hn,hn,ln,ww,ww,gn,ww,00,00,00,00,00,00,00
+ 101:				; 		.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,00,00,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,00
+ 102:				; 		.BYTE	ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww
+ 103:				; 		.BYTE	hn,hn,hn,hn,hn,hn,hn,hn,xn,hn,hn,cp,ww,00,00,00,00,00,00,ww,bn,hn,hn,xn,hn,hn,hn,hn,hn,hn,hn,hn
+ 104:				; 		.BYTE	ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww
+ 105:				; 		.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,00,00,00,00,00,00,00
+ 106:				; 		.BYTE	00,00,00,00,00,00,00,ww,gn,ww,ww,bn,hn,hn,hn,hn,hn,hn,hn,hn,cn,ww,ww,gn,ww,00,00,00,00,00,00,00
+ 107:				; 		.BYTE	00,00,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,00,00
+ 108:				; 		.BYTE	00,00,ww,rn,hn,hn,hn,hn,xn,hn,hn,kn,hn,hn,ln,ww,ww,rn,hn,hn,kn,hn,hn,xn,hn,hn,hn,hn,ln,ww,00,00
+ 109:				; 		.BYTE	00,00,ww,gn,ww,ww,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,gn,ww,ww,ww,ww,gn,ww,00,00
+ 110:				; 		.BYTE	00,00,ww,dn,hn,ln,ww,ww,bn,hn,hn,vn,hn,hn,kn,hn,hn,kn,hn,hn,vn,hn,hn,cn,ww,ww,rn,hn,un,ww,00,00
+ 111:				; 		.BYTE	00,00,ww,ww,ww,gn,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,gn,ww,ww,ww,00,00
+ 112:				; 		.BYTE	00,00,ww,rn,hn,kn,hn,hn,un,ww,ww,dn,hn,hn,ln,ww,ww,rn,hn,hn,un,ww,ww,dn,hn,hn,kn,hn,ln,ww,00,00
+ 113:				; 		.BYTE	00,00,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,ww,gn,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,gn,ww,00,00
+ 114:				; 		.BYTE	00,00,ww,dn,hn,hn,hn,hn,hn,hn,hn,hn,hn,hn,kn,hn,hn,kn,hn,hn,hn,hn,hn,hn,hn,hn,hn,hn,un,ww,00,00
+ 115:				; 		.BYTE	00,00,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,ww,00,00
+ 116:				; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+ 117:				; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+ 118:				; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+ 119:				; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+ 120:				; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+ 121:				; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
+ 122:				; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
 **** main.asm ****
- 110:     -	A927  00000000			.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
-	              00000000
+ 110:				; 		.BYTE	00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00,00
  111:				
  112:				;-----Path find map
  113:     -	D000          	pathFindMap	.EQU	0D000H
@@ -2892,8 +2668,8 @@ Statistics:
 
      4	passes
      0	jr promotions
-   313	symbols
-  6471	bytes
+   312	symbols
+  5447	bytes
 
 
 
@@ -3000,8 +2776,7 @@ ln             =   6
 logo            9eb8     
 lp             =  26     
 ls             =  16     
-map             a547     
-map1            a147     
+map             a147     
 message         9f5c     
 move            9787     
 movecursor      a032     
