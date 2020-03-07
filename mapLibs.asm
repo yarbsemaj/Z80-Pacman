@@ -40,6 +40,9 @@ checkNextLevel:
 				OR		A
 				RET		NZ
 
+				LD		HL,(level)
+				INC		HL
+				LD		(level),HL
 				CALL	countdown
 				CALL	initMap
 				CALL	initGhost

@@ -1,28 +1,37 @@
 score			.EQU	8900H		;Score
+level			.EQU	8902H		;Score
 
 printHud:
 				CALL	printScore
 				CALL	printLives
+				CALL	printLevel
 				RET
 ;Hud elements
 printScore:					
-				LD		C, $02
-				LD		B, $23
+				LD		C, $03
+				LD		B, $19
 				CALL	moveCursor
 				LD		HL, scoreHUD
 				CALL 	print
 				LD		HL, (score)
 				CALL	HLToDec
-				LD		A,LF
-				RST     08H
-				LD		A,CR
-				RST     08H
+				RET
+printLevel:					
+				LD		C, $03
+				LD		B, $1A
+				CALL	moveCursor
+				LD		HL, levelHUD
+				CALL 	print
+				LD		HL, (level)
+				CALL	HLToDec
 				RET
 
 printLives:					
-				LD		C, $02
-				LD		B, $24
+				LD		C, $03
+				LD		B, $1B
 				CALL	moveCursor
+				LD		HL, livesHUD
+				CALL 	print
 				LD 		A,(pacLives)
 				DEC		A
 				OR		A
@@ -36,4 +45,6 @@ removeOldLives:	LD		HL, liveBlanking
 				RET
 
 scoreHUD:     	.BYTE "Score: ",0
+levelHUD:     	.BYTE "Level: ",0
+livesHUD:     	.BYTE "Lives: ",0
 liveBlanking	.BYTE "   ",0

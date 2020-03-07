@@ -16,6 +16,8 @@ pPActive        .EQU    8104H       ;Power Pellet Timer
 initPacman:
 				LD		HL, 0H
 				LD		(score), HL
+				LD		HL, 1H
+				LD		(level), HL
 				LD		a,initLives
 				LD		(pacLives),a
 resetPacMan:	LD		a, initPacx		;set Pacman Pos
