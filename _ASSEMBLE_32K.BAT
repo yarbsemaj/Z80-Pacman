@@ -1,4 +1,0 @@
-zmac main.asm
-
-
-pause
